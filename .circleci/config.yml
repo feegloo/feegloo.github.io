@@ -1,3 +1,2 @@
 version: 2.1
 workflows:
-    "Hello Workflow":
