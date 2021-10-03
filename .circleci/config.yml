@@ -1,5 +1,8 @@
+# minimal config passing CircleCI build
 version: 2.1
 jobs:
-  build:
+  build:                         # your job name
+    docker:
+      - image: cimg/node:14.10.1 # (required) container where your job's commands are run 
     steps:
-      - run: echo "hello world" # run the `echo` command
+      - run: echo "noop"
