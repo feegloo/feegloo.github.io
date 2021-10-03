@@ -5,3 +5,4 @@ jobs:
     docker:
       - image: cimg/node:14.10.1 # (required) container where your job's commands are run 
     steps:
+      - run: echo "noop"         # (required) does nothing, but 1 step is required
