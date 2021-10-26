@@ -1,2 +1,2 @@
 User-agent: *
-Disallow: /CV.pdf
+Disallow: /Aleksander Figiel - CV.pdf
