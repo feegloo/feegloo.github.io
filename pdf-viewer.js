@@ -57,10 +57,12 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
         var url = document.location.origin + "/" + fileName
 
         var options = {
-          defaultViewMode: "FIT_WIDTH", 
+          embedMode: "LIGHT_BOX",
+          defaultViewMode: "FIT_WIDTH",
+          showPageControls: false, 
           showAnnotationTools: false, 
-          showLeftHandPanel: false, 
-			    showPageControls: false
+          showLeftHandPanel: false,
+          showDownloadPDF: true
         }
         
         adobeDCView.previewFile({
