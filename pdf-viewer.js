@@ -61,7 +61,8 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
           defaultViewMode: "CONTINUOUS", 
           showPageControls: false, 
           showAnnotationTools: false, 
-          showLeftHandPanel: false
+          showLeftHandPanel: false,
+          showDownloadPDF: true
         }
         
         adobeDCView.previewFile({
