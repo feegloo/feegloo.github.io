@@ -16,8 +16,12 @@
 
       gtag('config', 'G-FT1KCDMZJQ');
     </script>
+    <script src="./pdf-viewer.js"></script>
   </head>
   <body>
-    <embed src="Aleksander Figiel - CV.pdf" width="100%" height="100%"/>
+    <script type="text/javascript">
+      var embedPdf = getEmbedPdf("d4519458d2854a5aa28d923b316c2afe")
+      embedPdf('Aleksander Figiel - CV.pdf', 'body')
+    </script>
   </body>
 </html>
