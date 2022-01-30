@@ -33,8 +33,12 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
   var runAdobePdfEmbedAPI = (function() {
     var containerElementId = 'adobe-dc-view'
 
-    function getSdkScriptElementString() {
-      return '<script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>'
+    function getSdkScriptElement() {
+      var script   = document.createElement("script");
+      script.type  = "text/javascript";
+      script.src   = "https://documentcloud.adobe.com/view-sdk/main.js";
+      
+      return script
     }
 
     function getContainerElementString() {
@@ -73,10 +77,13 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
       });
     }
 
-    return function(clientId, fileName, parentElement) {      
-      appendHtmlElement(parentElement, getSdkScriptElementString())
+    return function(clientId, fileName, parentElement) {    
+      var headElement = document.querySelector('head')
+
+      headElement.appendChild(getSdkScriptElement())
+
       appendHtmlElement(parentElement, getContainerElementString())
-      appendHtmlElement(document.querySelector('head'), getMetaViewportElementString())
+      appendHtmlElement(headElement, getMetaViewportElementString())
 
       initSdk(clientId, fileName, containerElementId)
     }
