@@ -3,7 +3,7 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
    * utils 
    */
   function isMobile() {
-    navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|webOS)/);
+    return !!navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|webOS)/);
   }
 
   function appendHtmlElement(parentElement, htmlString) {
@@ -19,7 +19,6 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
     }
     
     return function(fileName, parentElement) {
-      console.log('runNativeEmbedPdf')
       var embedElementString = getEmbedElementString(fileName)
   
       appendHtmlElement(parentElement, embedElementString)      
