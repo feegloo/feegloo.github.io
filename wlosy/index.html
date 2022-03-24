@@ -1,0 +1,14 @@
+<html>
+  <body>
+    <div id="content">
+     
+    </div>
+    <script>
+  fetch('https://api.github.com/repos/feegloo/wlosy/git/trees/master?recursive=1')
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('content').innerHTML = JSON.stringify(data)
+  })
+   </script>
+</body>
+</html>
