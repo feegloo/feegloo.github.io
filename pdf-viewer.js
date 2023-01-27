@@ -58,6 +58,7 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
 
         var options = {
           embedMode: "FULL_WINDOW",
+          defaultViewMode: "FIT_WIDTH",
           showPageControls: false, 
           showAnnotationTools: false, 
           showLeftHandPanel: false,
