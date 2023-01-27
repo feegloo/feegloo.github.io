@@ -36,7 +36,7 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
     function getSdkScriptElement() {
       var script   = document.createElement("script");
       script.type  = "text/javascript";
-      script.src   = "https://documentcloud.adobe.com/view-sdk/main.js";
+      script.src   = "https://documentservices.adobe.com/view-sdk/viewer.js";
       
       return script
     }
