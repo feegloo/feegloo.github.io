@@ -46,7 +46,7 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
     }
 
     function getMetaViewportElementString() {
-      return '<meta name="viewport" content="width=device-width,initial-scale=1.2,maximum-scale=1.2,user-scalable=no"/>'
+      return '<meta name="viewport" content="width=initial-scale=1.2,maximum-scale=1.2,user-scalable=no"/>'
     }
 
     function initSdk(clientId, fileName, divId) {
