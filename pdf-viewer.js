@@ -83,7 +83,7 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
       headElement.appendChild(getSdkScriptElement())
 
       appendHtmlElement(parentElement, getContainerElementString())
-      appendHtmlElement(headElement, getMetaViewportElementString())
+//       appendHtmlElement(headElement, getMetaViewportElementString())
 
       initSdk(clientId, fileName, containerElementId)
     }
