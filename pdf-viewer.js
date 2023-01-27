@@ -57,7 +57,7 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
         var url = document.location.origin + "/" + fileName
 
         var options = {
-          embedMode: "LIGHT_BOX",
+          embedMode: "FULL_WINDOW",
           defaultViewMode: "FIT_WIDTH",
           showPageControls: false, 
           showAnnotationTools: false, 
