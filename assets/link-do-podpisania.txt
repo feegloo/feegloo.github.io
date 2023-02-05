@@ -6,7 +6,7 @@ b) podpis - w górnym menu, klikamy "Sign", tworzymy własny podpis - za pomoc�
 c) klikamy "Zastosuj zmiany"
 d) po przetworzeniu, na kolejnym ekranie klikamy "Download", pobrany plik PDF załączamy w odpowiedzi do tego emaila
 
-Alternatywne sposób podpisu - przechodzimy od razu do punktu "Zastosuj zmiany", pobieramy PDF
+Alternatywne sposoby podpisania - przechodzimy od razu do punktu "Zastosuj zmiany", pobieramy PDF
 1. otwieramy w aplikacji "Podgląd" w systemie macOS, nanosimy podpis, zapisujemy PDF
 
 lub
