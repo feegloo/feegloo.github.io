@@ -1,1 +1,14 @@
-https://www.sejda.com/pl/pdf-editor?files=%5B%7B%22downloadUrl%22%3A%22https%3A%2F%2Ftrycholog.pl%2Fassets%2FDo%2520podpisania%2520-%2520przed%2520konsultacj%25C4%2585.pdf%22%7D%5D
+https://www.sejda.com/pl/sign-pdf?files=%5B%7B%22downloadUrl%22%3A%22https%3A%2F%2Ftrycholog.pl%2Fassets%2FDo%2520podpisania%2520-%2520przed%2520konsultacj%25C4%2585.pdf%22%7D%5D
+
+Po kliknięciu na link, otworzy się edytor PDF. 
+a) aby napisać datę konsultacji - nad edytorem PDF, w górnym menu, mamy zaznaczoną opcję "Text", tworzymy pole tekstowe w stopce, wpisujemy datę
+b) podpis - w górnym menu, klikamy "Sign", tworzymy własny podpis - za pomocą myszki, lub upload istniejącego podpisu jako grafika
+c) klikamy "Zastosuj zmiany"
+d) po przetworzeniu, na kolejnym ekranie klikamy "Download", pobrany plik załączamy jako odpowiedź do tego emaila
+
+Alternatywne sposób podpisu - przechodzimy od razu do punktu "Zastosuj zmiany", pobieramy PDF
+1. otwieramy w aplikacji "Podgląd" w systemie macOS, nanosimy podpis, zapisujemy PDF
+
+lub
+
+2. drukujemy plik, nanosimy datę i podpis długopisem, robimy skan lub zdjęcie, przesyłamy plik PDF lub JPEG
