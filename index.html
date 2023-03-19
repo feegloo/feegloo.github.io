@@ -75,7 +75,9 @@
       // Default options are marked with *
       const response = await fetch(url, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
-        mode: location.hostname ? "cors" : "no-cors", // no-cors, *cors, same-origin
+        // TODO: false hardcoded
+        // Access to fetch at 'https://receive-events-i6eptbfmlq-lm.a.run.app/' from origin 'https://trycholog.pl' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+        mode: false && location.hostname ? "cors" : "no-cors", // no-cors, *cors, same-origin
         cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
         credentials: "same-origin", // include, *same-origin, omit
         headers: {
