@@ -1,4 +1,4 @@
-https://www.sejda.com/pl/sign-pdf?files=%5B%7B%22downloadUrl%22%3A%22https%3A%2F%2Ftrycholog.pl%2Fassets%2FDo%2520podpisania%2520-%2520przed%2520konsultacj%25C4%2585.pdf%22%7D%5D
+https://www.sejda.com/pl/sign-pdf?files=%5B%7B%22downloadUrl%22%3A%22https%3A%2F%2Ftrycholog.pl%2Fassets%2FDokument%2520-%2520przed%2520konsultacja%25CC%25A8.pdf%22%7D%5D
 
 Po kliknięciu na link, otworzy się edytor PDF. 
 a) aby napisać datę - nad edytorem PDF, w górnym menu, mamy zaznaczoną opcję "Text", tworzymy pole tekstowe w stopce, wpisujemy datę
