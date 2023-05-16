@@ -18,6 +18,13 @@
       padding: 0px 10vw;
       color: #191a1a;
     }
+    
+    /* smartphones */
+    @media (max-width:1280px) {
+      .title {
+        line-height:40px;
+      }
+    }
 
     /* hi-res laptops and desktops */
     @media (min-width:1281px) {
@@ -58,6 +65,11 @@
 
     a:hover:after {
       top: 0%;
+    }
+    
+    .title {
+      font-weight: 700; 
+      font-size: 2.2em;
     }
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
@@ -105,7 +117,7 @@
 </head>
 
 <body>
-  <p style="font-weight: 700; font-size: 2.2em; line-height:40px">Nazywam się Aleksander Figiel <br />i jestem <a
+  <p class="title">Nazywam się Aleksander Figiel <br />i jestem <a
       href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank">trychologiem.</a></p>
   <p>
     Rozpoznaję <a href="/leczenie-lysienia-androgenowego" target="_blank">łysienie androgenowe</a> i telogenowe, przyczyny wypadania włosów oraz
