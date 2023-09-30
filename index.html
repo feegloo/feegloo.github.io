@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <title>trycholog.pl | Aleksander Figiel</title>
   <meta name="description"
-    content="Rozpoznaję łysienie androgenowe oraz telogenowe, planuję leczenie na podstawie badań naukowych, doradzam jak zrobić dobry przeszczep włosów. Konsultacja w Warszawie lub zdalnie." />
+    content="Rozpoznaję łysienie androgenowe oraz telogenowe, planuję leczenie na podstawie badań naukowych, doradzam jak zrobić udany przeszczep włosów. Konsultacja w Warszawie lub zdalnie." />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="keywords" content="trycholog, trycholog warszawa, łysienie androgenowe, przeszczep włosów, wypadanie włosów, zakola, łysienie telogenowe, łojotokowe zapalenie skóry, łzs, finasteryd, minoxidil, dutasteryd, szampon na wypadanie włosów, włosing" />  
   <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
@@ -89,41 +89,6 @@
     gtag('js', new Date());
     gtag('config', 'G-FT1KCDMZJQ');
   </script>
-
-  <script>
-    // Example POST method implementation:
-    // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    async function postData(url = "", data = {}) {
-      // Default options are marked with *
-      const response = await fetch(url, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        // TODO: false hardcoded
-        // Access to fetch at 'https://receive-events-i6eptbfmlq-lm.a.run.app/' from origin 'https://trycholog.pl' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-        mode: false && location.hostname ? "cors" : "no-cors", // no-cors, *cors, same-origin
-        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: "same-origin", // include, *same-origin, omit
-        headers: {
-          "Content-Type": "application/json",
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: "follow", // manual, *follow, error
-        referrerPolicy: "origin", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(data), // body data type must match "Content-Type" header
-      });
-
-      if (response.body) return response.json(); // parses JSON response into native JavaScript objects
-    }
-
-    // TODO: hardcoded userId
-    const userId = [...Array(32)].map(() => Math.random().toString(36)[2]).join('')
-
-    // API exposed to app
-    function sendEvent(name, data) {      
-      postData("https://receive-events-i6eptbfmlq-lm.a.run.app", { name, data, userId }).then((responseBody) => {
-        // console.log(responseBody);
-      });
-    }
-  </script>
 </head>
 
 <body>
@@ -137,7 +102,7 @@
   <p>
     Udzielam 
     <a href="/konsultacja" target="_blank">konsultacji trychologicznych</a>
-    (do 60 minut, koszt 100zł) w Warszawie lub zdalnie
+    <br/> w Warszawie oraz zdalnie (do 60 minut, koszt 100zł)
     <br/> <a href="tel:791421067">📞 791 421 067</a>
   </p>
   <p>
@@ -146,19 +111,8 @@
   <p>
     Moim celem jest zaplanowanie strategii odbudowy włosów&nbsp;i utrzymanie ich na długie lata (bez zbędnych
     wydatków) oraz edukacja - opierająca się na wiedzy światowej klasy ekspertów i wynikach anglojęzycznych badań
-    naukowych<span class="dot" onclick="alert('you\'ve found Easter Egg :)')">.</span>
+    naukowych<span>.</span>
   </p>
-  <script>
-    // document.querySelectorAll('a').forEach((node) => {
-    //   node.addEventListener("click", (el) => {
-    //     sendEvent('click', { href: el.target.href })
-    //   })
-
-    //   node.addEventListener("mouseover", (el) => {
-    //     sendEvent('hover', { href: el.target.href })
-    //   })
-    // })
-  </script>
 </body>
 
 </html>
