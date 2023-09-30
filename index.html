@@ -22,8 +22,13 @@
     
     /* smartphones */
     @media (max-width:1280px) {
-      .title {
+      #title {
         line-height:26px;
+      }
+
+      #leczenie-lysienia-androgenowego {
+        white-space: pre-wrap;
+        word-wrap: break-word;
       }
     }
 
@@ -31,10 +36,6 @@
     @media (min-width:1281px) {
       body {
         padding: 4vh 10vw;
-      }
-
-      #konsultacja {
-        white-space: nowrap;
       }
     }
 
@@ -68,7 +69,7 @@
       top: 0%;
     }
     
-    .title {
+    #title {
       font-weight: 700; 
       font-size: 2.2em;
       margin: 25px 0px;
@@ -93,7 +94,7 @@
 </head>
 
 <body>
-  <p class="title">
+  <p id="title">
     Nazywam się Aleksander Figiel
     <br/> i jestem <a href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank">trychologiem</a>
   </p>
@@ -101,7 +102,7 @@
     Rozpoznaję choroby skóry głowy, 
     <br/> pomagam leczyć przyczyny wypadania włosów.
   </p>
-  <p>
+  <p id="leczenie-lysienia-androgenowego">
     Mój darmowy poradnik PDF:
     <a href="/leczenie-lysienia-androgenowego" target="_blank">Leczenie łysienia androgenowego u mężczyzn</a>
   </p>
