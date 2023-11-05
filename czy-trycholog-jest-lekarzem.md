@@ -20,7 +20,7 @@ W dermatologii nie istnieje specjalizacja o nazwie "trychologia".
 Włosy, podobnie jak paznokcie, to tzw. "przydatki" produkowane przez skórę - więc każdy dermatolog powinien "znać się na włosach". 
 
 <br>
-Łysienie jest postrzegane jako nieunikniony, trudny w leczeniu defekt kosmetyczny. 
+Łysienie jest postrzegane jako trudny w leczeniu defekt kosmetyczny z nieuniknionym końcem.
 <br>
 Defekt, który umożliwia w miarę normalne funkcjonowanie, dlatego lekarze wolą zajmować się "poważniejszymi" chorobami. 
 
