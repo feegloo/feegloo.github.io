@@ -35,7 +35,7 @@ Większość trychologów nie może wypisać recepty, więc skupiają się wyko
 <br>
 Na krótką metę widać poprawę. 
 <br>
-W dłużej perspektywie - optymalne rezultaty daje tylko współpraca z lekarzem i zaadresowanie przyczyny utraty włosów.
+W dłużej perspektywie - optymalne rezultaty daje tylko współpraca z dobrym lekarzem i zaadresowanie przyczyny utraty włosów.
 
 Maskując przyczynę problemu stymulatorami, wpadamy w spiralę niekończącej się ilości zabiegów.
 
