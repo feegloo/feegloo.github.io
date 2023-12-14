@@ -9,7 +9,7 @@
   position: absolute;
   opacity: 0;
   transform-origin: top left;
-  transition: opacity 0.1s ease-in;
+  transition: opacity 0.1s linear;
 }
 .zoom-on-hover.zoomed .zoom {
   opacity: 1;
