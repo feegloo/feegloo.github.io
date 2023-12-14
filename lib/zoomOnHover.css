@@ -12,7 +12,7 @@
 }
 .zoom-on-hover.zoomed .zoom {
   opacity: 1;
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in;
 }
 .zoom-on-hover.zoomed .normal {
   opacity: 0;  
