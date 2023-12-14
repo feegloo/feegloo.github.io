@@ -156,10 +156,9 @@
       // true for mobile device
       var appElement = document.querySelector("#app");
 
-      // Check if the element was found
       if (appElement) {
-        // Set the display property to "none"
-        appElement.style.display = "none";
+        // Remove the element from the DOM
+        appElement.remove()
       }
     } else{
         new Vue({
