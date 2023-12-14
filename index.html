@@ -141,6 +141,11 @@
 
       image.style.transform = transformValue;
     }
+
+    function resetMagnify() {
+      const image = document.querySelector('.magnifier-image');
+      image.style.transform = 'translate(-50%, -50%) scale(1)';
+    }
   </script>
 </head>
 
@@ -176,7 +181,7 @@
       </p>
     </div>
     <div class="right-column">
-      <div class="magnifier-container" onmousemove="magnify(event)">
+      <div class="magnifier-container" onmousemove="magnify(event)" onmouseleave="resetMagnify()">
         <img class="magnifier-image" src="leczenie-lysienia androgenowego-mapa-mysli.jpg" alt="leczenie-lysienia androgenowego-mapa-mysli" >
       </div>      
     </div>
