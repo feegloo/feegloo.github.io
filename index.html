@@ -18,7 +18,6 @@
       -webkit-font-smoothing: antialiased;
       padding: 0px 8vw;
       color: #191a1a;
-      display: flex;
     }
     
     /* smartphones */
@@ -91,7 +90,8 @@
 
     .left-column {
       flex: 1;
-/*       background-color: #f0f0f0; */
+      padding: 20px;
+      background-color: #f0f0f0;
     }
 
     .right-column {
@@ -100,22 +100,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 10px;
-/*       background-color: #e0e0e0; */
-    }
-
-    .magnifier-container {
-      position: relative;
-      overflow: hidden;
-      width: 400px;
-      height: 300px;
-      border: 2px solid #ddd;
-    }
-
-    .magnifier-image {
-      width: 100%;
-      height: 100%;
-      transition: transform 0.2s linear;
+      padding: 20px;
+      background-color: #e0e0e0;
     }
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
@@ -125,32 +111,18 @@
     gtag('js', new Date());
     gtag('config', 'G-FT1KCDMZJQ');
   </script>
-  <script>
-    function magnify(event) {
-      const container = document.querySelector('.magnifier-container');
-      const image = document.querySelector('.magnifier-image');
-      const boundingBox = container.getBoundingClientRect();
-
-      const mouseX = event.clientX - boundingBox.left;
-      const mouseY = event.clientY - boundingBox.top;
-
-      const percentX = mouseX / boundingBox.width * 100;
-      const percentY = mouseY / boundingBox.height * 100;
-
-      const transformValue = `translate(-${percentX}%, -${percentY}%) scale(2)`;
-
-      image.style.transform = transformValue;
-    }
-
-    function resetMagnify() {
-      const image = document.querySelector('.magnifier-image');
-      image.style.transform = 'translate(-50%, -50%) scale(1)';
-    }
+  <script src="https://unpkg.com/vue@3.3.0/dist/vue.global.prod.js"></script>
+  <script type="module">
+    import ZoomOnHover from "https://unpkg.com/vue-zoom-on-hover@latest/dist/index.esm.min.js";
+    Vue.use(ZoomOnHover);
+    new Vue({
+      el: "#app"
+    })
   </script>
 </head>
 
 <body>
-  <div class="container">
+  <div id="app" class="container">
     <div class="left-column">      
       <p id="title">
         Nazywam się Aleksander Figiel
@@ -181,9 +153,7 @@
       </p>
     </div>
     <div class="right-column">
-      <div class="magnifier-container" onmousemove="magnify(event)" onmouseleave="resetMagnify()">
-        <img class="magnifier-image" src="leczenie-lysienia androgenowego-mapa-mysli.jpg" alt="leczenie-lysienia androgenowego-mapa-mysli" >
-      </div>      
+      <zoom-on-hover img-normal="leczenie-lysienia androgenowego-mapa-mysli.jpg"></zoom-on-hover>
     </div>
   </div>
 </body>
