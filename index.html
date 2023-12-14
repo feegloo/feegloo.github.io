@@ -154,11 +154,11 @@
   <script>
     if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
       // true for mobile device
-      var appElement = document.querySelector("#app");
+      var element = document.querySelector("#app img");
 
-      if (appElement) {
+      if (element) {
         // Remove the element from the DOM
-        appElement.remove()
+        element.remove()
       }
     } else{
         new Vue({
