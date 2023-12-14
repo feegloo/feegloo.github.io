@@ -110,26 +110,13 @@
     gtag('js', new Date());
     gtag('config', 'G-FT1KCDMZJQ');
   </script>
-  <script type="importmap">
-    {
-      "imports": {
-        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
-      }
-    }
-  </script>
-  <script type="module">
-    import ZoomOnHover from "https://unpkg.com/vue-zoom-on-hover@latest/dist/index.esm.min.js";
-    import { createApp } from 'vue'
-    
-    const app = createApp()
-    
-    app.use(ZoomOnHover)
-    app.mount("#app")    
-  </script>
+  <script type="text/javascript" src="lib/vue.min.js"></script>
+  <script type="text/javascript" src="lib/zoomOnHover.js"></script>
+  <link rel="stylesheet" type="text/css" href="lib/zoomOnHover.css">
 </head>
 
 <body>
-  <div id="app" class="container">
+  <div class="container">
     <div class="left-column">      
       <p id="title">
         Nazywam się Aleksander Figiel
@@ -159,10 +146,18 @@
         Edukuję - bazując na wiedzy światowej klasy ekspertów, wynikach badań naukowych i osobistym doświadczeniu.
       </p>
     </div>
-    <div class="right-column">
+    <div class="right-column" id="app">
       <zoom-on-hover img-normal="leczenie-lysienia androgenowego-mapa-mysli.jpg"></zoom-on-hover>
     </div>
   </div>
+  <script>
+    new Vue({
+      el: "#app",
+      components: {
+        zoomOnHover: zoomOnHover
+      }
+    })
+  </script>
 </body>
 
 </html>
