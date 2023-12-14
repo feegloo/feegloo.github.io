@@ -114,10 +114,11 @@
   <script src="https://unpkg.com/vue@3.3.0/dist/vue.global.prod.js"></script>
   <script type="module">
     import ZoomOnHover from "https://unpkg.com/vue-zoom-on-hover@latest/dist/index.esm.min.js";
-    Vue.use(ZoomOnHover);
-    new Vue({
-      el: "#app"
-    })
+
+    const app = createApp()
+    app.use(ZoomOnHover)
+
+    app.mount("#app")
   </script>
 </head>
 
