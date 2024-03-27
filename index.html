@@ -100,6 +100,25 @@
       align-items: center;
       justify-content: center;
     }
+
+    /* fade-in effect of loading image */
+    .zoom-on-hover {
+      position: relative;
+/*       width: 300px; */
+/*       height: 200px; */
+      overflow: hidden;
+    }
+    
+    .zoom-on-hover img.normal {
+      width: 100%;
+      height: auto;
+      opacity: 0; /* Initially hidden */
+      transition: opacity 1s ease; /* Smooth transition */
+    }
+    
+    .zoom-on-hover img.loaded {
+      opacity: 1; /* Fade in when loaded */
+    }
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
   <script>
@@ -166,6 +185,14 @@
         }
       })
     }    
+
+    /* Fade in when loaded */
+    document.addEventListener("DOMContentLoaded", function() {
+      var img = document.querySelector('.zoom-on-hover img.normal')
+      img.onload = function() {
+        img.classList.add('loaded')
+      }
+    })
   </script>
 </body>
 
