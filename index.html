@@ -188,7 +188,7 @@
 
     /* Fade in when loaded */
     document.addEventListener("DOMContentLoaded", function() {
-      var img = document.querySelector('.zoom-on-hover img.normal')
+      var img = document.querySelector('.zoom-on-hover img:first-child')
       img.onload = function() {
         img.classList.add('loaded')
       }
