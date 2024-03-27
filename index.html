@@ -187,37 +187,38 @@
     }    
 
     /* Fade in when loaded */
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", () => {
       // Function to add loaded class when the image is fully loaded
-      function addLoadedClass() {
-        var img = document.querySelector('.zoom-on-hover img.normal');
+      const addLoadedClass = () => {
+        const img = document.querySelector('.zoom-on-hover img.normal')
         if (img.complete) {
-          img.classList.add('loaded');
+          img.classList.add('loaded')
         } else {
-          img.onload = function() {
-            img.classList.add('loaded');
-          };
+          img.onload = () => {
+            img.classList.add('loaded')
+          }
         }
       }
     
       // Check if the element exists initially
-      var imgElement = document.querySelector('.zoom-on-hover img.normal');
+      const imgElement = document.querySelector('.zoom-on-hover img.normal')
       if (imgElement) {
-        addLoadedClass();
+        addLoadedClass()
       } else {
         // Use MutationObserver to watch for the appearance of the element
-        var observer = new MutationObserver(function(mutationsList, observer) {
-          mutationsList.forEach(function(mutation) {
+        const observer = new MutationObserver(mutationsList => {
+          mutationsList.forEach(mutation => {
             if (mutation.addedNodes.length > 0 && mutation.addedNodes[0].nodeName === "IMG") {
-              addLoadedClass();
-              observer.disconnect(); // Stop observing once the element is found
+              addLoadedClass()
+              observer.disconnect() // Stop observing once the element is found
             }
-          });
-        });
-    
-        observer.observe(document.body, { childList: true, subtree: true });
+          })
+        })
+  
+        observer.observe(document.body, { childList: true, subtree: true })
       }
     });
+
   </script>
 </body>
 
