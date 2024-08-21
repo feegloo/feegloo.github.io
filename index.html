@@ -145,17 +145,25 @@
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
   <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
   <script
-    src="https://js-de.sentry-cdn.com/80c32dff6b98c61c03158dbf5202b885.min.js"
+    src="https://browser.sentry-cdn.com/8.26.0/bundle.tracing.replay.feedback.min.js"
+    integrity="sha384-u3C514nxDqz0fD63HP7I6OLFjYG+rtx1pqptNYuXVGR1pUtVswV/6C0dWYs9PvE9"
     crossorigin="anonymous"
   ></script>
   <script>
   Sentry.onLoad(function() {
     Sentry.init({
+      dsn: "https://80c32dff6b98c61c03158dbf5202b885@o4507817217490944.ingest.de.sentry.io/4507817219457104",
       integrations: [
         Sentry.replayIntegration({
           maskAllText: false,
           blockAllMedia: false,
-        })
+        }),
+        Sentry.feedbackIntegration({
+          // Additional SDK configuration goes in here, for example:
+          colorScheme: "system",
+          isNameRequired: true,
+          isEmailRequired: true,
+        }),
       ],
       // Tracing
       tracesSampleRate: 1.0, // Capture 100% of the transactions
