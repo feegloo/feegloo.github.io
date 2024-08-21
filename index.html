@@ -160,10 +160,22 @@
         }),
         Sentry.feedbackIntegration({
           // Additional SDK configuration goes in here, for example:
-          colorScheme: "system",
-          triggerLabel: "Kontakt",
-          isNameRequired: true,
+          colorScheme: "light",
+          showBranding: false,
+          isNameRequired: false,
           isEmailRequired: true,
+          triggerLabel: "Kontakt",
+          addScreenshotButtonLabel: "Załącz obrazek",
+          removeScreenshotButtonLabel: "Usuń obrazek",
+          nameLabel: "Imię",
+          namePlaceholder: "",
+          emailPlaceholder: "",
+          isRequiredLabel: "(wymagane)",
+          messageLabel: "Wiadomość",
+          messagePlaceholder: "",
+          submitButtonLabel: "Wyślij",
+          cancelButtonLabel: "Anuluj",
+          successMessageText: "Wiadomość wysłana"
         }),
       ],
       // Tracing
