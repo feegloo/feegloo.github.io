@@ -9,9 +9,21 @@
       background-color: #f0f0f0;
       padding: 1rem;
     }
+
+    .header {
+      text-align:right;
+    }
   </style>
 </head>
 <body>
-  {{ content }}
+  <header class="header">
+    <a href="https://trycholog.pl">
+      {{ site.title }}
+      <img src="/favicon.png" alt="Logo" style="height: 40px;">
+    </a>
+  </header>
+  <main>
+    {{ content }}
+  </main>
 </body>
 </html>
