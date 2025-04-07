@@ -1,5 +1,10 @@
-title: My Site
-description: My existing site + new Jekyll pages
-# theme: jekyll-theme-slate (for .md files, not .html ?)
+title: trycholog.pl
+# description: My existing site + new Jekyll pages
+# will generate <meta name="description" content="My existing site + new Jekyll pages">
+
+# theme: jekyll-theme-slate 
+# TODO: enable slate theme
 # https://pages-themes.github.io/slate/
+
+# full instruction for .md and .html
 # https://chatgpt.com/c/67f4016e-8f28-800f-8361-55d067baed19
