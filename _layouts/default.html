@@ -7,19 +7,24 @@
     body {
       font-family: system-ui;
       background-color: #f0f0f0;
-      padding: 1rem;
+      padding: 2rem;
     }
 
     .header a {
       display: flex;
       justify-content: end;
       align-items: center;
-      gap: 10px;
+      gap: 0.5rem;
     }
 
+    /* links */
     a:visited {
-      color: inherit;
+      color: #0066cc;
       text-decoration: none;
+    }
+
+    a:hover {
+      opacity: 0.7;
     }
   </style>
   <script type="text/javascript" async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
@@ -34,7 +39,7 @@
       crossorigin="anonymous"></script>
   <script type="text/javascript" src="../lib/sentry-config.js"></script>
   <script>
-      initSentry()
+      initSentry();
   </script>
 </head>
 <body>
