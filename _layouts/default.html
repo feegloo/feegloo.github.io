@@ -10,10 +10,32 @@
       padding: 1rem;
     }
 
-    .header {
-      text-align:right;
+    .header a {
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      gap: 10px;
+    }
+
+    a:visited {
+      color: inherit;
+      text-decoration: none;
     }
   </style>
+  <script type="text/javascript" async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
+  <script type="text/javascript">
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-FT1KCDMZJQ');
+  </script>
+  <script src="https://browser.sentry-cdn.com/8.26.0/bundle.tracing.replay.feedback.min.js"
+      integrity="sha384-u3C514nxDqz0fD63HP7I6OLFjYG+rtx1pqptNYuXVGR1pUtVswV/6C0dWYs9PvE9"
+      crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../lib/sentry-config.js"></script>
+  <script>
+      initSentry()
+  </script>
 </head>
 <body>
   <header class="header">
