@@ -4,3 +4,4 @@ Disallow: /*.pdf
 Disallow: /*.sh
 Disallow: /assets/
 Disallow: /pages/
+Disallow: /gmail/
