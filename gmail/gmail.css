@@ -3,10 +3,35 @@ body {
     font-family: Arial, sans-serif;
 }
 
-h1 {
+h1,
+h2,
+h3 {
     font-size: 13px;
+    font-weight: bold;
+}
+
+h1 {
+    color: #38761d;
+    padding-top: 10px;
+}
+
+h3 {
+    line-height: 5px;
 }
 
 div {
     font-size: 13px;
+}
+
+p>div:first-child {
+    font-weight: bold;
+}
+
+ul {
+    padding-left: 20px;
+    margin-bottom: 20px;
+}
+
+li {
+    padding-bottom: 4px;
 }
