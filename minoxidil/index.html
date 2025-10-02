@@ -40,6 +40,44 @@
       max-width: 100%;
     }
   </style>
+  
+  <style>
+    img.zoomable {
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      cursor: zoom-in;
+    }
+  
+    img.zoomable:hover {
+      transform: scale(1.5);
+      opacity: 0.7; /* fade effect */
+      z-index: 10;
+    }
+  </style>
+
+  <script>
+  (function() {
+    function enableImageZoom(scale = 1.5) {
+      document.querySelectorAll("img").forEach(img => {
+        // avoid re-adding
+        if (img.classList.contains("zoomable")) return;
+        img.classList.add("zoomable");
+  
+        // Apply zoom effect via inline style for scaling factor
+        img.addEventListener("mouseenter", () => {
+          img.style.transform = `scale(${scale})`;
+        });
+        img.addEventListener("mouseleave", () => {
+          img.style.transform = "scale(1)";
+        });
+      });
+    }
+  
+    document.addEventListener("DOMContentLoaded", () => {
+      enableImageZoom(1.5); // default 1.5x zoom
+    });
+  })();
+  </script>
+
 </head>
 
 <body>
