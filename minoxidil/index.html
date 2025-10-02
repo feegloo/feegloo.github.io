@@ -21,6 +21,25 @@
   <script>
     initSentry()
   </script>
+  <style>
+    .flex-container {
+      display: flex;
+      gap: 4rem;
+    }
+
+    .flex-child-1{
+      flex: 1;
+    }
+
+    .flex-child-2 {
+      flex: 1;
+      max-width: 30%;
+    }
+
+    .flex-child-2 img {
+      max-width: 100%;
+    }
+  </style>
 </head>
 
 <body>
@@ -33,8 +52,8 @@
     <div>
       <br>
     </div>
-    <div>
-      <div>
+    <div class="flex-container">
+      <div class="flex-child-1">
         <div>Minoxidil był oryginalnie lekiem na nadciśnienie przyjmowanym doustnie.&nbsp;</div>
         <div>
           Stosowany we wcierce, około 2% minoxidilu przenika do organizmu i u wrażliwych osób może powodować uczucie
@@ -108,8 +127,8 @@
           zawroty głowy, hipertrychozę&nbsp;(owłosienie na całym ciele).
         </div>
       </div>
-      <div>
-        <img src="./minoxidil.jpg" style="width: 70%;">
+      <div class="flex-child-2">
+        <img src="./minoxidil.jpg">
       </div>
     </div>
   </div>
