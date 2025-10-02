@@ -23,8 +23,13 @@
   </script>
   <style>
     .flex-container {
-      display: flex;
       gap: 4rem;
+    }
+
+    @media (min-width: 600px) {
+      .flex-container {
+        display: flex;
+      }
     }
 
     .flex-child-1{
