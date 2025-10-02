@@ -44,12 +44,10 @@
   <style>
     img.zoomable {
       transition: transform 0.3s ease, opacity 0.3s ease;
-      cursor: zoom-in;
     }
   
     img.zoomable:hover {
       transform: scale(1.5);
-      opacity: 0.7; /* fade effect */
       z-index: 10;
     }
   </style>
@@ -73,7 +71,7 @@
     }
   
     document.addEventListener("DOMContentLoaded", () => {
-      enableImageZoom(1.5); // default 1.5x zoom
+      enableImageZoom(2); // default 2x zoom
     });
   })();
   </script>
