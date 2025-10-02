@@ -72,10 +72,15 @@
   
         // Apply zoom effect via inline style for scaling factor
         img.addEventListener("mouseenter", () => {
-          img.style.transform = `scale(${scale})`;
+          if (window.innerWidth >= 700) {
+            img.style.transform = `scale(${scale})`;
+          }
         });
+        
         img.addEventListener("mouseleave", () => {
-          img.style.transform = "scale(1)";
+          if (window.innerWidth >= 700) {
+            img.style.transform = "scale(1)";
+          }
         });
       });
     }
