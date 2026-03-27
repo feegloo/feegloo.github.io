@@ -7,24 +7,17 @@
   <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | strip_newlines | truncate: 160 }}">
   <meta name="theme-color" content="#f5efe8">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
   <style>
     :root {
       --bg: #f8f3ee;
-      --bg-accent: #efe4d8;
-      --surface: rgba(255, 255, 255, 0.88);
-      --surface-strong: #ffffff;
+      --surface: rgba(255, 255, 255, 0.9);
       --text: #2b241f;
       --text-soft: #6f6258;
       --heading: #1f1a17;
       --line: rgba(88, 67, 53, 0.12);
       --primary: #8f5f3d;
-      --primary-hover: #774c2f;
       --shadow: 0 18px 50px rgba(55, 37, 24, 0.09);
-      --radius: 22px;
+      --radius: 20px;
       --content-width: 860px;
     }
 
@@ -32,31 +25,23 @@
       box-sizing: border-box;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
       margin: 0;
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Georgia, "Times New Roman", Times, serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(187, 143, 106, 0.18), transparent 32%),
-        radial-gradient(circle at top right, rgba(214, 190, 167, 0.22), transparent 30%),
-        linear-gradient(180deg, #fbf7f2 0%, var(--bg) 100%);
-      min-height: 100vh;
-      line-height: 1.72;
+      background: linear-gradient(180deg, #fbf7f2 0%, var(--bg) 100%);
+      line-height: 1.75;
+      letter-spacing: 0.01em;
       padding: 32px 20px 56px;
     }
 
     a {
       color: var(--primary);
       text-decoration: none;
-      transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
     }
 
     a:hover {
-      color: var(--primary-hover);
+      opacity: 0.8;
     }
 
     .site-shell {
@@ -66,244 +51,90 @@
 
     .site-header {
       margin-bottom: 28px;
-    }
-
-    .site-header-inner {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 0 0;
+      text-align: center;
     }
 
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
+      font-weight: 700;
       color: var(--heading);
-      font-weight: 800;
-      font-size: 1.05rem;
-      letter-spacing: -0.02em;
-    }
-
-    .brand:hover {
-      color: var(--heading);
-      opacity: 0.92;
-    }
-
-    .brand-mark {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #ffffff 0%, #f2e6da 100%);
-      border: 1px solid rgba(143, 95, 61, 0.14);
-      box-shadow: 0 10px 30px rgba(98, 69, 49, 0.10);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      overflow: hidden;
     }
 
     .brand-mark img {
-      width: 34px;
-      height: 34px;
-      object-fit: contain;
-      display: block;
-    }
-
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .brand-title {
-      font-size: 1.12rem;
-      line-height: 1.1;
-    }
-
-    .brand-subtitle {
-      font-size: 0.88rem;
-      font-weight: 500;
-      color: var(--text-soft);
-      line-height: 1.2;
+      width: 40px;
+      height: 40px;
     }
 
     .content-card {
       max-width: var(--content-width);
       margin: 0 auto;
       background: var(--surface);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.7);
       box-shadow: var(--shadow);
       border-radius: var(--radius);
-      overflow: hidden;
     }
 
     .content-inner {
       padding: 44px 48px 52px;
     }
 
-    main > :first-child {
-      margin-top: 0;
-    }
-
     main h1,
     main h2,
-    main h3,
-    main h4 {
+    main h3 {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--heading);
+      letter-spacing: -0.02em;
       line-height: 1.2;
-      letter-spacing: -0.03em;
-      margin: 1.7em 0 0.7em;
+      margin: 1.6em 0 0.6em;
     }
 
     main h1 {
-      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-size: 2.4rem;
       margin-top: 0;
-      margin-bottom: 0.75em;
     }
 
     main h2 {
-      font-size: clamp(1.45rem, 2.2vw, 1.9rem);
-    }
-
-    main h3 {
-      font-size: 1.2rem;
+      font-size: 1.6rem;
     }
 
     main p,
-    main li {
-      font-size: 1.05rem;
-      color: var(--text);
+    main li,
+    main div {
+      font-size: 1.08rem;
     }
 
-    main p {
-      margin: 0 0 1.15em;
-    }
-
-    main ul,
-    main ol {
+    main ul {
       padding-left: 1.3rem;
-      margin: 0 0 1.3em;
     }
 
     main li + li {
-      margin-top: 0.45em;
-    }
-
-    main strong {
-      color: var(--heading);
-    }
-
-    main hr {
-      border: 0;
-      border-top: 1px solid var(--line);
-      margin: 2rem 0;
-    }
-
-    main blockquote {
-      margin: 1.6rem 0;
-      padding: 1rem 1.2rem;
-      border-left: 4px solid rgba(143, 95, 61, 0.32);
-      background: rgba(143, 95, 61, 0.05);
-      border-radius: 14px;
-      color: var(--text);
+      margin-top: 0.4em;
     }
 
     main img {
-      display: block;
       max-width: 100%;
-      height: auto;
+      display: block;
       margin: 1.5rem auto;
-      border-radius: 18px;
-      box-shadow: 0 12px 30px rgba(43, 36, 31, 0.10);
-    }
-
-    main a {
-      font-weight: 600;
-      word-break: break-word;
-    }
-
-    main code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      background: rgba(47, 33, 23, 0.06);
-      padding: 0.15rem 0.4rem;
-      border-radius: 8px;
-      font-size: 0.95em;
-    }
-
-    main table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.5rem 0;
-      overflow: hidden;
       border-radius: 14px;
-      background: var(--surface-strong);
-    }
-
-    main th,
-    main td {
-      text-align: left;
-      padding: 0.9rem 1rem;
-      border-bottom: 1px solid var(--line);
-    }
-
-    main th {
-      color: var(--heading);
-      font-weight: 700;
-      background: rgba(143, 95, 61, 0.06);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     }
 
     .site-footer {
       max-width: var(--content-width);
       margin: 18px auto 0;
-      padding: 0 8px;
       text-align: center;
       color: var(--text-soft);
-      font-size: 0.92rem;
+      font-size: 0.9rem;
     }
 
     @media (max-width: 720px) {
-      body {
-        padding: 20px 14px 36px;
-      }
-
-      .site-header {
-        margin-bottom: 18px;
-      }
-
-      .brand {
-        gap: 12px;
-      }
-
-      .brand-mark {
-        width: 46px;
-        height: 46px;
-        border-radius: 14px;
-      }
-
-      .brand-mark img {
-        width: 30px;
-        height: 30px;
-      }
-
-      .brand-title {
-        font-size: 1rem;
-      }
-
-      .brand-subtitle {
-        font-size: 0.82rem;
-      }
-
       .content-inner {
         padding: 28px 20px 34px;
       }
 
-      main p,
-      main li {
-        font-size: 1rem;
+      main h1 {
+        font-size: 2rem;
       }
     }
   </style>
@@ -311,14 +142,13 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
+    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-FT1KCDMZJQ');
   </script>
 
   <script
     src="https://browser.sentry-cdn.com/8.26.0/bundle.tracing.replay.feedback.min.js"
-    integrity="sha384-u3C514nxDqz0fD63HP7I6OLFjYG+rtx1pqptNYuXVGR1pUtVswV/6C0dWYs9PvE9"
     crossorigin="anonymous">
   </script>
   <script src="/lib/sentry-config.js"></script>
@@ -329,18 +159,12 @@
 <body>
   <div class="site-shell">
     <header class="site-header">
-      <div class="site-header-inner">
-        <a class="brand" href="https://trycholog.pl" aria-label="Przejdź do strony głównej trycholog.pl">
-          <span class="brand-mark">
-            <img src="/favicon.png" alt="Logo trycholog.pl">
-          </span>
-
-          <span class="brand-text">
-            <span class="brand-title">{{ site.title }}</span>
-            <span class="brand-subtitle">O włosach i leczeniu łysienia</span>
-          </span>
-        </a>
-      </div>
+      <a class="brand" href="/">
+        <span class="brand-mark">
+          <img src="/favicon.png" alt="logo">
+        </span>
+        <span>{{ site.title }}</span>
+      </a>
     </header>
 
     <div class="content-card">
