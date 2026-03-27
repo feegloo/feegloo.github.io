@@ -1,220 +1,252 @@
 <!DOCTYPE html>
 <html lang="pl-PL">
+
 <head>
- <meta charset="utf-8" />
+  <meta charset="utf-8" />
+  <title>trycholog.pl | Aleksander Figiel | Warszawa </title>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <meta name="description"
+    content="Rozpoznaję łysienie androgenowe oraz telogenowe, planuję leczenie na podstawie badań naukowych, doradzam jak zrobić udany przeszczep włosów. Konsultacja w Warszawie lub online." />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="lekarz od włosów, trycholog, trycholog warszawa, łysienie androgenowe, przeszczep włosów, wypadanie włosów, zakola, łysienie telogenowe, łojotokowe zapalenie skóry, łzs, finasteryd, minoxidil, dutasteryd, szampon na wypadanie włosów, włosing" />  
+  <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,700" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+        sans-serif;
+      font-size: calc(10px + 0.33vw);
+      -webkit-font-smoothing: antialiased;
+      padding: 0px 8vw;
+      color: #191a1a;
+      background-color: #f2fefe;
+      background-image: url('wlos.jpg');
+      background-repeat: no-repeat;
+    }
+    
+    /* smartphones */
+    @media (max-width:1280px) {
+      h1 {
+        line-height:26px;
+      }
 
- <title>trycholog.pl | Aleksander Figiel | Warszawa </title>
+      #link-to-pdf span {
+        display: none;
+      }
+    }
 
- <link rel="icon" type="image/png" href="./favicon.png">
+    /* hi-res laptops and desktops */
+    @media (min-width:1281px) {
+      body {
+        padding: 4vh 2vw 4vh 4vw;
+      }
+    }
+   
+    /* if height exceeds background height size */
+    @media (min-height: 944px) {
+      body {
+        background-size: contain;
+        height: 100vh;
+      }
+    }
 
- <meta name="description"
- content="Rozpoznaję łysienie androgenowe oraz telogenowe, planuję leczenie na podstawie badań naukowych, doradzam jak zrobić udany przeszczep włosów. Konsultacja w Warszawie lub online." />
- <meta name="viewport" content="width=device-width, initial-scale=1" />
+    p {
+      font-size: 1.38em;
+      font-weight: 300;
+      line-height: 1.35;
+      max-width: 28em;
+    }
 
- <meta name="keywords" content="lekarz od włosów, trycholog, trycholog warszawa, łysienie androgenowe, przeszczep włosów, wypadanie włosów, zakola, łysienie telogenowe, łojotokowe zapalenie skóry, łzs, finasteryd, minoxidil, dutasteryd, szampon na wypadanie włosów, włosing" />
+    a {
+      text-decoration: none;
+      white-space: nowrap;
+      color: rgba(53, 142, 220, 1);
+      position: relative;
+      font-weight: 400;
+    }
 
- <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,700" rel="stylesheet" />
+    a:after {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      top: 93%;
+      left: -1px;
+      right: -1px;
+      bottom: 0px;
+      transition: top 500ms cubic-bezier(0, 0.8, 0.13, 1);
+      background-color: rgba(53, 142, 220, 0.35);
+    }
 
- <style>
- body {
- font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI',
- Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
- sans-serif;
- font-size: calc(10px + 0.33vw);
- -webkit-font-smoothing: antialiased;
- padding: 0px 8vw;
- color: #191a1a;
- background-color: #f2fefe;
- background-image: url('wlos.jpg');
- background-repeat: no-repeat;
- }
+    a:hover:after {
+      top: 0%;
+    }
 
- /* smartphones */
- @media (max-width:1280px) {
- h1 {
- line-height:26px;
- }
+    a.hovered {
+      background-color: rgba(53, 142, 220, 0.15);
+    }
 
- #link-to-pdf span {
- display: none;
- }
- }
+    a.hovered:hover {
+      background-color: initial;
+    }
+    
+    h1 {
+      font-weight: 500; 
+      font-size: 1.8em;
+      line-height: 1.2em;
+      margin: 20px 0px;      
+    }    
+    
+    .bolder {
+      font-weight: 500;
+    }
 
- /* hi-res laptops and desktops */
- @media (min-width:1281px) {
- body {
- padding: 4vh 2vw 4vh 4vw;
- }
- }
+    .container {
+      display: flex;
+      width: 100%;
+    }
 
- /* if height exceeds background height size */
- @media (min-height: 944px) {
- body {
- background-size: contain;
- height: 100vh;
- }
- }
+    .left-column {
+      flex: 1;
+    }
 
- p {
- font-size: 1.38em;
- font-weight: 300;
- line-height: 1.35;
- max-width: 28em;
- }
+    .right-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
 
- a {
- text-decoration: none;
- white-space: nowrap;
- color: rgba(53, 142, 220, 1);
- position: relative;
- font-weight: 400;
- }
-
- a:after {
- content: '';
- position: absolute;
- z-index: -1;
- top: 93%;
- left: -1px;
- right: -1px;
- bottom: 0px;
- transition: top 500ms cubic-bezier(0, 0.8, 0.13, 1);
- background-color: rgba(53, 142, 220, 0.35);
- }
-
- a:hover:after {
- top: 0%;
- }
-
- a.hovered {
- background-color: rgba(53, 142, 220, 0.15);
- }
-
- a.hovered:hover {
- background-color: initial;
- }
-
- h1 {
- font-weight: 500;
- font-size: 1.8em;
- line-height: 1.2em;
- margin: 20px 0px;
- }
-
- .bolder {
- font-weight: 500;
- }
-
- .container {
- display: flex;
- width: 100%;
- }
-
- .left-column {
- flex: 1;
- }
-
- .right-column {
- flex: 1;
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- }
-
- #hair-loss-tree {
- width: 100%;
- max-width: 980px;
- }
-
- @media (max-width: 1280px) {
- .container {
- flex-direction: column;
- }
-
- .right-column {
- margin-top: 20px;
- }
- }
- </style>
-
- <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
-
- <script>
- window.dataLayer = window.dataLayer || [];
-
- function gtag() { dataLayer.push(arguments); }
-
- gtag('js', new Date());
-
- gtag('config', 'G-FT1KCDMZJQ');
- </script>
-
- <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-
- <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
-
- <script
- src="https://browser.sentry-cdn.com/8.26.0/bundle.tracing.replay.feedback.min.js"
- integrity="sha384-u3C514nxDqz0fD63HP7I6OLFjYG+rtx1pqptNYuXVGR1pUtVswV/6C0dWYs9PvE9"
- crossorigin="anonymous"
- ></script>
- <script type="text/javascript" src="lib/sentry-config.js"></script>
-
- <script>
- initSentry(true)
- </script>
-
- <script type="text/javascript" src="lib/graph.js"></script>
+    /* fade-in effect of loading image */
+    .zoom-on-hover {
+      position: relative;
+/*       width: 300px; */
+/*       height: 200px; */
+      overflow: hidden;
+    }
+    
+    .zoom-on-hover img.normal {
+      width: 100%;
+      height: auto;
+      opacity: 0; /* Initially hidden */
+      transition: opacity 1s ease; /* Smooth transition */
+    }
+    
+    .zoom-on-hover img.loaded {
+      opacity: 1; /* Fade in when loaded */
+    }
+  </style>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-FT1KCDMZJQ');
+  </script>
+  <script type="text/javascript" src="lib/vue.min.js"></script>
+  <script type="text/javascript" src="lib/zoomOnHover.js"></script>
+  <link rel="stylesheet" type="text/css" href="lib/zoomOnHover.css">
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+  <script
+    src="https://browser.sentry-cdn.com/8.26.0/bundle.tracing.replay.feedback.min.js"
+    integrity="sha384-u3C514nxDqz0fD63HP7I6OLFjYG+rtx1pqptNYuXVGR1pUtVswV/6C0dWYs9PvE9"
+    crossorigin="anonymous"
+  ></script>
+   <script type="text/javascript" src="lib/sentry-config.js"></script>
+   <script>
+    initSentry(true)
+   </script>
 </head>
 
 <body>
- <div class="container">
+  <div class="container">
+    <div class="left-column">      
+      <h1>
+        Nazywam się Aleksander Figiel
+        <br/> i jestem <a style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank">trychologiem</a>
+      </h1>
+      <p>    
+        Identyfikuję choroby skóry głowy, 
+        <br/> pomagam w leczeniu przyczyn wypadania włosów.
+      </p>
+      <p>
+        <a class="hovered" href="" style="color: #db2121" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/trycholog/konsultacja'});return false;">Umów Konsultację Trychologiczną</a> <span class="bolder">(30 min + zalecenia na email, 200 zł)</span> w Warszawie (Młociny) lub online.<br/> Telefon: <a href="tel:791421067">📞 791 421 067</a>
+      </p>
+      <p>
+        Po konsultacji, <span class="bolder">wysyłam na e-mail indywidualny plan</span>: sugerowane leki i kontakt do <a href="/czy-trycholog-jest-lekarzem">dermatologów "od włosów"</a>, strategia na przeszczep włosów (najlepsze kliniki, ilość graftów), uzupełnianie diety suplementami, zabiegi i "włosing".
+      </p>  
+      <p>
+        Pokazuję, jak można odbudować włosy i utrzymać <br/> je na długie lata, bez zbędnych wydatków.
+      </p>
+      <p>
+        Edukuję - bazując na wiedzy ekspertów światowej klasy i AI, wynikach badań naukowych i osobistym doświadczeniu.
+      </p>
+      <p>
+        <span class="bolder">
+        Mój bezpłatny poradnik-instrukcja w PDF:
+        </span>
+        <a href="/leczenie-lysienia-androgenowego/" target="_blank" id="link-to-pdf">
+          Leczenie łysienia androgenowego <span>u mężczyzn</span>
+        </a>
+      </p>
+    </div>
+    <div class="right-column" id="app">
+      <zoom-on-hover img-normal="leczenie-lysienia-androgenowego-mapa-mysli.png" :scale="0.62"></zoom-on-hover>
+    </div>
+  </div>
+  <script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+      // true for mobile device
+      const element = document.querySelector("#app");
 
- <div class="left-column">
+      if (element) {
+        // Remove the element from the DOM
+        element.remove()
+      }
+    } else{
+        new Vue({
+        el: "#app",
+        components: {
+          zoomOnHover: zoomOnHover
+        }
+      })
+    }    
 
- <h1>
- Nazywam się Aleksander Figiel
- <br/> i jestem <a style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank">trychologiem</a>
- </h1>
+    /* Fade in when loaded */
+    document.addEventListener("DOMContentLoaded", () => {
+      // Function to add loaded class when the image is fully loaded
+      const addLoadedClass = () => {
+        const img = document.querySelector('.zoom-on-hover img.normal')
+        if (img.complete) {
+          img.classList.add('loaded')
+        } else {
+          img.onload = () => {
+            img.classList.add('loaded')
+          }
+        }
+      }
+    
+      // Check if the element exists initially
+      const imgElement = document.querySelector('.zoom-on-hover img.normal')
+      if (imgElement) {
+        addLoadedClass()
+      } else {
+        // Use MutationObserver to watch for the appearance of the element
+        const observer = new MutationObserver(mutationsList => {
+          mutationsList.forEach(mutation => {
+            if (mutation.addedNodes.length > 0 && mutation.addedNodes[0].nodeName === "IMG") {
+              addLoadedClass()
+              observer.disconnect() // Stop observing once the element is found
+            }
+          })
+        })
+  
+        observer.observe(document.body, { childList: true, subtree: true })
+      }
+    });
 
- <p>
- Identyfikuję choroby skóry głowy,
- <br/> pomagam w leczeniu przyczyn wypadania włosów.
- </p>
-
- <p>
- <a class="hovered" href="" style="color: #db2121" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/trycholog/konsultacja'});return false;">Umów Konsultację Trychologiczną</a> <span class="bolder">(30 min + zalecenia na email, 200 zł)</span> w Warszawie (Młociny) lub online.<br/> Telefon: <a href="tel:791421067"> 791 421 067</a>
- </p>
-
- <p>
- Po konsultacji, <span class="bolder">wysyłam na e-mail indywidualny plan</span>: sugerowane leki i kontakt do <a href="/czy-trycholog-jest-lekarzem">dermatologów "od włosów"</a>, strategia na przeszczep włosów (najlepsze kliniki, ilość graftów), uzupełnianie diety suplementami, zabiegi i "włosing".
- </p>
-
- <p>
- Pokazuję, jak można odbudować włosy i utrzymać <br/> je na długie lata, bez zbędnych wydatków.
- </p>
-
- <p>
- Edukuję - bazując na wiedzy ekspertów światowej klasy i AI, wynikach badań naukowych i osobistym doświadczeniu.
- </p>
-
- <p>
- <span class="bolder">
- Mój bezpłatny poradnik-instrukcja w PDF:
- </span>
-
- <a href="/leczenie-lysienia-androgenowego/" target="_blank" id="link-to-pdf">
- Leczenie łysienia androgenowego <span>u mężczyzn</span>
- </a>
- </p>
-
- </div>
-
- <div class="right-column" id="app">
-   <div id="hair-loss-tree"></div>
- </div>
-
- </div>
+  </script>
 </body>
+
 </html>
