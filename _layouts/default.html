@@ -314,7 +314,7 @@
       }
     }
     
-    /* 🍏 Apple-style hover */
+/* 🔥 Apple-like hover (bez unoszenia, tylko scale + opacity) */
 
 .brand {
   display: inline-flex;
@@ -327,19 +327,21 @@
 }
 
 .brand-mark img {
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              filter 0.2s ease;
   will-change: transform;
 }
 
 /* hover */
 .brand:hover {
-  transform: translateY(-1.5px) scale(1.01);
-  opacity: 0.85;
+  opacity: 0.75;
+  transform: scale(1.03);
 }
 
-/* subtle icon response */
+/* ikonka trochę bardziej „żyje” */
 .brand:hover .brand-mark img {
-  transform: scale(1.04);
+  transform: scale(1.06);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));
 }
   </style>
 
