@@ -159,12 +159,18 @@
 <body>
   <div class="site-shell">
     <header class="site-header">
-      <a class="brand" href="/">
-        <span class="brand-mark">
-          <img src="/favicon.png" alt="logo">
-        </span>
-        <span>{{ site.title }}</span>
-      </a>
+      <div class="site-header-inner">
+        <a class="brand" href="https://trycholog.pl" aria-label="Przejdź do strony głównej trycholog.pl">
+          <span class="brand-mark">
+            <img src="/favicon.png" alt="Logo trycholog.pl">
+          </span>
+
+          <span class="brand-text">
+            <span class="brand-title">{{ site.title }}</span>
+            <span class="brand-subtitle">Trychologia i leczenie łysienia</span>
+          </span>
+        </a>
+      </div>
     </header>
 
     <div class="content-card">
