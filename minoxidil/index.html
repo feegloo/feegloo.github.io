@@ -4,70 +4,48 @@ title: trycholog.pl | Minoxidil
 ---
 
 <style>
-  .flex-container {
-    gap: 4rem;
+  .bottom-image {
+    margin-top: 2rem;
+    text-align: center;
   }
 
-  @media (min-width: 700px) {
-    .flex-container {
-      display: flex;
-    }
-
-    .flex-child-2 {
-      max-width: 30%;
-    }
-  }
-
-  .flex-child-1 {
-    flex: 1;
-  }
-
-  .flex-child-2 {
-    flex: 1;
-  }
-
-  .flex-child-2 img {
+  .bottom-image img {
     max-width: 100%;
+    height: auto;
+    cursor: zoom-in;
+    transition: transform 0.25s ease;
+    transform-origin: center center;
   }
 
   @media (min-width: 700px) {
-    img.zoomable {
-      transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-
-    img.zoomable:hover {
-      transform: scale(1.5);
+    .bottom-image img.zoomable:hover {
+      transform: scale(1.8);
       z-index: 10;
+      position: relative;
     }
   }
 </style>
 
 <script>
-  (function() {
-    function enableImageZoom(scale = 1.5) {
-      document.querySelectorAll("img").forEach(img => {
-        if (img.classList.contains("zoomable")) return;
+  document.addEventListener("DOMContentLoaded", function () {
+    const img = document.querySelector(".bottom-image img");
 
-        img.classList.add("zoomable");
+    if (!img) return;
 
-        img.addEventListener("mouseenter", () => {
-          if (window.innerWidth >= 700) {
-            img.style.transform = `scale(${scale})`;
-          }
-        });
+    img.classList.add("zoomable");
 
-        img.addEventListener("mouseleave", () => {
-          if (window.innerWidth >= 700) {
-            img.style.transform = "scale(1)";
-          }
-        });
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      enableImageZoom(2);
+    img.addEventListener("mouseenter", function () {
+      if (window.innerWidth >= 700) {
+        img.style.transform = "scale(1.8)";
+      }
     });
-  })();
+
+    img.addEventListener("mouseleave", function () {
+      if (window.innerWidth >= 700) {
+        img.style.transform = "scale(1)";
+      }
+    });
+  });
 </script>
 
 <div>
@@ -80,98 +58,125 @@ title: trycholog.pl | Minoxidil
   <br>
 </div>
 
-<div class="flex-container">
-  <div class="flex-child-1">
-    <div>Minoxidil był oryginalnie lekiem na nadciśnienie przyjmowanym doustnie.&nbsp;</div>
+<div>Minoxidil był oryginalnie lekiem na nadciśnienie przyjmowanym doustnie.</div>
 
-    <div>
-      Stosowany we wcierce, około 2% minoxidilu przenika do organizmu i u wrażliwych osób może powodować uczucie
-      słabości, tachykardię i kłucie w sercu.
-    </div>
+<div>
+  <br>
+</div>
 
-    <div>
-      <br>
-    </div>
+<div>
+  Stosowany we wcierce, około 2% minoxidilu przenika do organizmu i u wrażliwych osób może powodować uczucie
+  słabości, tachykardię i kłucie w sercu.
+</div>
 
-    <div>
-      <div>
-        <div>
-          <div>wcierka Alopexy (Minoxidil 5%)</div>
-          <div>- w aptece bez recepty</div>
-          <div>
-            - 1 butelka 60 ml zawiera płaską strzykawkę - aplikator (nie trzeba kupować trójpaka 3x60ml)
-          </div>
-        </div>
+<div>
+  <br>
+</div>
 
-        <div>
-          <div>- od 1ml do 2ml 1x dziennie (pokryć pożądany obszar skóry głowy)&nbsp;</div>
-          <div>- głowę można umyć po 1.5h od wcierki</div>
-          <div>
-            - może wystąpić przejściowe wypadanie włosów (shedding) między 2-8 tygodniem od rozpoczęcia
-            stosowania minoxidilu - kontynuować leczenie, oznacza to że minoxidil działa (efekty można
-            ocenić po 2-3 miesiącach)
-          </div>
-          <div>
-            - po odstawieniu minoxidilu, po miesiącu może rozpocząć się wypadanie włosów i wszystkie
-            korzystne efekty znikną&nbsp;po 3 miesiącach
-          </div>
-          <div>
-            - uwaga: minoxidil jest toksyczny dla kotów i psów (umyć dokładnie ręce po wcieraniu i przez
-            minimum godzinę nie mieć kontaktu z karmą dla zwierząt, zalecam wcierać lewą ręką jeśli jesteśmy
-            praworęczni), w przypadku zatrucia zwierzę będzie wymiotować i należy udać się niezwłocznie do
-            weterynarza
-          </div>
-        </div>
-      </div>
+<div>wcierka Alopexy (Minoxidil 5%)</div>
 
-      <div>
-        <br>
-      </div>
-    </div>
+<div>
+  <br>
+</div>
 
-    <div>
-      Alopexy ma najlepszy skład z dostępnych minoxidilów&nbsp;w aptece (zawiera najmniej glikolu propylenowego
-      oraz etanolu - alkoholu).
-    </div>
+<div>- w aptece bez recepty</div>
 
-    <div>Mimo wszystko, glikol można pozostawiać efekt tłustych włosów a alkohol może przesuszać skórę.</div>
+<div>
+  <br>
+</div>
 
-    <div>
-      <br>
-    </div>
+<div>- 1 butelka 60 ml zawiera płaską strzykawkę - aplikator (nie trzeba kupować trójpaka 3x60ml)</div>
 
-    <div>
-      Alternatywnie do płynu, można stosować minoxidil w piance (nie ma glikolu ani etanolu), jest nieco droższa
-      - ale szybciej się wchłania (po 15 minutach zamiast 1.5h) i nie powoduje efektu tłustych włosów.
-    </div>
+<div>
+  <br>
+</div>
 
-    <div>
-      <br>
-    </div>
+<div>- od 1ml do 2ml 1x dziennie (pokryć pożądany obszar skóry głowy)</div>
+<div>- głowę można umyć po 1.5h od wcierki</div>
 
-    <div>Pianka Doppelhertz Minoxidil 5%</div>
-    <a href="https://www.ceneo.pl/174130671" target="_blank">https://www.ceneo.pl/174130671</a>
+<div>
+  <br>
+</div>
 
-    <br>
-    <br>
+<div>
+  - może wystąpić przejściowe wypadanie włosów (shedding) między 2-8 tygodniem od rozpoczęcia stosowania
+  minoxidilu - kontynuować leczenie, oznacza to że minoxidil działa (efekty można ocenić po 2-3 miesiącach)
+</div>
 
-    <div>
-      Minoxidil&nbsp;jest również dostępny jako tabletki na receptę (w&nbsp;Centrum Rakowska), natomiast
-      trzeba być ostrożnym.&nbsp;
-    </div>
+<div>
+  <br>
+</div>
 
-    <div>
-      Oryginalnie&nbsp;minoxidil&nbsp;w&nbsp;formie doustnej był stosowany jako lek na
-      nadciśnienie&nbsp;w&nbsp;dawce 50mg dziennie.&nbsp;
-    </div>
+<div>
+  - po odstawieniu minoxidilu, po miesiącu może rozpocząć się wypadanie włosów i wszystkie korzystne efekty
+  znikną po 3 miesiącach
+</div>
 
-    <div>
-      Uznaje się, że 1mg do 5mg dziennie jest bezpieczne, ale u niektórych osób może powodować tachykardię,
-      zawroty głowy, hipertrychozę&nbsp;(owłosienie na całym ciele).
-    </div>
-  </div>
+<div>
+  <br>
+</div>
 
-  <div class="flex-child-2">
-    <img src="./minoxidil.jpg" alt="Minoxidil">
-  </div>
+<div>
+  - uwaga: minoxidil jest toksyczny dla kotów i psów (umyć dokładnie ręce po wcieraniu i przez minimum godzinę
+  nie mieć kontaktu z karmą dla zwierząt, zalecam wcierać lewą ręką jeśli jesteśmy praworęczni), w przypadku
+  zatrucia zwierzę będzie wymiotować i należy udać się niezwłocznie do weterynarza
+</div>
+
+<div>
+  <br>
+</div>
+
+<div>
+  Alopexy ma najlepszy skład z dostępnych minoxidilów w aptece (zawiera najmniej glikolu propylenowego oraz
+  etanolu - alkoholu).
+</div>
+
+<div>Mimo wszystko, glikol można pozostawiać efekt tłustych włosów, a alkohol może przesuszać skórę.</div>
+
+<div>
+  <br>
+</div>
+
+<div>
+  Alternatywnie do płynu, można stosować minoxidil w piance (nie ma glikolu ani etanolu), jest nieco droższa -
+  ale szybciej się wchłania (po 15 minutach zamiast 1.5h) i nie powoduje efektu tłustych włosów.
+</div>
+
+<div>
+  <br>
+</div>
+
+<div>Pianka Doppelhertz Minoxidil 5%</div>
+
+<div>
+  <a href="https://www.ceneo.pl/174130671" target="_blank">https://www.ceneo.pl/174130671</a>
+</div>
+
+<div>
+  <br>
+</div>
+
+<div>
+  Minoxidil jest również dostępny jako tabletki na receptę (w Centrum Rakowska), natomiast trzeba być ostrożnym.
+</div>
+
+<div>
+  <br>
+</div>
+
+<div>
+  Oryginalnie minoxidil w formie doustnej był stosowany jako lek na nadciśnienie w dawce 50mg dziennie.
+</div>
+
+<div>
+  <br>
+</div>
+
+<div>
+  Uznaje się, że 1mg do 5mg dziennie jest bezpieczne, ale u niektórych osób może powodować tachykardię,
+  zawroty głowy, hipertrychozę (owłosienie na całym ciele).
+</div>
+
+<div class="bottom-image">
+  <img src="./minoxidil.jpg" alt="Minoxidil">
 </div>
