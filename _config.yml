@@ -1,13 +1,19 @@
 title: trycholog.pl
-# TODO: add logo
-# TODO: position right
+description: Trychologiczna wiedza o włosach, łysieniu androgenowym, minoxidilu, DHT i przyczynach wypadania włosów.
+url: "https://trycholog.pl"
+lang: "pl-PL"
 
-# description: My existing site + new Jekyll pages
-# will generate <meta name="description" content="My existing site + new Jekyll pages">
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
 
-# theme: jekyll-theme-slate 
-# TODO: enable slate theme
-# https://pages-themes.github.io/slate/
+twitter:
+  card: summary
 
-# full instruction for .md and .html
-# https://chatgpt.com/c/67f4016e-8f28-800f-8361-55d067baed19
+defaults:
+  - scope:
+      path: ""
+    values:
+      image: /favicon.png
+      author: trycholog.pl
+      locale: pl_PL
