@@ -314,31 +314,33 @@
       }
     }
     
-    /* 🔥 interaktywny hover na logo */
+    /* 🍏 Apple-style hover */
 
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.25s ease;
-      cursor: pointer;
-    }
-    
-    .brand-mark img {
-      transition: all 0.25s ease;
-    }
-    
-    /* efekt hover na CAŁYM logo */
-    .brand:hover {
-      opacity: 0.7;
-      transform: translateY(-2px);
-    }
-    
-    /* delikatne powiększenie samej ikonki */
-    .brand:hover .brand-mark img {
-      transform: scale(1.08);
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
-    }
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.2s ease;
+  will-change: transform;
+  cursor: pointer;
+}
+
+.brand-mark img {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* hover */
+.brand:hover {
+  transform: translateY(-1.5px) scale(1.01);
+  opacity: 0.85;
+}
+
+/* subtle icon response */
+.brand:hover .brand-mark img {
+  transform: scale(1.04);
+}
   </style>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1KCDMZJQ"></script>
