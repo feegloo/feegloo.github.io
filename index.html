@@ -117,6 +117,24 @@
       justify-content: center;
     }
 
+    #google-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2em;
+      margin-left: 0.45em;
+      font-size: 0.6em;
+      font-weight: 400;
+      color: #555;
+      white-space: nowrap;
+      vertical-align: middle;
+      line-height: 1;
+    }
+
+    #google-rating .gr-stars {
+      color: #fbbc04;
+      letter-spacing: -0.05em;
+    }
+
     /* fade-in effect of loading image */
     .zoom-on-hover {
       position: relative;
@@ -164,7 +182,7 @@
     <div class="left-column">      
       <h1>
         Nazywam się Aleksander Figiel
-        <br/> i jestem <a style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank">trychologiem</a>
+        <br/> i jestem <a style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer">trychologiem</a><span id="google-rating"></span>
       </h1>
       <p>    
         Identyfikuję choroby skóry głowy, 
@@ -186,7 +204,7 @@
         <span class="bolder">
         Mój bezpłatny poradnik-instrukcja w PDF:
         </span>
-        <a href="/leczenie-lysienia-androgenowego/" target="_blank" id="link-to-pdf">
+        <a href="/leczenie-lysienia-androgenowego/" target="_blank" rel="noopener noreferrer" id="link-to-pdf">
           Leczenie łysienia androgenowego <span>u mężczyzn</span>
         </a>
       </p>
@@ -263,6 +281,64 @@
       }
     });
 
+  </script>
+  <script>
+    // Renders the Google rating badge next to "trychologiem"
+    function renderRating(d) {
+      var el = document.getElementById('google-rating');
+      if (!el || !d || !d.rating) return;
+      var full  = Math.round(d.rating);
+      var stars = '★'.repeat(full) + '☆'.repeat(5 - full);
+      var count = typeof d.count === 'number' ? d.count : 0;
+      el.setAttribute('aria-label', 'Ocena Google ' + d.rating.toFixed(1) + ' na 5, ' + count + ' opinii');
+      el.innerHTML =
+        '<span class="gr-stars" aria-hidden="true">' + stars + '</span>' +
+        d.rating.toFixed(1) +
+        ' <span>(' + count + ')</span>';
+    }
+
+    // Called automatically by the Maps JS API after it loads
+    function initGoogleRating() {
+      // Serve from sessionStorage to avoid a redundant API round-trip
+      var cached = sessionStorage.getItem('googleRating');
+      if (cached) {
+        try {
+          renderRating(JSON.parse(cached));
+        } catch (e) {}
+        return;
+      }
+    
+      var service = new google.maps.places.PlacesService(document.createElement('div'));
+      const placeId = 'ChIJDc-ljHTLHkcR_eu7VTdGIvk';
+    
+      service.getDetails(
+        {
+          placeId,
+          fields: ['rating', 'user_ratings_total']
+        },
+        function (place, status) {
+          if (
+            status !== google.maps.places.PlacesServiceStatus.OK ||
+            !place ||
+            !place.rating
+          ) return;
+    
+          const d = {
+            rating: place.rating,
+            count: place.user_ratings_total
+          };
+    
+          sessionStorage.setItem('googleRating', JSON.stringify(d));
+          renderRating(d);
+        }
+      );
+    }
+  </script>
+  <!-- Google Maps JS API – replace YOUR_GOOGLE_MAPS_API_KEY with a key that has
+       the "Maps JavaScript API" and "Places API" enabled in Google Cloud Console.
+       Restrict the key to your domain for security. -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDfrxjTEk9CYYJulZTd53BHQ5Y3CHX7Q_g&libraries=places&callback=initGoogleRating">
   </script>
 </body>
 
