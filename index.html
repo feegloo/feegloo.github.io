@@ -297,10 +297,21 @@
         ' <span>(' + count + ')</span>';
     }
 
+    // Fallback: if the Maps JS API never fires initGoogleRating (e.g. RefererNotAllowedMapError),
+    // still show whatever rating was cached from a previous successful load.
+    var _googleRatingFallbackTimer = setTimeout(function () {
+      var cached = localStorage.getItem('googleRating');
+      if (cached) {
+        try { renderRating(JSON.parse(cached)); } catch (e) {}
+      }
+    }, 4000);
+
     // Called automatically by the Maps JS API after it loads
     function initGoogleRating() {
-      // Serve from sessionStorage to avoid a redundant API round-trip
-      var cached = sessionStorage.getItem('googleRating');
+      clearTimeout(_googleRatingFallbackTimer);
+
+      // Serve from localStorage to avoid a redundant API round-trip
+      var cached = localStorage.getItem('googleRating');
       if (cached) {
         try {
           renderRating(JSON.parse(cached));
@@ -328,7 +339,7 @@
             count: place.user_ratings_total
           };
     
-          sessionStorage.setItem('googleRating', JSON.stringify(d));
+          localStorage.setItem('googleRating', JSON.stringify(d));
           renderRating(d);
         }
       );
