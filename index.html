@@ -323,12 +323,12 @@
         id: 'ChIJDc-ljHTLHkcR_eu7VTdGIvk'
       });
 
-      place.fetchFields({ fields: ['rating', 'userRatingsTotal'] })
+      place.fetchFields({ fields: ['rating', 'userRatingCount'] })
         .then(function () {
           if (!place.rating) return;
           var d = {
             rating: place.rating,
-            count: typeof place.userRatingsTotal === 'number' ? place.userRatingsTotal : 0
+            count: typeof place.userRatingCount === 'number' ? place.userRatingCount : 0
           };
           localStorage.setItem('googleRating', JSON.stringify(d));
           renderRating(d);
