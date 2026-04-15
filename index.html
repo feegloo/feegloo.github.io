@@ -289,10 +289,12 @@
       if (!el || !d || !d.rating) return;
       var full  = Math.round(d.rating);
       var stars = '★'.repeat(full) + '☆'.repeat(5 - full);
+      var count = typeof d.count === 'number' ? d.count : 0;
+      el.setAttribute('aria-label', 'Ocena Google ' + d.rating.toFixed(1) + ' na 5, ' + count + ' opinii');
       el.innerHTML =
-        '<span class="gr-stars">' + stars + '</span>' +
+        '<span class="gr-stars" aria-hidden="true">' + stars + '</span>' +
         d.rating.toFixed(1) +
-        ' <span>(' + d.count + ')</span>';
+        ' <span>(' + count + ')</span>';
     }
 
     // Called automatically by the Maps JS API after it loads
