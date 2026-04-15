@@ -300,30 +300,36 @@
       // Serve from sessionStorage to avoid a redundant API round-trip
       var cached = sessionStorage.getItem('googleRating');
       if (cached) {
-        try { renderRating(JSON.parse(cached)); } catch (e) {}
+        try {
+          renderRating(JSON.parse(cached));
+        } catch (e) {}
         return;
       }
-
+    
       var service = new google.maps.places.PlacesService(document.createElement('div'));
-
-      // Look up the place by query (swap in your Place ID below once known, so only
-      // one getDetails call is needed instead of two):
-      //   service.getDetails({ placeId: 'YOUR_PLACE_ID', fields: ['rating','user_ratings_total'] }, cb)
-      service.findPlaceFromQuery({
-        query: 'Konsultacja trychologiczna wypadanie włosów łysienie androgenowe Warszawa Młociny',
-        fields: ['place_id']
-      }, function (results, status) {
-        if (status !== google.maps.places.PlacesServiceStatus.OK || !results || !results[0]) return;
-        service.getDetails({
-          placeId: results[0].place_id,
+      const placeId = 'ChIJDc-ljHTLHkcR_eu7VTdGIvk';
+    
+      service.getDetails(
+        {
+          placeId,
           fields: ['rating', 'user_ratings_total']
-        }, function (place, s) {
-          if (s !== google.maps.places.PlacesServiceStatus.OK || !place || !place.rating) return;
-          var d = { rating: place.rating, count: place.user_ratings_total };
+        },
+        function (place, status) {
+          if (
+            status !== google.maps.places.PlacesServiceStatus.OK ||
+            !place ||
+            !place.rating
+          ) return;
+    
+          const d = {
+            rating: place.rating,
+            count: place.user_ratings_total
+          };
+    
           sessionStorage.setItem('googleRating', JSON.stringify(d));
           renderRating(d);
-        });
-      });
+        }
+      );
     }
   </script>
   <!-- Google Maps JS API – replace YOUR_GOOGLE_MAPS_API_KEY with a key that has
