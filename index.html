@@ -318,29 +318,27 @@
         } catch (e) {}
         return;
       }
-    
-      var place = new google.maps.places.Place({
-        id: 'ChIJDc-ljHTLHkcR_eu7VTdGIvk'
-      });
 
-      place.fetchFields({ fields: ['rating', 'userRatingCount'] })
-        .then(function () {
-          if (!place.rating) return;
+      // Use the legacy PlacesService (avoids the new v1/$rpc endpoint that may be blocked)
+      var service = new google.maps.places.PlacesService(document.createElement('div'));
+      service.getDetails(
+        { placeId: 'ChIJDc-ljHTLHkcR_eu7VTdGIvk', fields: ['rating', 'user_ratings_total'] },
+        function (place, status) {
+          if (status !== google.maps.places.PlacesServiceStatus.OK || !place || !place.rating) return;
           var d = {
             rating: place.rating,
-            count: typeof place.userRatingCount === 'number' ? place.userRatingCount : 0
+            count: typeof place.user_ratings_total === 'number' ? place.user_ratings_total : 0
           };
           localStorage.setItem('googleRating', JSON.stringify(d));
           renderRating(d);
-        })
-        .catch(function () {});
+        }
+      );
     }
   </script>
-  <!-- Google Maps JS API – replace YOUR_GOOGLE_MAPS_API_KEY with a key that has
-       the "Maps JavaScript API" and "Places API" enabled in Google Cloud Console.
+  <!-- Google Maps JS API – the key must have "Maps JavaScript API" and "Places API" enabled.
        Restrict the key to your domain for security. -->
   <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDfrxjTEk9CYYJulZTd53BHQ5Y3CHX7Q_g&libraries=places&callback=initGoogleRating">
+    src="https://maps.googleapis.com/maps/api/js?loading=async&key=AIzaSyDfrxjTEk9CYYJulZTd53BHQ5Y3CHX7Q_g&libraries=places&callback=initGoogleRating">
   </script>
 </body>
 
