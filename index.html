@@ -297,10 +297,21 @@
         ' <span>(' + count + ')</span>';
     }
 
+    // Fallback: if the Maps JS API never fires initGoogleRating (e.g. RefererNotAllowedMapError),
+    // still show whatever rating was cached from a previous successful load.
+    var _googleRatingFallbackTimer = setTimeout(function () {
+      var cached = localStorage.getItem('googleRating');
+      if (cached) {
+        try { renderRating(JSON.parse(cached)); } catch (e) {}
+      }
+    }, 4000);
+
     // Called automatically by the Maps JS API after it loads
     function initGoogleRating() {
-      // Serve from sessionStorage to avoid a redundant API round-trip
-      var cached = sessionStorage.getItem('googleRating');
+      clearTimeout(_googleRatingFallbackTimer);
+
+      // Serve from localStorage to avoid a redundant API round-trip
+      var cached = localStorage.getItem('googleRating');
       if (cached) {
         try {
           renderRating(JSON.parse(cached));
@@ -308,30 +319,21 @@
         return;
       }
     
-      var service = new google.maps.places.PlacesService(document.createElement('div'));
-      const placeId = 'ChIJDc-ljHTLHkcR_eu7VTdGIvk';
-    
-      service.getDetails(
-        {
-          placeId,
-          fields: ['rating', 'user_ratings_total']
-        },
-        function (place, status) {
-          if (
-            status !== google.maps.places.PlacesServiceStatus.OK ||
-            !place ||
-            !place.rating
-          ) return;
-    
-          const d = {
+      var place = new google.maps.places.Place({
+        id: 'ChIJDc-ljHTLHkcR_eu7VTdGIvk'
+      });
+
+      place.fetchFields({ fields: ['rating', 'userRatingsTotal'] })
+        .then(function () {
+          if (!place.rating) return;
+          var d = {
             rating: place.rating,
-            count: place.user_ratings_total
+            count: typeof place.userRatingsTotal === 'number' ? place.userRatingsTotal : 0
           };
-    
-          sessionStorage.setItem('googleRating', JSON.stringify(d));
+          localStorage.setItem('googleRating', JSON.stringify(d));
           renderRating(d);
-        }
-      );
+        })
+        .catch(function () {});
     }
   </script>
   <!-- Google Maps JS API – replace YOUR_GOOGLE_MAPS_API_KEY with a key that has
