@@ -192,7 +192,13 @@
       </p>
     </div>
     <div class="right-column" id="app">
-      <zoom-on-hover img-normal="leczenie-lysienia-androgenowego-mapa-mysli.png" :scale="0.62"></zoom-on-hover>
+      <zoom-on-hover
+        img-normal="leczenie-lysienia-androgenowego-mapa-mysli.png"
+        :scale="0.62"
+        :clickable-colors="boxColors"
+        :color-tolerance="35"
+        @box-click="onBoxClick">
+      </zoom-on-hover>
     </div>
   </div>
   <script>
@@ -209,6 +215,18 @@
         el: "#app",
         components: {
           zoomOnHover: zoomOnHover
+        },
+        data: {
+          // Background colors of the clickable treatment boxes in the mind-map image,
+          // sampled directly from the PNG pixels. Both green variants (#b6d7a8 / #b7d7a8)
+          // appear in the image due to anti-aliasing; tolerance of 35 covers the rest.
+          boxColors: ['#c9daf8', '#efefef', '#fffef9', '#fff9d9', '#b6d7a8', '#b7d7a8']
+        },
+        methods: {
+          onBoxClick: function(position) {
+            // position.x and position.y are pixel coordinates on the original image
+            console.log('Box clicked at image coordinates:', position)
+          }
         }
       })
     }    
