@@ -226,6 +226,7 @@
       margin: 1.5rem auto;
       border-radius: 18px;
       box-shadow: 0 12px 30px rgba(43, 36, 31, 0.10);
+      cursor: zoom-in;
     }
 
     main a {
@@ -345,10 +346,6 @@
 }
 
 /* Image modal */
-main img {
-  cursor: zoom-in;
-}
-
 .img-modal-overlay {
   display: none;
   position: fixed;
@@ -455,12 +452,16 @@ main img {
       var modalImg = document.getElementById('imgModalImg');
       var closeBtn = document.getElementById('imgModalClose');
 
+      var lastFocus = null;
+
       document.querySelector('main').addEventListener('click', function (e) {
         if (!e.target.matches('img')) return;
+        lastFocus = document.activeElement;
         modalImg.src = e.target.src;
         modalImg.alt = e.target.alt;
         overlay.classList.add('is-open');
         document.body.style.overflow = 'hidden';
+        closeBtn.focus();
       });
 
       function closeModal() {
@@ -468,6 +469,7 @@ main img {
         document.body.style.overflow = '';
         modalImg.src = '';
         modalImg.alt = '';
+        if (lastFocus) { lastFocus.focus(); lastFocus = null; }
       }
 
       closeBtn.addEventListener('click', closeModal);
@@ -475,7 +477,12 @@ main img {
         if (e.target === overlay) closeModal();
       });
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
+        if (!overlay.classList.contains('is-open')) return;
+        if (e.key === 'Escape') { closeModal(); return; }
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          if (document.activeElement !== closeBtn) closeBtn.focus();
+        }
       });
     })();
   </script>
