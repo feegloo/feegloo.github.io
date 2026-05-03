@@ -456,10 +456,9 @@ main img {
       var closeBtn = document.getElementById('imgModalClose');
 
       document.querySelector('main').addEventListener('click', function (e) {
-        var img = e.target.closest('main img');
-        if (!img) return;
-        modalImg.src = img.src;
-        modalImg.alt = img.alt;
+        if (!e.target.matches('img')) return;
+        modalImg.src = e.target.src;
+        modalImg.alt = e.target.alt;
         overlay.classList.add('is-open');
         document.body.style.overflow = 'hidden';
       });
@@ -468,6 +467,7 @@ main img {
         overlay.classList.remove('is-open');
         document.body.style.overflow = '';
         modalImg.src = '';
+        modalImg.alt = '';
       }
 
       closeBtn.addEventListener('click', closeModal);
@@ -475,7 +475,7 @@ main img {
         if (e.target === overlay) closeModal();
       });
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeModal();
+        if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
       });
     })();
   </script>
