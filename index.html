@@ -7,11 +7,6 @@
     <meta name="description" content="Aleksander Figiel, JavaScript Software Engineer" />
 
     <style>
-      :root {
-        --switcher-width: clamp(210px, 18vw, 290px);
-        --background: #292929;
-      }
-
       * {
         box-sizing: border-box;
       }
@@ -22,14 +17,10 @@
         height: 100%;
         margin: 0;
         overflow: hidden;
-        background: var(--background);
+        background: #292929;
       }
 
-      .document-viewer {
-        width: calc(100% - var(--switcher-width));
-        height: 100%;
-      }
-
+      .document-viewer,
       .document-viewer embed {
         display: block;
         width: 100%;
@@ -37,43 +28,32 @@
       }
 
       .document-switcher {
-        position: fixed;
-        top: 0;
-        right: 0;
+        position: absolute;
+        top: 50%;
+        right: 24px;
         z-index: 10;
-        display: flex;
-        width: var(--switcher-width);
-        height: 100%;
-        align-items: center;
-        justify-content: center;
+        transform: translateY(-50%);
         pointer-events: none;
       }
 
       .document-switcher__button {
         display: inline-flex;
-        min-width: 180px;
         align-items: center;
         justify-content: center;
-        gap: 14px;
-        padding: 18px 22px;
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        border-radius: 12px;
+        gap: 10px;
+        padding: 13px 17px;
+        border: 0;
+        border-radius: 9px;
         background: rgba(20, 20, 20, 0.92);
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.34);
         color: #fff;
-        font: 700 18px/1.2 Arial, sans-serif;
+        font: 700 16px/1.2 Arial, sans-serif;
         cursor: pointer;
         pointer-events: auto;
-        transition:
-          transform 160ms ease,
-          background-color 160ms ease,
-          box-shadow 160ms ease;
       }
 
       .document-switcher__button:hover {
         background: #111;
-        box-shadow: 0 14px 38px rgba(0, 0, 0, 0.5);
-        transform: translateX(4px);
       }
 
       .document-switcher__button:focus-visible {
@@ -82,54 +62,21 @@
       }
 
       .document-switcher__arrow {
-        display: inline-block;
-        font-size: 30px;
+        font-size: 23px;
         line-height: 1;
-        animation: point-right 1.4s ease-in-out infinite;
-      }
-
-      @keyframes point-right {
-        0%,
-        100% {
-          transform: translateX(0);
-        }
-
-        50% {
-          transform: translateX(7px);
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .document-switcher__arrow {
-          animation: none;
-        }
-
-        .document-switcher__button {
-          transition: none;
-        }
       }
 
       @media (max-width: 900px) {
-        :root {
-          --switcher-width: 0px;
-        }
-
-        .document-viewer {
-          width: 100%;
-        }
-
         .document-switcher {
           top: auto;
-          right: 18px;
-          bottom: 18px;
-          width: auto;
-          height: auto;
+          right: 16px;
+          bottom: 16px;
+          transform: none;
         }
 
         .document-switcher__button {
-          min-width: 0;
-          padding: 14px 17px;
-          font-size: 15px;
+          padding: 11px 14px;
+          font-size: 14px;
         }
       }
     </style>
