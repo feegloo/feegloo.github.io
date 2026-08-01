@@ -99,6 +99,16 @@
         }
       }
 
+      @media (prefers-reduced-motion: reduce) {
+        .document-switcher__arrow {
+          animation: none;
+        }
+
+        .document-switcher__button {
+          transition: none;
+        }
+      }
+
       @media (max-width: 900px) {
         :root {
           --switcher-width: 0px;
