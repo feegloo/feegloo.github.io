@@ -29,10 +29,9 @@
 
       .document-switcher {
         position: absolute;
-        top: 50%;
-        right: 24px;
+        right: 16px;
+        bottom: 16px;
         z-index: 10;
-        transform: translateY(-50%);
         pointer-events: none;
       }
 
@@ -67,13 +66,6 @@
       }
 
       @media (max-width: 900px) {
-        .document-switcher {
-          top: auto;
-          right: 16px;
-          bottom: 16px;
-          transform: none;
-        }
-
         .document-switcher__button {
           padding: 11px 14px;
           font-size: 14px;
