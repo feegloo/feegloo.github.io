@@ -1,0 +1,45 @@
+Materiały źródłowe do tej serii:
+1. Nowa aplikacja: https://aleksanderfigiel.pl/ios-nowa-aplikacja-tutorial-1
+2. TestFlight: https://aleksanderfigiel.pl/ios-testflight-tutorial-2
+3. Instalacja przez kabel: https://aleksanderfigiel.pl/ios-development-kabel-tutorial-3
+
+Przed rozpoczęciem otwórz i przeczytaj stronę części, której dotyczy ten prompt. Korzystaj z jej instrukcji, ilustracji i kodu. Pozostałe części traktuj jako kontekst i sięgaj do nich, gdy wymaga tego bieżący krok. Zachowaj zakres tej części i prowadź mnie po jednym kroku. Jeśli nie masz dostępu do strony lub nie została jeszcze opublikowana, powiedz o tym i poproś o jej treść albo pliki; nie udawaj, że ją przeczytałeś.
+
+Poprowadź mnie po polsku przez utworzenie nowej aplikacji iOS w Apple Developer i App Store Connect. Zakres kończy się na zarejestrowanym App ID oraz nowym rekordzie aplikacji ze sprawdzonymi danymi. Nie obejmuje pisania kodu, TestFlight, certyfikatów, profili provisioning, GitHub Actions, instalacji przez kabel ani publikacji w App Store.
+
+Zacznij od jednego pytania: „Jak ma się nazywać Twoja aplikacja?”. Poczekaj na odpowiedź. Następnie ustal prefiks Bundle ID: zapytaj o domenę lub już używany prefiks organizacji. Jeśli użytkownik nie ma domeny, pomóż wybrać stabilny prefiks oparty na jego własnej nazwie dewelopera; nie przypisuj mu cudzej domeny i nie wymagaj zakupu domeny. Nie generuj identyfikatora wyłącznie z nazwy aplikacji bez uzgodnienia prefiksu.
+
+Na podstawie nazwy oraz uzgodnionego prefiksu zaproponuj spójny zestaw:
+- Name: nazwa aplikacji, od 2 do 30 znaków; przy zbyt długiej nazwie zaproponuj skrócenie.
+- Description w Apple Developer: czytelna nazwa bez niedozwolonych znaków specjalnych, np. zamień & na „and”. To opis identyfikatora, nie opis marketingowy sklepu.
+- Bundle ID: uzgodniony prefiks + kropka + nazwa przekształcona do małych liter ASCII bez spacji i polskich znaków. Zachowaj litery i cyfry; unikaj pustych segmentów i gwiazdek. Bundle ID dopuszcza litery ASCII, cyfry, kropki i myślniki, ale nie podkreślenia. Jeśli wynik jest pusty, poproś o techniczną nazwę.
+- SKU: stabilna techniczna wersja nazwy, zaczynająca się literą lub cyfrą, złożona z liter ASCII, cyfr oraz ewentualnie myślników, kropek lub podkreśleń. Musi być unikalna na koncie.
+Po ustaleniu danych pokaż tabelę konkretnych wartości i wyjaśnij ich budowę na przykładzie. Przykład dydaktyczny: Name i Description „Testowa Apka”, prefiks „pl.jankowalski”, nazwa techniczna „testowaapka”, Bundle ID „pl.jankowalski.testowaapka”, SKU „testowa_apka”. Nie przypisuj użytkownikowi tych przykładowych danych: generuj jego własne na podstawie odpowiedzi. Wyjaśnij, że podkreślenie jest dopuszczalne w SKU, ale nie w Bundle ID.
+Zapisuj w kontekście wartości zaakceptowane i rzeczywiście zarejestrowane przez użytkownika. Jeśli użytkownik wybierze inne, stosuj je konsekwentnie. Nie deklaruj dostępności nazwy lub Bundle ID, zanim potwierdzi ją portal Apple.
+
+Sprawdź, czy użytkownik ma aktywne członkostwo Apple Developer Program oraz dostęp do tworzenia aplikacji. Jeśli nie, wyjaśnij wymaganie i skieruj do https://developer.apple.com/programs/enroll/ . Nie zakładaj, że ma firmowe konto lub dostęp administratora. Jeżeli ma już aplikację, ustal czy naprawdę tworzy osobny rekord, czy tylko odtwarza kroki na istniejącym. Nie każ tworzyć duplikatów ani kasować istniejących aplikacji.
+
+Pracuj po jednym ekranie lub małym kroku na wiadomość. Podawaj numer, cel, dokładne nazwy przycisków i konkretne wartości do wklejenia. Po każdym kroku czekaj na potwierdzenie albo screenshot. Nie wypisuj od razu całego tutorialu. Na screenshotach sprawdzaj rzeczywisty ekran i komunikaty; nie zakładaj powodzenia. Jeśli dane są zamazane lub zastąpione placeholderami, poproś użytkownika o samodzielne sprawdzenie wartości, nie żądaj ujawnienia danych osobistych. Nie proś o hasło, kod 2FA, klucze ani certyfikaty. Nie używaj znaku em dash.
+
+Przebieg:
+1. Otwórz https://developer.apple.com/account/resources/identifiers/list i zaloguj się do właściwego zespołu.
+2. Kliknij + przy Identifiers.
+3. Wybierz App IDs i Continue.
+4. Wybierz App i Continue.
+5. Wpisz ustalone Description i Bundle ID, zaznacz Explicit. Dla podstawowej rejestracji nie włączaj dodatkowych Capabilities. Jeśli użytkownik pyta o konkretną funkcję, wyjaśnij ją bez zgadywania wymagań aplikacji. Nie myl uprawnień aparatu z capabilities.
+6. Sprawdź podsumowanie, kliknij Register i potwierdź obecność identyfikatora na liście.
+7. Otwórz https://appstoreconnect.apple.com/apps na tym samym koncie i w tym samym zespole.
+8. Kliknij + przy Apps.
+9. Wybierz New App.
+10. W formularzu zaznacz iOS, wpisz ustaloną nazwę, wybierz wcześniej zarejestrowany Bundle ID i wpisz SKU. Przed wyborem Primary Language zapytaj, jaki ma być podstawowy język informacji sklepowych. Przed wyborem User Access ustal, czy aplikację mają widzieć wszyscy uprawnieni członkowie zespołu, czy tylko wybrani; wyjaśnij Full Access i Limited Access. To dostęp zespołu, nie publiczna dostępność aplikacji. Sprawdź dane przed Create; wyjaśnij, że SKU nie można później zmienić. Po Create poproś o ekran wyniku.
+11. Otwórz aplikację, następnie General > App Information. Sprawdź nazwę, Bundle ID, SKU i Primary Language. Bundle ID musi być potem taki sam w kodzie; po przesłaniu pierwszego buildu nie można zmienić go w tym rekordzie. Jeśli użytkownik zmienił edytowalne pola, przypomnij o Save.
+
+W razie błędu zajętej nazwy albo identyfikatora zaproponuj wariant i poczekaj na wybór. Gdy Bundle ID nie ma na liście, sprawdź konto, zespół, rejestrację i ewentualne przypisanie do istniejącej aplikacji; dopiero potem odśwież formularz. Brak przycisku tworzenia może wymagać sprawdzenia roli lub umów konta. Nie usuwaj niczego jako obejścia.
+
+Korzystaj z aktualnych oficjalnych instrukcji Apple, jeśli masz przeglądanie internetu:
+https://developer.apple.com/help/account/identifiers/register-an-app-id/
+https://developer.apple.com/help/app-store-connect/create-an-app-record/add-a-new-app/
+https://developer.apple.com/help/app-store-connect/reference/app-information/app-information/
+Jeżeli interfejs się różni, kieruj się screenshotem i dokumentacją. Jeśli nie masz dostępu do internetu, powiedz o tym przy rozbieżności zamiast udawać weryfikację.
+
+Zakończ tabelą rzeczywiście ustalonych danych oraz informacją: utworzono identyfikator i rekord aplikacji; aplikacja nie jest jeszcze opublikowana. Wskaż osobne kolejne tematy: TestFlight i instalacja przez kabel, ale nie zaczynaj ich bez prośby. Nie generuj stron ani PDF podczas prowadzenia użytkownika, chyba że o to poprosi.

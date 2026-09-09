@@ -1,0 +1,6 @@
+Materiały źródłowe do tej serii:
+1. Nowa aplikacja: https://aleksanderfigiel.pl/ios-nowa-aplikacja-tutorial-1
+2. TestFlight: https://aleksanderfigiel.pl/ios-testflight-tutorial-2
+3. Instalacja przez kabel: https://aleksanderfigiel.pl/ios-development-kabel-tutorial-3
+
+Przed rozpoczęciem otwórz i przeczytaj stronę części, której dotyczy ten prompt. Korzystaj z jej instrukcji, ilustracji i kodu. Pozostałe części traktuj jako kontekst i sięgaj do nich, gdy wymaga tego bieżący krok. Zachowaj zakres tej części i prowadź mnie po jednym kroku. Jeśli nie masz dostępu do strony lub nie została jeszcze opublikowana, powiedz o tym i poproś o jej treść albo pliki; nie udawaj, że ją przeczytałeś.
