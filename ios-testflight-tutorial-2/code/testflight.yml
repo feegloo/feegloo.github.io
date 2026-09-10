@@ -1,0 +1,173 @@
+name: Build and upload to TestFlight
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  XCODE_PROJECT: ${{ vars.XCODE_PROJECT }}
+  APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+  ASC_KEY_ID: ${{ vars.ASC_KEY_ID }}
+  ASC_ISSUER_ID: ${{ vars.ASC_ISSUER_ID }}
+
+jobs:
+  testflight:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[testflight]')
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate repository variables
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+
+          required = ("XCODE_PROJECT", "APPLE_TEAM_ID",
+                      "ASC_KEY_ID", "ASC_ISSUER_ID")
+          missing = [name for name in required if not os.environ.get(name, "").strip()]
+          if missing:
+              raise SystemExit("Missing GitHub Actions Variables: " + ", ".join(missing))
+          if not re.fullmatch(r"[A-Z0-9]{10}", os.environ["APPLE_TEAM_ID"]):
+              raise SystemExit("APPLE_TEAM_ID must contain 10 uppercase letters or digits.")
+          if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", os.environ["XCODE_PROJECT"]):
+              raise SystemExit("XCODE_PROJECT must be the project and scheme name without an extension.")
+          PY
+
+      - name: Install XcodeGen
+        run: |
+          # GitHub's macOS runner currently includes an untrusted aws/tap.
+          # It is unrelated to this project and causes Homebrew to emit a warning.
+          brew untap aws/tap >/dev/null 2>&1 || true
+          brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Prepare App Store Connect API key
+        env:
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          key_id = os.environ["ASC_KEY_ID"].strip()
+          key = os.environ["ASC_PRIVATE_KEY"].strip()
+
+          # Accept either a normal multiline GitHub secret or a value pasted
+          # with literal \n escape sequences, and normalize line endings.
+          if "\\n" in key and "\n" not in key:
+              key = key.replace("\\n", "\n")
+          key = key.replace("\r\n", "\n").replace("\r", "\n").strip()
+
+          begin = "-----BEGIN PRIVATE KEY-----"
+          end = "-----END PRIVATE KEY-----"
+          if not key.startswith(begin) or not key.endswith(end):
+              raise SystemExit(
+                  "ASC_PRIVATE_KEY is not a valid .p8 PEM value: "
+                  "it must include BEGIN PRIVATE KEY and END PRIVATE KEY lines."
+              )
+
+          path = Path(os.environ["RUNNER_TEMP"]) / f"AuthKey_{key_id}.p8"
+          path.write_text(key + "\n", encoding="utf-8")
+          path.chmod(0o600)
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"ASC_KEY_PATH={path}\n")
+          PY
+
+      - name: Import reusable distribution signing assets
+        env:
+          DISTRIBUTION_CERTIFICATE_P12_BASE64: ${{ secrets.DISTRIBUTION_CERTIFICATE_P12_BASE64 }}
+          DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          APP_STORE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APP_STORE_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          umask 077
+          : "${DISTRIBUTION_CERTIFICATE_P12_BASE64:?Missing distribution certificate secret}"
+          : "${DISTRIBUTION_CERTIFICATE_PASSWORD:?Missing distribution certificate password}"
+          : "${APP_STORE_PROVISIONING_PROFILE_BASE64:?Missing App Store profile secret}"
+          printf '%s' "$DISTRIBUTION_CERTIFICATE_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/distribution.p12"
+          printf '%s' "$APP_STORE_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$RUNNER_TEMP/app-store.mobileprovision"
+          openssl smime -inform der -verify -noverify \
+            -in "$RUNNER_TEMP/app-store.mobileprovision" \
+            -out "$RUNNER_TEMP/app-store-profile.plist"
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/testflight.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/distribution.p12" \
+            -P "$DISTRIBUTION_CERTIFICATE_PASSWORD" -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+          # Install Apple's intermediate certificate without overriding system trust.
+          curl --fail --silent --show-error --location \
+            https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer \
+            -o "$RUNNER_TEMP/AppleWWDRCAG3.cer"
+          # A Keychain-exported .p12 may already contain this intermediate.
+          # Ignore only the duplicate-item error; propagate every other failure.
+          if import_output=$(security import "$RUNNER_TEMP/AppleWWDRCAG3.cer" -k "$KEYCHAIN_PATH" 2>&1); then
+            printf '%s\n' "$import_output"
+          else
+            import_status=$?
+            if [[ "$import_output" == *"SecKeychainItemImport: The specified item already exists in the keychain."* ]]; then
+              echo "Apple WWDR G3 intermediate is already installed."
+            else
+              printf '%s\n' "$import_output" >&2
+              exit "$import_status"
+            fi
+          fi
+
+      # Reuse the imported certificate at export; never request new signing assets.
+      - name: Archive without local signing
+        run: |
+          xcodebuild \
+            -project "${XCODE_PROJECT}.xcodeproj" \
+            -scheme "$XCODE_PROJECT" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            clean archive
+
+      - name: Validate signing profile and create manual export options
+        run: python3 scripts/prepare-testflight-export.py
+
+      - name: Sign with imported certificate and upload to App Store Connect
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Remove temporary signing assets
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/testflight.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/distribution.p12" "$RUNNER_TEMP/app-store.mobileprovision" \
+            "$RUNNER_TEMP/app-store-profile.plist" "$RUNNER_TEMP/AppleWWDRCAG3.cer" \
+            "$RUNNER_TEMP/ExportOptions.plist"
+          if [[ -n "$ASC_KEY_PATH" ]]; then rm -f "$ASC_KEY_PATH"; fi
+          if [[ -f "$RUNNER_TEMP/testflight-profile-paths.txt" ]]; then
+            while IFS= read -r profile_path; do rm -f "$profile_path"; done < "$RUNNER_TEMP/testflight-profile-paths.txt"
+            rm -f "$RUNNER_TEMP/testflight-profile-paths.txt"
+          fi

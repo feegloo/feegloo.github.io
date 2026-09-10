@@ -1,0 +1,138 @@
+name: Build signed iPhone artifact
+
+on:
+  push:
+    branches:
+      - main
+      - '[0-9]*/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  XCODE_PROJECT: ${{ vars.XCODE_PROJECT }}
+  APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+
+jobs:
+  device-build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate repository variables
+        run: |
+          [[ "$XCODE_PROJECT" =~ ^[A-Za-z0-9_-]+$ ]] || { echo "Set XCODE_PROJECT to the project and scheme name (without .xcodeproj)"; exit 1; }
+          [[ "$APPLE_TEAM_ID" =~ ^[A-Z0-9]{10}$ ]] || { echo "Set APPLE_TEAM_ID"; exit 1; }
+
+      - name: Install XcodeGen
+        run: |
+          brew untap aws/tap >/dev/null 2>&1 || true
+          brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Prepare signing assets
+        env:
+          DEVICE_CERTIFICATE_P12_BASE64: ${{ secrets.DEVICE_CERTIFICATE_P12_BASE64 }}
+          DEVICE_CERTIFICATE_PASSWORD: ${{ secrets.DEVICE_CERTIFICATE_PASSWORD }}
+          DEVICE_PROVISIONING_PROFILE_BASE64: ${{ secrets.DEVICE_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          umask 077
+          CERTIFICATE_PATH="$RUNNER_TEMP/device-signing.p12"
+          PROFILE_PATH="$RUNNER_TEMP/${XCODE_PROJECT}.mobileprovision"
+          PROFILE_PLIST_PATH="$RUNNER_TEMP/${XCODE_PROJECT}-profile.plist"
+
+          # Decode the binary signing files stored as base64 GitHub secrets.
+          printf '%s' "$DEVICE_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+          printf '%s' "$DEVICE_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+
+          # Fail early with a useful message if a secret was empty or decoded incorrectly.
+          test -s "$CERTIFICATE_PATH" || { echo "Decoded .p12 certificate is empty"; exit 1; }
+          test -s "$PROFILE_PATH" || { echo "Decoded provisioning profile is empty"; exit 1; }
+
+          # A .mobileprovision file is a CMS container. OpenSSL reliably extracts the embedded plist
+          # on GitHub-hosted macOS runners, where `security cms` can fail depending on runner version.
+          openssl smime \
+            -inform der \
+            -verify \
+            -noverify \
+            -in "$PROFILE_PATH" \
+            -out "$PROFILE_PLIST_PATH"
+
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$PROFILE_PLIST_PATH")
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PROFILE_PLIST_PATH")
+
+          # Install the provisioning profile where Xcode can resolve it during manual signing.
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILES_DIR"
+          cp "$PROFILE_PATH" "$PROFILES_DIR/$PROFILE_UUID.mobileprovision"
+
+          echo "DEVICE_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/device-build.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+
+          # Import the reusable Apple Development certificate into a temporary CI keychain.
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" \
+            -P "$DEVICE_CERTIFICATE_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+      - name: Build signed app for registered iPhone
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild \
+            -project "$XCODE_PROJECT.xcodeproj" \
+            -scheme "$XCODE_PROJECT" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Development" \
+            PROVISIONING_PROFILE_SPECIFIER="$DEVICE_PROFILE_NAME" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            clean archive
+
+      - name: Package signed app
+        run: |
+          APP_PATH="$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive/Products/Applications/${XCODE_PROJECT}.app"
+          ZIP_PATH="$RUNNER_TEMP/device-app.zip"
+
+          test -d "$APP_PATH"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
+
+          echo "DEVICE_ZIP_PATH=$ZIP_PATH" >> "$GITHUB_ENV"
+
+      - name: Upload signed app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: device-app
+          path: ${{ env.DEVICE_ZIP_PATH }}
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+      - name: Clean signing assets
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/device-build.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/device-signing.p12" "$RUNNER_TEMP/${XCODE_PROJECT}.mobileprovision" "$RUNNER_TEMP/${XCODE_PROJECT}-profile.plist"

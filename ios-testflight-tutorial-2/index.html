@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>TestFlight i GitHub Actions krok po kroku - tutorial 2</title><meta content="Od certyfikatu Apple Distribution do instalacji i aktualizacji na iPhonie. macOS, Windows, Linux, GitHub Actions, gotowy kod i prompt AI." name="description"/><link href="https://aleksanderfigiel.pl/ios-testflight-tutorial-2" rel="canonical"/><meta content="index,follow" name="robots"/><meta content="TestFlight i GitHub Actions - tutorial 2" property="og:title"/><meta content="Certyfikat, profil, sekrety, upload i testy na iPhonie. Gotowy HTML, kod i prompt." property="og:description"/><meta content="article" property="og:type"/><meta content="https://aleksanderfigiel.pl/ios-testflight-tutorial-2" property="og:url"/><meta content="summary" name="twitter:card"/><link href="../tutoriale/style.css" rel="stylesheet"/><script defer="" src="../tutoriale/app.js"></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "TestFlight i GitHub Actions krok po kroku", "inLanguage": "pl", "url": "https://aleksanderfigiel.pl/ios-testflight-tutorial-2", "description": "Tutorial 2: od certyfikatu do testów i aktualizacji aplikacji iOS.", "dateModified": "2026-09-09"}</script></head><body><a class="skip" href="#tresc">Przejdź do treści</a><header class="top"><a class="brand" href="/ios-new-app-tutorial-1">Aplikacja iOS <span>/ od pomysłu do telefonu</span></a><a href="#prompt">Prompt dla asystenta AI ↓</a></header><div class="layout"><aside><p class="eyebrow">Tutorial 02 / TestFlight</p><nav aria-label="Spis treści"><a href="#start">1. Co przygotowujemy i dlaczego</a><a href="#certyfikat">2. Certyfikat: wybierz swój system</a><a href="#profil">3. Wspólny krok: profil App Store</a><a href="#api">4. Klucz API do wysyłania buildów</a><a href="#variables">5. GitHub: cztery Variables</a><a href="#secrets">6. GitHub: cztery Secrets</a><a href="#kod">7. Dodaj gotowy kod workflow</a><a href="#uruchomienie">8. Uruchomienie ręczne lub przez [testflight]</a><a href="#processing">9. Poczekaj na Processing → Complete</a><a href="#testflight">10. Zainstaluj TestFlight i utwórz grupę</a><a href="#zaproszenie">11. Dodaj siebie i przyjmij zaproszenie</a><a href="#instalacja">12. Zainstaluj i otwórz aplikację</a><a href="#aktualizacja">13. Kolejny build i powiadomienia</a><a href="#problemy">14. Gdy coś się zatrzyma</a><a href="#prompt">Prompt do skopiowania</a><a href="#zrodla">Źródła</a></nav></aside><main id="tresc"><div class="intro"><p class="eyebrow">Kod w GitHub. Aplikacja na iPhonie.</p><h1>TestFlight<br/>krok po kroku</h1><p class="lead">Przygotuj podpisywanie raz. Buduj w GitHub Actions. Instaluj i aktualizuj własną aplikację na telefonie.</p><p class="meta">Część 2 z 3 · 9 września 2026 · macOS / Windows / Linux</p></div><div class="preflight"><b>Gotowy materiał do przejścia samodzielnie lub z AI.</b><p>Ścieżka macOS oraz upload i instalacja zostały sprawdzone w praktyce. Zakładki Windows/Linux opisują przygotowanie plików przez OpenSSL. Wszystkie nazwy i identyfikatory w przykładach zastąp własnymi.</p><div class="series"><a href="/ios-new-app-tutorial-1">1. Rejestracja aplikacji</a><strong>2. TestFlight</strong><a href="/ios-macos-cable-tutorial-3">3. Instalacja przez kabel</a></div></div><section class="step" id="start"><h2>1. Co przygotowujemy i dlaczego</h2>
+<p>Na koniec zainstalujesz własną aplikację na iPhonie z TestFlight i dostarczysz jej kolejną aktualizację. Zakładamy, że masz już App ID i rekord aplikacji z <a href="/ios-new-app-tutorial-1">tutorialu 1</a> oraz kod aplikacji w GitHub.</p>
+<p>Potrzebujesz aktywnego Apple Developer Program, dostępu do App Store Connect, repozytorium z włączonym GitHub Actions i iPhone'a. TestFlight jest bezpłatną aplikacją Apple: <a href="https://apps.apple.com/pl/app/testflight/id899247664">pobierz TestFlight z App Store</a>. Sam tester nie potrzebuje Maca ani własnego płatnego konta deweloperskiego.</p>
+<p>Możesz pisać kod i przygotować certyfikat na Windowsie lub Linuksie. Kompilację i podpisywanie iOS wykona Mac w GitHub Actions (<code>macos-latest</code>). W tym wariancie nie musisz mieć własnego Maca. GitHub rozlicza użycie runnerów według planu i ustawień konta; darmowy kod tutorialu nie oznacza nieograniczonego darmowego CI.</p>
+<div class="table-wrap"><table><thead><tr><th>Element</th><th>Po co jest potrzebny</th></tr></thead><tbody><tr><td>Klucz prywatny + CSR</td><td>Na komputerze tworzysz klucz i wniosek o certyfikat. Apple na podstawie CSR wystawia certyfikat.</td></tr><tr><td>Apple Distribution (.cer)</td><td>Potwierdza tożsamość zespołu, który podpisuje aplikację. Nie jest przypisany do modelu komputera ani jednego iPhone’a.</td></tr><tr><td>Plik .p12 i jego hasło</td><td>Przenosi certyfikat razem z kluczem prywatnym do runnera CI. Sam .cer nie wystarczy.</td></tr><tr><td>Profil App Store (.mobileprovision)</td><td>Łączy konkretny Bundle ID, zespół, uprawnienia aplikacji i certyfikat dystrybucyjny.</td></tr><tr><td>Klucz API App Store Connect (.p8)</td><td>Uwierzytelnia wysłanie podpisanego buildu do Apple. To inny klucz niż prywatny klucz z .p12.</td></tr></tbody></table></div>
+<p>Certyfikat dystrybucyjny można ponownie wykorzystywać w aplikacjach tego samego zespołu. Profil jest przygotowany dla konkretnej aplikacji. Przekazanie własnego certyfikatu komuś z innego zespołu nie zmieni jego właściciela. Osoba publikująca na swoim koncie tworzy zasoby we własnym zespole.</p>
+<p>Nasz workflow importuje istniejący certyfikat przy każdym uruchomieniu. Nie tworzy nowych certyfikatów w Apple przy każdym buildzie, więc nie zużywa w ten sposób limitu aktywnych certyfikatów.</p>
+<div class="note">Przykłady poniżej są fikcyjne: Jan Kowalski, Testowa Apka, repozytorium <code>jankowalski/testowa-apka</code>, projekt i schemat <code>TestowaApka</code>, Bundle ID <code>pl.jankowalski.testowaapka</code>. Wstaw własne wartości. Screeny z danymi zostały przetworzone w celu anonimizacji i mają charakter poglądowy.</div>
+</section><section class="step" id="certyfikat"><h2>2. Certyfikat: wybierz swój system</h2><p>Wykonaj tylko jedną zakładkę. Każda prowadzi od CSR do gotowego <code>AppleDistribution.p12</code>. Potem wróć do wspólnego kroku 3. Podstawą są <a href="https://docs.openssl.org/3.0/man1/openssl-req/">dokumentacja CSR</a> oraz <a href="https://docs.openssl.org/3.0/man1/openssl-pkcs12/">dokumentacja PKCS#12</a>.</p><div class="tabs" data-tabs=""><div aria-label="System operacyjny" role="tablist"><button aria-controls="panel-0" aria-selected="true" id="tab-0" role="tab" tabindex="0">macOS</button><button aria-controls="panel-1" aria-selected="false" id="tab-1" role="tab" tabindex="-1">Windows</button><button aria-controls="panel-2" aria-selected="false" id="tab-2" role="tab" tabindex="-1">Linux</button></div><div aria-labelledby="tab-0" id="panel-0" role="tabpanel"><h3>macOS: CSR w Dostępie do pęku kluczy</h3><ol><li>Otwórz <b>Dostęp do pęku kluczy / Keychain Access</b> przez Spotlight. Wybierz pęk <b>Logowanie</b>.</li><li>W menu aplikacji wybierz <b>Asystent certyfikatów → Poproś o certyfikat z urzędu certyfikacji</b> (<i>Certificate Assistant → Request a Certificate From a Certificate Authority</i>).</li><li>Wpisz swój e-mail i nazwę rozpoznawczą, np. <code>Jan Kowalski Distribution</code>. Pole e-mail urzędu certyfikacji pozostaw puste. Zaznacz <b>Zapisany na dysku / Saved to disk</b>.</li><li>Kliknij Dalej i zapisz CSR, np. na Biurku. Jeżeli pojawi się wybór parametrów klucza, użyj RSA 2048 bitów.</li></ol><h3>Wystawienie certyfikatu przez Apple</h3><ol><li>Otwórz <a href="https://developer.apple.com/account/resources/certificates/list">Apple Developer → Certificates</a> i wybierz właściwy zespół.</li><li>Kliknij <b>+</b>, zaznacz <b>Apple Distribution</b> i kliknij <b>Continue</b>.</li><li>Wybierz <b>Choose File</b> i wskaż utworzony plik CSR. Wyślij go przez <b>Continue</b>.</li><li>Kliknij <b>Download</b>. Zapisz <code>distribution.cer</code> w katalogu z kluczem/CSR.</li></ol><p>Do Apple przesyłasz CSR. Prywatny klucz zostaje u Ciebie. <a href="https://developer.apple.com/help/account/certificates/create-a-certificate-signing-request/">Instrukcja CSR Apple</a>.</p>
+<h3>Import i eksport .p12</h3><ol><li>Otwórz pobrany <code>distribution.cer</code> dwuklikiem na tym samym Macu, na którym powstał CSR.</li><li>W <b>Logowanie → Moje certyfikaty</b> wyszukaj <code>Apple Distribution</code>. Rozwiń strzałkę przy certyfikacie. Pod nim musi być <b>klucz prywatny</b>.</li><li>Zaznacz certyfikat z powiązanym kluczem, wybierz eksport z menu kontekstowego lub <b>Plik → Eksportuj rzeczy</b>.</li><li>Wybierz format <b>Wymiana danych osobistych (.p12)</b>, nazwę <code>AppleDistribution.p12</code> i zapisz na Biurku.</li><li>Ustaw hasło eksportu, powtórz je i zachowaj. Jeżeli macOS poprosi dodatkowo o hasło pęku kluczy, jest to osobne potwierdzenie systemowe.</li></ol>
+<p>Jeżeli .p12 nie jest dostępny, sprawdź, czy eksportujesz także pasujący klucz prywatny. Import samego .cer na innym komputerze nie odtworzy klucza.</p>
+<figure class="desktop"><a href="resources/keychain.png" target="_blank"><img alt="Apple Distribution z rozwiniętym kluczem prywatnym. Dane przykładowe." loading="lazy" src="resources/keychain.png"/></a><figcaption>Apple Distribution z rozwiniętym kluczem prywatnym. Dane przykładowe.</figcaption></figure><figure class="desktop"><a href="resources/export-p12.png" target="_blank"><img alt="Eksport certyfikatu i klucza do AppleDistribution.p12." loading="lazy" src="resources/export-p12.png"/></a><figcaption>Eksport certyfikatu i klucza do AppleDistribution.p12.</figcaption></figure><figure class="desktop"><a href="resources/p12-password.png" target="_blank"><img alt="Hasło chroniące eksport .p12. Zapisz je do późniejszego użycia w CI." loading="lazy" src="resources/p12-password.png"/></a><figcaption>Hasło chroniące eksport .p12. Zapisz je do późniejszego użycia w CI.</figcaption></figure>
+<div class="note"><b>Czy ustawiać „Zawsze ufaj”?</b> Podczas przygotowania materiału lokalny certyfikat pokazywał „nie jest zaufany”. Pozostawiliśmy domyślne ustawienia zaufania. Wysyłka przez CI i instalacja z TestFlight udały się bez ręcznego „Zawsze ufaj”. Runner importuje certyfikat pośredni Apple WWDR G3 i sprawdza poprawną tożsamość podpisującą. To wynik tego scenariusza, a nie zalecenie ignorowania dowolnych błędów zaufania.</div></div><div aria-labelledby="tab-1" id="panel-1" role="tabpanel"><div class="note">Ścieżka Windows została opisana na podstawie dokumentacji OpenSSL. Nie wykonywaliśmy jej na Windowsie podczas tego tutorialu. Udany test całego procesu wykonano z .p12 wyeksportowanym na macOS.</div>
+<h3>Windows: przygotuj OpenSSL</h3><p>Zainstaluj Git for Windows z <a href="https://git-scm.com/downloads/win">oficjalnej strony</a> i otwórz <b>Git Bash</b>. Poniższe komendy wpisuj w Git Bash, nie w PowerShell. Sprawdź dostępność:</p><pre class="code"><code>openssl version</code></pre><p>Jeżeli polecenie nie jest znalezione, sprawdź instalację Git Bash lub zainstaluj dystrybucję OpenSSL wskazaną na <a href="https://wiki.openssl.org/index.php/Binaries">liście OpenSSL</a>. Nie pobieraj kluczy ani gotowego .p12 z internetu.</p><pre class="code"><code>mkdir -p ~/testflight-signing
+cd ~/testflight-signing
+export MSYS_NO_PATHCONV=1</code></pre><p>Ostatnia linia zapobiega zamianie parametru <code>/CN=...</code> na ścieżkę Windows przez Git Bash. Folder znajduje się zwykle w <code>C:\Users\TwojLogin\testflight-signing</code>; <code>pwd -W</code> pokaże jego dokładną ścieżkę.</p><pre class="code"><code>openssl genpkey -algorithm RSA -aes-256-cbc -pkeyopt rsa_keygen_bits:2048 -out distribution.key
+openssl req -new -sha256 -key distribution.key -out distribution.csr -subj "/CN=Jan Kowalski Distribution/emailAddress=jan@example.com"</code></pre><p>Pierwsza komenda pyta o hasło chroniące klucz prywatny, druga o to samo hasło. W polach CN oraz emailAddress wpisz własne dane. Nie nadpisuj istniejącego klucza, dla którego wystawiono już certyfikat.</p><h3>Wystawienie certyfikatu przez Apple</h3><ol><li>Otwórz <a href="https://developer.apple.com/account/resources/certificates/list">Apple Developer → Certificates</a> i wybierz właściwy zespół.</li><li>Kliknij <b>+</b>, zaznacz <b>Apple Distribution</b> i kliknij <b>Continue</b>.</li><li>Wybierz <b>Choose File</b> i wskaż utworzony plik CSR. Wyślij go przez <b>Continue</b>.</li><li>Kliknij <b>Download</b>. Zapisz <code>distribution.cer</code> w katalogu z kluczem/CSR.</li></ol><p>Do Apple przesyłasz CSR. Prywatny klucz zostaje u Ciebie. <a href="https://developer.apple.com/help/account/certificates/create-a-certificate-signing-request/">Instrukcja CSR Apple</a>.</p><pre class="code"><code>openssl x509 -inform DER -in distribution.cer -out distribution.pem
+openssl pkcs12 -export -inkey distribution.key -in distribution.pem -name "Apple Distribution" -out AppleDistribution.p12</code></pre><p>Przy eksporcie podaj hasło prywatnego klucza, a następnie nowe hasło eksportu .p12 (Export Password). To drugie trafi do <code>DISTRIBUTION_CERTIFICATE_PASSWORD</code>. Certyfikat .cer musi pochodzić z CSR utworzonego z tego klucza.</p><p>Sprawdź zawartość bez wypisywania klucza:</p><pre class="code"><code>openssl pkcs12 -info -noout -in AppleDistribution.p12</code></pre><p>Wynik powinien zawierać certyfikat oraz zaszyfrowany klucz, np. <code>Certificate bag</code> i <code>Shrouded Keybag</code>. Błąd niezgodności klucza i certyfikatu oznacza, że używasz innej pary plików.</p></div><div aria-labelledby="tab-2" id="panel-2" role="tabpanel"><div class="note">Ścieżka Linux została opisana na podstawie dokumentacji OpenSSL i wymaga sprawdzenia w Twoim środowisku. Nie zastępuje runnera macOS potrzebnego do kompilacji aplikacji iOS.</div>
+<h3>Linux: przygotuj OpenSSL</h3><p>W Ubuntu lub Debianie otwórz terminal:</p><pre class="code"><code>sudo apt update
+sudo apt install openssl
+openssl version
+mkdir -p ~/testflight-signing
+cd ~/testflight-signing
+umask 077</code></pre><p>W innych dystrybucjach użyj ich menedżera pakietów. <code>umask 077</code> ogranicza dostęp do nowych plików do Twojego użytkownika. Folder znajdziesz jako <code>/home/TwojLogin/testflight-signing</code>.</p><pre class="code"><code>openssl genpkey -algorithm RSA -aes-256-cbc -pkeyopt rsa_keygen_bits:2048 -out distribution.key
+openssl req -new -sha256 -key distribution.key -out distribution.csr -subj "/CN=Jan Kowalski Distribution/emailAddress=jan@example.com"</code></pre><p>Pierwsza komenda pyta o hasło chroniące klucz prywatny, druga o to samo hasło. W polach CN oraz emailAddress wpisz własne dane. Nie nadpisuj istniejącego klucza, dla którego wystawiono już certyfikat.</p><h3>Wystawienie certyfikatu przez Apple</h3><ol><li>Otwórz <a href="https://developer.apple.com/account/resources/certificates/list">Apple Developer → Certificates</a> i wybierz właściwy zespół.</li><li>Kliknij <b>+</b>, zaznacz <b>Apple Distribution</b> i kliknij <b>Continue</b>.</li><li>Wybierz <b>Choose File</b> i wskaż utworzony plik CSR. Wyślij go przez <b>Continue</b>.</li><li>Kliknij <b>Download</b>. Zapisz <code>distribution.cer</code> w katalogu z kluczem/CSR.</li></ol><p>Do Apple przesyłasz CSR. Prywatny klucz zostaje u Ciebie. <a href="https://developer.apple.com/help/account/certificates/create-a-certificate-signing-request/">Instrukcja CSR Apple</a>.</p><pre class="code"><code>openssl x509 -inform DER -in distribution.cer -out distribution.pem
+openssl pkcs12 -export -inkey distribution.key -in distribution.pem -name "Apple Distribution" -out AppleDistribution.p12</code></pre><p>Przy eksporcie podaj hasło prywatnego klucza, a następnie nowe hasło eksportu .p12 (Export Password). To drugie trafi do <code>DISTRIBUTION_CERTIFICATE_PASSWORD</code>. Certyfikat .cer musi pochodzić z CSR utworzonego z tego klucza.</p><p>Sprawdź zawartość bez wypisywania klucza:</p><pre class="code"><code>openssl pkcs12 -info -noout -in AppleDistribution.p12</code></pre><p>Wynik powinien zawierać certyfikat oraz zaszyfrowany klucz, np. <code>Certificate bag</code> i <code>Shrouded Keybag</code>. Błąd niezgodności klucza i certyfikatu oznacza, że używasz innej pary plików.</p></div></div></section><section class="step" id="profil"><h2>3. Wspólny krok: profil App Store</h2><ol><li>Otwórz <a href="https://developer.apple.com/account/resources/profiles/list">Apple Developer → Profiles</a> i kliknij <b>+</b>.</li><li>W sekcji <b>Distribution</b> zaznacz <b>App Store Connect</b> i kliknij Continue. Nie wybieraj iOS App Development ani Ad Hoc.</li><li>Wybierz App ID swojej aplikacji. Bundle ID musi być identyczny jak w kodzie i rekordzie App Store Connect.</li><li>Wybierz utworzony certyfikat Apple Distribution, którego klucz masz w .p12. Kliknij Continue.</li><li>Podaj nazwę, np. <code>TestowaApkaAppStore</code>, kliknij <b>Generate</b>, a potem <b>Download</b>.</li><li>Zapisz plik jako <code>TestowaApkaAppStore.mobileprovision</code>, np. na Biurku na Macu albo w katalogu <code>testflight-signing</code> na Windows/Linux.</li></ol><p>To profil dystrybucji App Store używany także przez TestFlight. Nie wpisujesz UDID iPhone’a. Dla kompilacji w GitHub Actions nie musisz instalować tego profilu na swoim komputerze.</p><figure class="desktop"><a href="resources/profile-type.png" target="_blank"><img alt="Distribution → App Store Connect." loading="lazy" src="resources/profile-type.png"/></a><figcaption>Distribution → App Store Connect.</figcaption></figure><figure class="desktop"><a href="resources/profile-app.png" target="_blank"><img alt="Wybór App ID aplikacji." loading="lazy" src="resources/profile-app.png"/></a><figcaption>Wybór App ID aplikacji.</figcaption></figure><figure class="desktop"><a href="resources/profile-cert.png" target="_blank"><img alt="Wybór certyfikatu Distribution odpowiadającego plikowi .p12." loading="lazy" src="resources/profile-cert.png"/></a><figcaption>Wybór certyfikatu Distribution odpowiadającego plikowi .p12.</figcaption></figure><figure class="desktop"><a href="resources/profile-name.png" target="_blank"><img alt="Nadaj własną nazwę i kliknij Generate. Dane na ilustracji ukryto." loading="lazy" src="resources/profile-name.png"/></a><figcaption>Nadaj własną nazwę i kliknij Generate. Dane na ilustracji ukryto.</figcaption></figure><figure class="desktop"><a href="resources/profile-download.png" target="_blank"><img alt="Gotowy profil App Store: kliknij Download." loading="lazy" src="resources/profile-download.png"/></a><figcaption>Gotowy profil App Store: kliknij Download.</figcaption></figure></section><section class="step" id="api"><h2>4. Klucz API do wysyłania buildów</h2><ol><li>Otwórz <a href="https://appstoreconnect.apple.com/access/integrations/api">App Store Connect → Users and Access → Integrations → App Store Connect API</a>.</li><li>Wybierz <b>Team Keys</b>, a następnie <b>Generate API Key</b> lub <b>+</b>. Pierwsze użycie API może wymagać wcześniejszego uzyskania dostępu przez Account Holder.</li><li>Wpisz nazwę <code>GitHub TestFlight</code>. W <b>Access</b> wybierz <b>Developer</b> i kliknij <b>Generate</b>.</li><li>Kliknij <b>Download API Key</b> i potwierdź <b>Download</b>. Zachowaj plik <code>AuthKey_XXXXXXXXXX.p8</code>. Można pobrać go tylko raz.</li><li>Na tej samej stronie skopiuj <b>Key ID</b> i <b>Issuer ID</b>. Za chwilę zapiszesz je w GitHub jako Variables.</li></ol><p>Rola Developer wystarczyła w sprawdzonym tutaj workflow: gotowy .p12, profil i ręczne podpisywanie w runnerze. Nie jest to konfiguracja automatycznego wystawiania certyfikatów ani cloud signing. Uprawnienia do tworzenia klucza przez użytkownika i rola przyznana samemu kluczowi to osobne kwestie. <a href="https://developer.apple.com/help/app-store-connect/manage-builds/upload-builds/">Apple: role do uploadu</a>.</p><figure class="desktop"><a href="resources/api-create.png" target="_blank"><img alt="Generate API Key: nazwa GitHub TestFlight, następnie Access → Developer." loading="lazy" src="resources/api-create.png"/></a><figcaption>Generate API Key: nazwa GitHub TestFlight, następnie Access → Developer.</figcaption></figure><figure class="desktop"><a href="resources/api-list.png" target="_blank"><img alt="Team Keys: Key ID i Issuer ID to dwa różne identyfikatory." loading="lazy" src="resources/api-list.png"/></a><figcaption>Team Keys: Key ID i Issuer ID to dwa różne identyfikatory.</figcaption></figure><figure class="desktop"><a href="resources/api-download.png" target="_blank"><img alt="Plik .p8 można pobrać tylko raz." loading="lazy" src="resources/api-download.png"/></a><figcaption>Plik .p8 można pobrać tylko raz.</figcaption></figure></section><section class="step" id="variables"><h2>5. GitHub: cztery Variables</h2><p>W repozytorium otwórz <b>Settings → Secrets and variables → Actions → Variables → New repository variable</b>. Nazwy przepisz dokładnie.</p><div class="table-wrap"><table><thead><tr><th>Nazwa</th><th>Przykładowa wartość</th><th>Skąd ją wziąć</th></tr></thead><tbody><tr><td><code>XCODE_PROJECT</code></td><td><code>TestowaApka</code></td><td>Wspólna nazwa projektu i schematu Xcode, bez .xcodeproj.</td></tr><tr><td><code>APPLE_TEAM_ID</code></td><td><code>A1B2C3D4E5</code></td><td>Team ID z konta Apple Developer, 10 znaków.</td></tr><tr><td><code>ASC_KEY_ID</code></td><td><code>K8M2N4P6Q9</code></td><td>Key ID klucza API, również występuje w nazwie .p8.</td></tr><tr><td><code>ASC_ISSUER_ID</code></td><td><code>a7c29e41-6b83-4fd2-9a15-08e3b6c742d9</code></td><td>Issuer ID nad listą Team Keys. To UUID, nie hash.</td></tr></tbody></table></div>
+<p>Własna nazwa projektu może być inna od nazwy widocznej pod ikoną aplikacji. Workflow buduje ścieżkę <code>${XCODE_PROJECT}.xcodeproj</code>, nazwę archiwum <code>${XCODE_PROJECT}.xcarchive</code> i używa tej samej wartości jako schematu. Dlatego jedna zmienna wystarcza, gdy projekt i schemat nazywają się tak samo.</p>
+<p>Przykładowy link: <a href="https://github.com/jankowalski/testowa-apka/settings/variables/actions">github.com/jankowalski/testowa-apka/settings/variables/actions</a>. Zastąp właściciela i repozytorium swoimi danymi. To przykład adresu, nie istniejący zasób tutorialu.</p><figure class="desktop"><a href="resources/github-variable.png" target="_blank"><img alt="Formularz New variable. Nazwy użytkownika i repozytorium są przykładowe." loading="lazy" src="resources/github-variable.png"/></a><figcaption>Formularz New variable. Nazwy użytkownika i repozytorium są przykładowe.</figcaption></figure>
+<h3>Repository, Environment czy Organization?</h3><div class="table-wrap"><table><thead><tr><th>Zakres</th><th>Zastosowanie</th></tr></thead><tbody><tr><td>Repository</td><td>Ustawienia jednego repozytorium. Tego używa gotowy workflow.</td></tr><tr><td>Environment</td><td>Osobne ustawienia np. staging i production w obrębie jednego repozytorium. Job musi wskazywać np. environment: testflight.</td></tr><tr><td>Organization</td><td>Wspólne Variables/Secrets dla wybranych repozytoriów należących do organizacji, zależnie od planu i zasad dostępu.</td></tr></tbody></table></div><p><b>Environment nie współdzieli ustawień pomiędzy repozytoriami na prywatnym profilu.</b> Do tego służy zakres Organization. Variables zawierają zwykły tekst i nie są automatycznie maskowane jak Secrets. <a href="https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-variables">Dokumentacja zmiennych GitHub</a>.</p></section><section class="step" id="secrets"><h2>6. GitHub: cztery Secrets</h2><p>Otwórz <b>Settings → Secrets and variables → Actions → Secrets → New repository secret</b>. Przykładowy adres: <a href="https://github.com/jankowalski/testowa-apka/settings/secrets/actions/new">github.com/jankowalski/testowa-apka/settings/secrets/actions/new</a>.</p><div class="table-wrap"><table><thead><tr><th>Nazwa</th><th>Co wkleić</th></tr></thead><tbody><tr><td><code>DISTRIBUTION_CERTIFICATE_P12_BASE64</code></td><td>Cały plik AppleDistribution.p12 zakodowany do Base64.</td></tr><tr><td><code>DISTRIBUTION_CERTIFICATE_PASSWORD</code></td><td>Hasło ustawione podczas eksportu .p12, zwykły tekst.</td></tr><tr><td><code>APP_STORE_PROVISIONING_PROFILE_BASE64</code></td><td>Cały plik .mobileprovision zakodowany do Base64.</td></tr><tr><td><code>ASC_PRIVATE_KEY</code></td><td>Pełna treść .p8 jako tekst PEM, bez Base64.</td></tr></tbody></table></div><figure class="desktop"><a href="resources/github-secret.png" target="_blank"><img alt="New secret: wpisz dokładną nazwę i odpowiednią wartość, następnie Add secret." loading="lazy" src="resources/github-secret.png"/></a><figcaption>New secret: wpisz dokładną nazwę i odpowiednią wartość, następnie Add secret.</figcaption></figure>
+<h3>macOS: kopiowanie plików do schowka</h3><p>Uruchamiaj pojedynczo i po każdej komendzie wklej zawartość schowka do właściwego sekretu:</p><pre class="code"><code>base64 -i ~/Desktop/AppleDistribution.p12 | pbcopy</code></pre><pre class="code"><code>base64 -i ~/Desktop/TestowaApkaAppStore.mobileprovision | pbcopy</code></pre><pre class="code"><code>cat ~/Downloads/AuthKey_K8M2N4P6Q9.p8 | pbcopy</code></pre>
+<p>Dostosuj nazwę pliku .p8 i jego katalog. Jeśli leży na Biurku, użyj <code>~/Desktop/</code>. Polecenie <code>cat AuthKey_K8M2N4P6Q9.p8 | pbcopy</code> zadziała, jeśli terminal jest już w folderze tego pliku.</p>
+<h3>Windows: PowerShell i schowek</h3><p>Po przygotowaniu plików w Git Bash możesz otworzyć PowerShell. Poniższe polecenia są dla PowerShell:</p><pre class="code"><code>[Convert]::ToBase64String([IO.File]::ReadAllBytes("$HOME\testflight-signing\AppleDistribution.p12")) | Set-Clipboard</code></pre><pre class="code"><code>[Convert]::ToBase64String([IO.File]::ReadAllBytes("$HOME\testflight-signing\TestowaApkaAppStore.mobileprovision")) | Set-Clipboard</code></pre><pre class="code"><code>Get-Content -Raw "$HOME\Downloads\AuthKey_K8M2N4P6Q9.p8" | Set-Clipboard</code></pre>
+<h3>Linux: Base64 do pliku tekstowego</h3><pre class="code"><code>base64 -w 0 ~/testflight-signing/AppleDistribution.p12 &gt; ~/testflight-signing/certificate-base64.txt
+base64 -w 0 ~/testflight-signing/TestowaApkaAppStore.mobileprovision &gt; ~/testflight-signing/profile-base64.txt</code></pre><p>Otwórz każdy plik tekstowy, zaznacz całość i skopiuj do właściwego sekretu. .p8 otwórz bez konwersji. Nie dodawaj plików z kluczami ani ich zakodowanych kopii do repozytorium. Base64 to kodowanie, nie szyfrowanie.</p>
+<h3>Alternatywa dla .p8: zwykły edytor tekstu</h3><p>Na każdym systemie możesz otworzyć .p8 w edytorze, wybrać <b>Zaznacz wszystko</b> i <b>Kopiuj</b>. Wklej również pierwszą i ostatnią linię:</p><pre class="code"><code>-----BEGIN PRIVATE KEY-----
+...cała rzeczywista zawartość Twojego klucza...
+-----END PRIVATE KEY-----</code></pre><p>Te linie nie są opcjonalnymi komentarzami. To znaczniki formatu PEM; nasz workflow odrzuci niepełny plik. Nie kopiuj przykładu z wielokropkiem i nie koduj .p8 drugi raz do Base64.</p>
+<p>Sekrety <code>DEVICE_CERTIFICATE_P12_BASE64</code>, <code>DEVICE_CERTIFICATE_PASSWORD</code> i <code>DEVICE_PROVISIONING_PROFILE_BASE64</code> dotyczą osobnego tutorialu o kablu. Nie są potrzebne temu workflow i nie trzeba ich tu tworzyć.</p></section><section class="step" id="kod"><h2>7. Dodaj gotowy kod workflow</h2><p>W ZIP-ie są dwa pliki. Skopiuj je do repozytorium z zachowaniem ścieżek:</p><ul><li><a download="" href="code/testflight.yml">code/.github/workflows/testflight.yml</a> → <code>.github/workflows/testflight.yml</code></li><li><a download="" href="code/scripts/prepare-testflight-export.py">code/scripts/prepare-testflight-export.py</a> → <code>scripts/prepare-testflight-export.py</code></li></ul>
+<p><b>Ten wariant jest dla projektu używającego XcodeGen</b>, z <code>project.yml</code> w katalogu głównym. Projekt i schemat muszą odpowiadać <code>XCODE_PROJECT</code>. Przykładowo <code>name: TestowaApka</code> oraz target/scheme TestowaApka. Ustaw <code>PRODUCT_BUNDLE_IDENTIFIER</code> na Bundle ID z kroku 3. Samo dodanie zmiennej w GitHub nie zmienia nazw w kodzie ani nie tworzy aplikacji.</p>
+<p>Jeżeli masz gotowy projekt Xcode bez XcodeGen, usuń kroki instalowania XcodeGen i generowania projektu. Dla workspace, wielu aplikacji, rozszerzeń lub Watch app potrzebna jest adaptacja. Dołączony skrypt celowo zatrzyma się przy rozszerzeniach, które wymagają osobnych profili.</p>
+<p>Workflow tworzy tymczasowy pęk kluczy, importuje .p12 i pośredni certyfikat WWDR G3, archiwizuje aplikację, a potem podpisuje ją podczas eksportu. Skrypt porównuje profil z Bundle ID, zespołem i certyfikatem oraz sprawdza datę ważności. Na końcu wysyła build i usuwa lokalne zasoby podpisywania z runnera.</p>
+<p>W kodzie uwzględniono przypadek, kiedy WWDR G3 jest już dołączony do .p12: ignorujemy tylko konkretny komunikat o duplikacie. Nie pomijamy wszystkich błędów importu. Nie używamy <code>-allowProvisioningUpdates</code> do tworzenia nowych zasobów podpisywania.</p>
+<details><summary>Pokaż pełny testflight.yml</summary><pre class="code"><code>name: Build and upload to TestFlight
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  XCODE_PROJECT: ${{ vars.XCODE_PROJECT }}
+  APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+  ASC_KEY_ID: ${{ vars.ASC_KEY_ID }}
+  ASC_ISSUER_ID: ${{ vars.ASC_ISSUER_ID }}
+
+jobs:
+  testflight:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[testflight]')
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate repository variables
+        run: |
+          python3 - &lt;&lt;'PY'
+          import os
+          import re
+
+          required = ("XCODE_PROJECT", "APPLE_TEAM_ID",
+                      "ASC_KEY_ID", "ASC_ISSUER_ID")
+          missing = [name for name in required if not os.environ.get(name, "").strip()]
+          if missing:
+              raise SystemExit("Missing GitHub Actions Variables: " + ", ".join(missing))
+          if not re.fullmatch(r"[A-Z0-9]{10}", os.environ["APPLE_TEAM_ID"]):
+              raise SystemExit("APPLE_TEAM_ID must contain 10 uppercase letters or digits.")
+          if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", os.environ["XCODE_PROJECT"]):
+              raise SystemExit("XCODE_PROJECT must be the project and scheme name without an extension.")
+          PY
+
+      - name: Install XcodeGen
+        run: |
+          # GitHub's macOS runner currently includes an untrusted aws/tap.
+          # It is unrelated to this project and causes Homebrew to emit a warning.
+          brew untap aws/tap &gt;/dev/null 2&gt;&amp;1 || true
+          brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Prepare App Store Connect API key
+        env:
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          python3 - &lt;&lt;'PY'
+          import os
+          from pathlib import Path
+
+          key_id = os.environ["ASC_KEY_ID"].strip()
+          key = os.environ["ASC_PRIVATE_KEY"].strip()
+
+          # Accept either a normal multiline GitHub secret or a value pasted
+          # with literal \n escape sequences, and normalize line endings.
+          if "\\n" in key and "\n" not in key:
+              key = key.replace("\\n", "\n")
+          key = key.replace("\r\n", "\n").replace("\r", "\n").strip()
+
+          begin = "-----BEGIN PRIVATE KEY-----"
+          end = "-----END PRIVATE KEY-----"
+          if not key.startswith(begin) or not key.endswith(end):
+              raise SystemExit(
+                  "ASC_PRIVATE_KEY is not a valid .p8 PEM value: "
+                  "it must include BEGIN PRIVATE KEY and END PRIVATE KEY lines."
+              )
+
+          path = Path(os.environ["RUNNER_TEMP"]) / f"AuthKey_{key_id}.p8"
+          path.write_text(key + "\n", encoding="utf-8")
+          path.chmod(0o600)
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"ASC_KEY_PATH={path}\n")
+          PY
+
+      - name: Import reusable distribution signing assets
+        env:
+          DISTRIBUTION_CERTIFICATE_P12_BASE64: ${{ secrets.DISTRIBUTION_CERTIFICATE_P12_BASE64 }}
+          DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          APP_STORE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APP_STORE_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          umask 077
+          : "${DISTRIBUTION_CERTIFICATE_P12_BASE64:?Missing distribution certificate secret}"
+          : "${DISTRIBUTION_CERTIFICATE_PASSWORD:?Missing distribution certificate password}"
+          : "${APP_STORE_PROVISIONING_PROFILE_BASE64:?Missing App Store profile secret}"
+          printf '%s' "$DISTRIBUTION_CERTIFICATE_P12_BASE64" | base64 --decode &gt; "$RUNNER_TEMP/distribution.p12"
+          printf '%s' "$APP_STORE_PROVISIONING_PROFILE_BASE64" | base64 --decode &gt; "$RUNNER_TEMP/app-store.mobileprovision"
+          openssl smime -inform der -verify -noverify \
+            -in "$RUNNER_TEMP/app-store.mobileprovision" \
+            -out "$RUNNER_TEMP/app-store-profile.plist"
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/testflight.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/distribution.p12" \
+            -P "$DISTRIBUTION_CERTIFICATE_PASSWORD" -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+          # Install Apple's intermediate certificate without overriding system trust.
+          curl --fail --silent --show-error --location \
+            https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer \
+            -o "$RUNNER_TEMP/AppleWWDRCAG3.cer"
+          # A Keychain-exported .p12 may already contain this intermediate.
+          # Ignore only the duplicate-item error; propagate every other failure.
+          if import_output=$(security import "$RUNNER_TEMP/AppleWWDRCAG3.cer" -k "$KEYCHAIN_PATH" 2&gt;&amp;1); then
+            printf '%s\n' "$import_output"
+          else
+            import_status=$?
+            if [[ "$import_output" == *"SecKeychainItemImport: The specified item already exists in the keychain."* ]]; then
+              echo "Apple WWDR G3 intermediate is already installed."
+            else
+              printf '%s\n' "$import_output" &gt;&amp;2
+              exit "$import_status"
+            fi
+          fi
+
+      # Reuse the imported certificate at export; never request new signing assets.
+      - name: Archive without local signing
+        run: |
+          xcodebuild \
+            -project "${XCODE_PROJECT}.xcodeproj" \
+            -scheme "$XCODE_PROJECT" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            clean archive
+
+      - name: Validate signing profile and create manual export options
+        run: python3 scripts/prepare-testflight-export.py
+
+      - name: Sign with imported certificate and upload to App Store Connect
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Remove temporary signing assets
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/testflight.keychain-db" 2&gt;/dev/null || true
+          rm -f "$RUNNER_TEMP/distribution.p12" "$RUNNER_TEMP/app-store.mobileprovision" \
+            "$RUNNER_TEMP/app-store-profile.plist" "$RUNNER_TEMP/AppleWWDRCAG3.cer" \
+            "$RUNNER_TEMP/ExportOptions.plist"
+          if [[ -n "$ASC_KEY_PATH" ]]; then rm -f "$ASC_KEY_PATH"; fi
+          if [[ -f "$RUNNER_TEMP/testflight-profile-paths.txt" ]]; then
+            while IFS= read -r profile_path; do rm -f "$profile_path"; done &lt; "$RUNNER_TEMP/testflight-profile-paths.txt"
+            rm -f "$RUNNER_TEMP/testflight-profile-paths.txt"
+          fi</code></pre></details><details><summary>Pokaż pełny prepare-testflight-export.py</summary><pre class="code"><code>"""Validate one app's App Store profile and select an imported signing identity."""
+import datetime
+import hashlib
+import os
+from pathlib import Path
+import plistlib
+import re
+import shutil
+import subprocess
+
+
+def export_options(profile, bundle_id, team_id, identities):
+    entitlements = profile.get("Entitlements", {})
+    if profile.get("TeamIdentifier") != [team_id]:
+        raise ValueError("App Store profile belongs to a different Apple team.")
+    prefixes = profile.get("ApplicationIdentifierPrefix", [])
+    app_id = entitlements.get("application-identifier")
+    if not any(app_id == prefix + "." + bundle_id for prefix in prefixes):
+        raise ValueError("App Store profile does not match the archived Bundle ID.")
+    if entitlements.get("get-task-allow", False):
+        raise ValueError("Use an App Store profile, not a Development profile.")
+    if "ProvisionedDevices" in profile or profile.get("ProvisionsAllDevices"):
+        raise ValueError("Use an App Store profile, not Ad Hoc or Enterprise.")
+    expiry = profile.get("ExpirationDate")
+    if not expiry or expiry.replace(tzinfo=datetime.timezone.utc) &lt;= datetime.datetime.now(datetime.timezone.utc):
+        raise ValueError("App Store profile is expired or has no expiration date.")
+    uuid = profile.get("UUID", "")
+    if not re.fullmatch(r"[A-Fa-f0-9-]{36}", uuid):
+        raise ValueError("App Store profile has an invalid UUID.")
+
+    # find-identity only lists valid identities whose private keys are available.
+    valid = set(re.findall(r'([A-Fa-f0-9]{40})\s+"Apple Distribution:', identities))
+    matching = [hashlib.sha1(cert).hexdigest().upper()
+                for cert in profile.get("DeveloperCertificates", [])]
+    fingerprint = next((sha for sha in matching if sha in {item.upper() for item in valid}), None)
+    if not fingerprint:
+        raise ValueError("No valid Apple Distribution identity matches the profile. "
+                         "Check the .p12, its private key, certificate expiry and WWDR trust chain.")
+    return {
+        "method": "app-store-connect",
+        "destination": "upload",
+        "signingStyle": "manual",
+        "signingCertificate": fingerprint,
+        "teamID": team_id,
+        "provisioningProfiles": {bundle_id: uuid},
+        "manageAppVersionAndBuildNumber": False,
+        "uploadSymbols": True,
+    }
+
+
+def main():
+    temp = Path(os.environ["RUNNER_TEMP"])
+    archive = temp / (os.environ["XCODE_PROJECT"] + ".xcarchive")
+    apps = list((archive / "Products/Applications").glob("*.app"))
+    if len(apps) != 1:
+        raise ValueError("Expected one application in the Xcode archive.")
+    if list(apps[0].rglob("*.appex")) or (apps[0] / "Watch").exists():
+        raise ValueError("Extensions and Watch apps need their own provisioning profile mappings.")
+    with (apps[0] / "Info.plist").open("rb") as stream:
+        bundle_id = plistlib.load(stream)["CFBundleIdentifier"]
+    with (temp / "app-store-profile.plist").open("rb") as stream:
+        profile = plistlib.load(stream)
+    identities = subprocess.check_output(
+        ["security", "find-identity", "-v", "-p", "codesigning",
+         str(temp / "testflight.keychain-db")], text=True)
+    options = export_options(profile, bundle_id, os.environ["APPLE_TEAM_ID"], identities)
+
+    # Support both older Xcode and current Xcode provisioning profile locations.
+    installed = []
+    for directory in ("Library/MobileDevice/Provisioning Profiles",
+                      "Library/Developer/Xcode/UserData/Provisioning Profiles"):
+        target = Path.home() / directory / (profile["UUID"] + ".mobileprovision")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(temp / "app-store.mobileprovision", target)
+        installed.append(str(target))
+    (temp / "testflight-profile-paths.txt").write_text("\n".join(installed) + "\n")
+    with (temp / "ExportOptions.plist").open("wb") as stream:
+        plistlib.dump(options, stream)
+    print("Validated App Store profile and reusable distribution identity.")
+
+
+if __name__ == "__main__":
+    main()</code></pre></details>
+<p>Kod jest udostępniony do skopiowania bez opłat. Pliki są zgodne z wariantem, na którym wykonano udany upload w tym tutorialu.</p></section><section class="step" id="uruchomienie"><h2>8. Uruchomienie ręczne lub przez [testflight]</h2><ol><li>Zapisz oba pliki w repozytorium i wypchnij commit. Workflow musi być na domyślnej gałęzi, aby można było uruchomić go ręcznie w interfejsie GitHub.</li><li>Przejdź do <b>Actions → Build and upload to TestFlight → Run workflow</b>.</li><li>Wybierz gałąź z gotowym kodem i ustawieniami, np. <code>main</code>, a potem kliknij zielony <b>Run workflow</b>.</li><li>Otwórz uruchomienie i sprawdź wynik. Zielony job oznacza zakończenie kompilacji, podpisywania i uploadu.</li></ol>
+<h3>Automatycznie po wybranym commicie</h3><p>Wpisz znacznik w wiadomości commita:</p><pre class="code"><code>git commit -m "Popraw wygląd przycisku [testflight]"</code></pre><p>Następnie wykonaj push. Możesz też poprosić agenta AI: <b>„Wprowadź poprawkę i dodaj [testflight] do wiadomości commita, żeby uruchomić build.”</b> Przy kilku commitach w jednym pushu znacznik musi być w ostatnim, ponieważ warunek sprawdza <code>head_commit.message</code>. Przy squash merge umieść go w końcowej wiadomości squasha.</p>
+<p>Push bez znacznika może pokazać workflow z pominiętym jobem, ale nie wykonuje kompilacji i uploadu. Domyślnie uruchamiaj je ręcznie; znacznik stosuj do zmian, które chcesz testować na telefonie. Oszczędza to minuty CI i niepotrzebne wysyłki.</p>
+<div class="note">Nie opieramy instrukcji na niepotwierdzonej liczbie „30 uploadów dziennie”. Jeśli Apple zwróci limit wysyłek, zastosuj wskazany w komunikacie okres oczekiwania. Nie uruchamiaj workflow wielokrotnie tylko dlatego, że build nadal ma status Processing.</div>
+<p>Numer kompilacji pochodzi z <code>GITHUB_RUN_NUMBER</code>. Nowe uruchomienie workflow dostaje nowy numer; <b>Re-run jobs</b> tego samego uruchomienia zachowuje numer. Po udanym uploadzie uruchom nowy workflow, aby uniknąć próby ponownego wysłania tego samego numeru.</p></section><section class="step" id="processing"><h2>9. Poczekaj na Processing → Complete</h2><p>Po zielonym workflow otwórz <b>App Store Connect → Apps → Twoja aplikacja → TestFlight → iOS → Build Uploads</b>. Apple przetwarza plik niezależnie od GitHub Actions.</p><figure class="desktop"><a href="resources/processing.png" target="_blank"><img alt="Nowy build 0.1 (74) jest Processing, poprzedni 0.1 (73) ma Complete." loading="lazy" src="resources/processing.png"/></a><figcaption>Nowy build 0.1 (74) jest Processing, poprzedni 0.1 (73) ma Complete.</figcaption></figure><p><b>Processing</b> oznacza, że upload jest jeszcze przetwarzany. Po <b>Complete</b> build może zostać udostępniony testerom. Przy poprawnej konfiguracji grupy i spełnieniu wymagań aplikacji pojawi się w TestFlight do instalacji lub aktualizacji.</p><p>Podczas tego testu trwało to około <b>2-3 minut</b>. Czas jest orientacyjny i może być dłuższy. Complete dotyczy przetworzenia uploadu, nie jest zatwierdzeniem publicznej publikacji aplikacji.</p><p>Jeśli pojawi się <b>Missing Compliance</b>, uzupełnij pytania dotyczące szyfrowania zgodnie z rzeczywistym działaniem aplikacji. Jeżeli build jest Failed, sprawdź szczegóły w App Store Connect i wiadomość od Apple. Jeśli jest Complete, ale nie ma go w telefonie, sprawdź grupę, dodany build i zaakceptowanie zaproszenia.</p></section><section class="step" id="testflight"><h2>10. Zainstaluj TestFlight i utwórz grupę</h2><p>Na iPhonie zainstaluj <a href="https://apps.apple.com/pl/app/testflight/id899247664">TestFlight od Apple</a>. Przed pierwszym zaproszeniem zobaczysz pusty ekran „Wszystko gotowe”. To normalne.</p><figure class="phone"><a href="resources/empty.jpeg" target="_blank"><img alt="TestFlight przed pierwszym zaproszeniem do testowania." loading="lazy" src="resources/empty.jpeg"/></a><figcaption>TestFlight przed pierwszym zaproszeniem do testowania.</figcaption></figure><p>Jako właściciel konta możesz testować własną aplikację przez grupę wewnętrzną. Nie potrzebujesz publicznego linku ani zewnętrznej grupy.</p><ol><li>W App Store Connect otwórz swoją aplikację i zakładkę TestFlight.</li><li>Kliknij <b>+</b> obok <b>Internal Testing</b>.</li><li>Wpisz nazwę grupy <code>Internal Testers</code>.</li><li>Zaznacz <b>Enable automatic distribution</b> i kliknij <b>Create</b>. Kolejne kwalifikujące się buildy z naszego workflow będą automatycznie trafiały do tej grupy.</li></ol><figure class="desktop"><a href="resources/group-start.png" target="_blank"><img alt="TestFlight: przycisk + obok Internal Testing." loading="lazy" src="resources/group-start.png"/></a><figcaption>TestFlight: przycisk + obok Internal Testing.</figcaption></figure><figure class="desktop"><a href="resources/group-create.png" target="_blank"><img alt="Utworzenie grupy Internal Testers z automatyczną dystrybucją." loading="lazy" src="resources/group-create.png"/></a><figcaption>Utworzenie grupy Internal Testers z automatyczną dystrybucją.</figcaption></figure><p>Nie myl automatycznej dystrybucji do grupy z automatycznym instalowaniem aktualizacji na iPhonie. To dwa osobne ustawienia.</p></section><section class="step" id="zaproszenie"><h2>11. Dodaj siebie i przyjmij zaproszenie</h2><ol><li>Otwórz <b>Internal Testers → Testers</b> i kliknij <b>+</b> lub Invite Testers.</li><li>Zaznacz swoje konto App Store Connect i kliknij <b>Add</b>.</li><li>Sprawdź zakładkę <b>Builds</b>. Na pokazanym ekranie grupa ma już <b>1 Build</b>. Jeśli u Ciebie jest pusta, wybierz <b>Add Builds</b>, zaznacz gotowy build, kliknij Next, uzupełnij What to Test i dodaj.</li><li>Na iPhonie otwórz e-mail z zaproszeniem i kliknij <b>View in TestFlight</b>.</li><li>Zaakceptuj zaproszenie w aplikacji TestFlight.</li></ol><figure class="desktop"><a href="resources/group-empty.png" target="_blank"><img alt="Grupa ma 0 testerów i 1 build. Kliknij + przy Testers." loading="lazy" src="resources/group-empty.png"/></a><figcaption>Grupa ma 0 testerów i 1 build. Kliknij + przy Testers.</figcaption></figure><figure class="desktop"><a href="resources/group-add.png" target="_blank"><img alt="Zaznacz własne konto i wybierz Add." loading="lazy" src="resources/group-add.png"/></a><figcaption>Zaznacz własne konto i wybierz Add.</figcaption></figure><figure class="phone"><a href="resources/invitation.png" target="_blank"><img alt="Przykładowy e-mail zapraszający do Testowa Apka. Kliknij View in TestFlight." loading="lazy" src="resources/invitation.png"/></a><figcaption>Przykładowy e-mail zapraszający do Testowa Apka. Kliknij View in TestFlight.</figcaption></figure><p>Tester wewnętrzny jest użytkownikiem App Store Connect z dostępem do aplikacji. Dla znajomych spoza zespołu używa się testów zewnętrznych, które mogą wymagać Beta App Review. Ten tutorial prowadzi przez test wewnętrzny. <a href="https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers/">Instrukcja Apple</a>.</p></section><section class="step" id="instalacja"><h2>12. Zainstaluj i otwórz aplikację</h2><p>Na ekranie aplikacji w TestFlight naciśnij <b>Zainstaluj</b>. Po zakończeniu pojawi się <b>Otwórz</b> oraz możliwość wysłania opinii. Uruchom aplikację i sprawdź jej działanie.</p><div class="gallery"><figure class="phone"><a href="resources/install.png" target="_blank"><img alt="Przed instalacją: Zainstaluj." loading="lazy" src="resources/install.png"/></a><figcaption>Przed instalacją: Zainstaluj.</figcaption></figure><figure class="phone"><a href="resources/installed.png" target="_blank"><img alt="Po instalacji: Otwórz i Wyślij opinię." loading="lazy" src="resources/installed.png"/></a><figcaption>Po instalacji: Otwórz i Wyślij opinię.</figcaption></figure><figure class="phone"><a href="resources/open.png" target="_blank"><img alt="Lista aplikacji TestFlight: przycisk Otwórz." loading="lazy" src="resources/open.png"/></a><figcaption>Lista aplikacji TestFlight: przycisk Otwórz.</figcaption></figure></div><p>Buildy TestFlight są dostępne przez ograniczony czas, na screenie 90 dni. Testowa instalacja nie oznacza publikacji aplikacji w publicznym App Store.</p></section><section class="step" id="aktualizacja"><h2>13. Kolejny build i powiadomienia</h2><ol><li>Zapisz kolejną zmianę w kodzie.</li><li>Uruchom nowy workflow ręcznie albo wykonaj push commita ze znacznikiem <code>[testflight]</code>.</li><li>Poczekaj na zielony workflow, następnie na przetworzenie nowego buildu przez Apple.</li><li>Po udostępnieniu buildu grupie otwórz TestFlight na iPhonie. Przy aplikacji zobaczysz <b>Uaktualnij</b>. Naciśnij go.</li></ol><figure class="phone"><a href="resources/update.png" target="_blank"><img alt="Nowy build 0.1 (74): Uaktualnij zamiast Otwórz." loading="lazy" src="resources/update.png"/></a><figcaption>Nowy build 0.1 (74): Uaktualnij zamiast Otwórz.</figcaption></figure><h3>Wyłącz e-maile, jeśli przeszkadzają</h3><p>W TestFlight otwórz szczegóły aplikacji i przewiń w dół. Wyłącz <b>Powiadomienia e-mail</b>. Możesz osobno pozostawić włączone powiadomienia push oraz <b>Uaktualnienia automatyczne</b>, tak jak na screenie. Wyłączenie e-maili nie kończy udziału w testach.</p><figure class="phone"><a href="resources/notifications.png" target="_blank"><img alt="Powiadomienia e-mail wyłączone; push i automatyczne aktualizacje włączone." loading="lazy" src="resources/notifications.png"/></a><figcaption>Powiadomienia e-mail wyłączone; push i automatyczne aktualizacje włączone.</figcaption></figure><div class="finish"><b>Gotowe.</b> Masz działającą instalację i aktualizacje przez TestFlight. Certyfikat i profil są ponownie używane przez CI, a klucz API ma rolę Developer. Kolejny niezależny temat to <a href="/ios-macos-cable-tutorial-3">instalacja przez kabel</a>.</div></section><section class="step" id="problemy"><h2>14. Gdy coś się zatrzyma</h2><div class="table-wrap"><table><thead><tr><th>Objaw</th><th>Co sprawdzić</th></tr></thead><tbody><tr><td>Brak klucza prywatnego pod certyfikatem</td><td>Czy CSR i klucz powstały na tym komputerze? Wyeksportuj .p12 z maszyny, która ma klucz.</td></tr><tr><td>Błąd hasła .p12</td><td>Użyj hasła eksportu, nie hasła Apple ID ani pęku Logowanie.</td></tr><tr><td>No valid Apple Distribution identity</td><td>Para certyfikat-klucz, ważność certyfikatu, zgodność z profilem i łańcuch WWDR.</td></tr><tr><td>Profile does not match Bundle ID</td><td>Porównaj Bundle ID w kodzie, profilu i App Store Connect.</td></tr><tr><td>Brak projektu lub schematu</td><td>XCODE_PROJECT musi odpowiadać projektowi i schematowi wygenerowanemu przez project.yml.</td></tr><tr><td>Niepełny ASC_PRIVATE_KEY</td><td>Pełna treść .p8, ze znacznikami BEGIN/END PRIVATE KEY, bez Base64.</td></tr><tr><td>Błąd uwierzytelniania API</td><td>Key ID musi odpowiadać .p8; sprawdź Issuer ID, aktywność klucza i zespół.</td></tr><tr><td>Build Complete, brak aktualizacji</td><td>Sprawdź grupę Builds, testerów, przyjęte zaproszenie i wymagania compliance.</td></tr><tr><td>Numer buildu był już użyty</td><td>Uruchom nowy workflow; Re-run zachowuje GITHUB_RUN_NUMBER.</td></tr><tr><td>Długi Processing</td><td>Sprawdź stan w Apple. Sam zielony workflow nie gwarantuje natychmiastowej gotowości instalacji.</td></tr></tbody></table></div></section><section class="prompt-section" id="prompt"><p class="eyebrow">Asystent AI</p><h2>Przejdź te kroki z pomocą czatu</h2><p>Skopiuj prompt do nowej rozmowy i dołącz pliki kodu z paczki. Asystent będzie prowadził Cię po jednym kroku.</p><div class="actions"><button data-copy-status="copy-status" data-copy-target="prompt-text" id="copy-prompt">Kopiuj prompt</button><a download="" href="prompt.txt">Pobierz prompt.txt</a><span id="copy-status" role="status"></span></div><details><summary>Pokaż pełny prompt</summary><pre id="prompt-text">Materiały źródłowe do tej serii:
+1. Nowa aplikacja: https://aleksanderfigiel.pl/ios-new-app-tutorial-1
+2. TestFlight: https://aleksanderfigiel.pl/ios-testflight-tutorial-2
+3. Instalacja przez kabel: https://aleksanderfigiel.pl/ios-macos-cable-tutorial-3
+
+Przed rozpoczęciem otwórz i przeczytaj stronę części, której dotyczy ten prompt. Korzystaj z jej instrukcji, ilustracji i kodu. Pozostałe części traktuj jako kontekst i sięgaj do nich, gdy wymaga tego bieżący krok. Zachowaj zakres tej części i prowadź mnie po jednym kroku. Jeśli nie masz dostępu do strony lub nie została jeszcze opublikowana, powiedz o tym i poproś o jej treść albo pliki; nie udawaj, że ją przeczytałeś.
+
+Poprowadź mnie po polsku, po jednym małym kroku na wiadomość, przez TestFlight według dołączonego tutorialu 2. Celem jest pierwszy udany upload, zaproszenie mnie jako testera wewnętrznego, instalacja na iPhonie i kolejna aktualizacja. Nie publikuj aplikacji w publicznym App Store. Nie używaj znaku em dash.
+
+Zacznij od ustalenia systemu: macOS, Windows lub Linux, oraz adresu mojego repozytorium GitHub. Ustal już zarejestrowany Bundle ID i rekord aplikacji, nazwę projektu/schematu oraz używanie XcodeGen. Nie zakładaj, że przykłady TestowaApka, pl.jankowalski.testowaapka lub jankowalski/testowa-apka są moimi danymi. Zachowuj potwierdzone wartości i generuj konkretne linki https://github.com/OWNER/REPO/settings/variables/actions oraz https://github.com/OWNER/REPO/settings/secrets/actions. Nie powtarzaj pytań, gdy odpowiedź jest w kontekście.
+
+Wyjaśnij: tester potrzebuje TestFlight z https://apps.apple.com/pl/app/testflight/id899247664 i iPhone'a, nie Maca. Klucz i CSR można przygotować na każdym systemie; certyfikat wystawia Apple, a kompilację i podpisywanie wykonuje runner macOS w GitHub Actions. Wymagane są Apple Developer Program i gotowy kod aplikacji. Kieruj do tutorialu 1, jeśli brakuje App ID/rekordu. Nie twórz duplikatów zasobów.
+
+Korzystaj z odpowiedniej zakładki systemowej. macOS: Keychain Access, Certificate Assistant, CSR zapisany na dysku; Apple Distribution w portalu; pobranie .cer; import na komputerze z prywatnym kluczem; eksport certyfikatu z kluczem do .p12 z hasłem. Windows: Git Bash + OpenSSL, MSYS_NO_PATHCONV=1 dla -subj. Linux: OpenSSL. W obu utwórz zaszyfrowany klucz RSA 2048 i CSR, prześlij CSR do Apple, pobierz .cer, przekonwertuj DER do PEM i wyeksportuj .p12. Ścieżki Windows/Linux są opracowane z dokumentacji, nie deklaruj ich osobistego przetestowania. Nie zalecaj bezwarunkowego Always Trust. W naszym teście domyślne zaufanie na Macu wystarczyło, bo CI ma poprawny łańcuch WWDR.
+
+Wspólne kroki: Profiles +, Distribution &gt; App Store Connect, właściwy App ID, właściwy Apple Distribution, nazwa i Generate, Download .mobileprovision. Nie wybieraj Development/Ad Hoc i nie żądaj UDID do TestFlight. Następnie Users and Access &gt; Integrations &gt; App Store Connect API &gt; Team Keys &gt; Generate API Key, nazwa GitHub TestFlight, Access Developer. W tym wariancie używamy ręcznego podpisywania gotowym .p12 i profilem. Pobierz .p8 tylko raz i zachowaj bezpiecznie; skopiuj Key ID i Issuer ID.
+
+Repository Variables: XCODE_PROJECT (bez rozszerzenia, wspólna nazwa projektu i schematu), APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID. Repository Secrets: DISTRIBUTION_CERTIFICATE_P12_BASE64, DISTRIBUTION_CERTIFICATE_PASSWORD, APP_STORE_PROVISIONING_PROFILE_BASE64, ASC_PRIVATE_KEY. Nigdy nie proś mnie o przesłanie prywatnego klucza, .p12, hasła ani zawartości sekretów do czatu. Wyjaśnij różnicę Repository/Environment/Organization: Environment dotyczy jednego repozytorium i wymaga environment w jobie; współdzielenie pomiędzy repozytoriami to Organization, zależnie od planu.
+
+Na Macu pokazuj konkretne ścieżki, np. base64 -i ~/Desktop/AppleDistribution.p12 | pbcopy i base64 -i ~/Desktop/TestowaApkaAppStore.mobileprovision | pbcopy. Dopasuj nazwę do pliku użytkownika. .p8 kopiujemy jako zwykły tekst, np. cat ~/Downloads/AuthKey_KEYID.p8 | pbcopy. Alternatywa: edytor tekstu, zaznacz wszystko, kopiuj. Wyraźnie wymagaj obu linii -----BEGIN PRIVATE KEY----- i -----END PRIVATE KEY-----, to znaczniki PEM, nie opcjonalne komentarze. Dla Windows podaj PowerShell ReadAllBytes/ToBase64String/Set-Clipboard, a .p8 Get-Content -Raw; dla Linux base64 -w 0 do pliku. Base64 nie jest szyfrowaniem.
+
+Przed zmianami kodu przeczytaj AGENTS.md i istniejące workflow. Użyj obu dołączonych plików code/.github/workflows/testflight.yml oraz code/scripts/prepare-testflight-export.py. Nie pomiń helpera. Dostosuj do faktycznej struktury projektu; nie zmieniaj Bundle ID istniejącej aplikacji bez zgody. Ten wariant zakłada jedną aplikację, XcodeGen oraz wspólną nazwę projektu/schematu; rozszerzenia i Watch wymagają adaptacji. Nie twórz certyfikatów przy każdym buildzie. Kod używa manual export signing, bez -allowProvisioningUpdates. WWDR import obsługuje konkretny duplikat, inne błędy zatrzymują job. Nie wpisuj prywatnych danych w workflow i nie dodawaj plików kluczy do git.
+
+Uruchomienie: Actions &gt; Build and upload to TestFlight &gt; Run workflow, wybór gałęzi. Domyślnie ręcznie. Push z [testflight] w wiadomości ostatniego commita uruchamia job automatycznie, także po commicie przez agenta AI. Push bez znacznika pomija job. Nie podawaj niepotwierdzonego limitu 30 uploadów dziennie jako faktu. Nowe uruchomienie zwiększa GITHUB_RUN_NUMBER, Re-run zachowuje go. Nie uruchamiaj pętli CI i nie czekaj na statusy w pętli, jeśli AGENTS tego zabrania.
+
+Po zielonym workflow: App Store Connect &gt; aplikacja &gt; TestFlight &gt; iOS &gt; Build Uploads. Poczekaj na Processing &gt; Complete; około 2-3 minut w naszym przykładzie, nie gwarancja. Uzupełnij compliance tylko zgodnie z prawdziwymi funkcjami aplikacji. Utwórz grupę Internal Testers z Enable automatic distribution. Dodaj własne konto przez Testers + / Invite Testers &gt; Add; upewnij się, że grupa ma build, w razie potrzeby Add Builds. Nie każ wykonywać Beta App Review dla tego scenariusza testów wewnętrznych.
+
+Na telefonie otwórz mail &gt; View in TestFlight &gt; akceptacja &gt; Zainstaluj. Po instalacji Otwórz. Przy kolejnym buildzie i Complete pojawia się Uaktualnij, o ile build jest udostępniony grupie. W szczegółach aplikacji można wyłączyć Powiadomienia e-mail, pozostawiając push i Uaktualnienia automatyczne. Grupa automatycznej dystrybucji i aktualizacje na telefonie to osobne opcje.
+
+Po każdym kroku czekaj na potwierdzenie lub screenshot; oceniaj realny stan, nie zakładaj sukcesu. Przy błędzie czytaj konkretny log, nie zmieniaj roli na Admin bez analizy. Jeżeli masz internet, weryfikuj aktualne wymagania Apple/GitHub. Na końcu podsumuj faktycznie zakończone kroki. Tutorial 3 o kablu jest osobnym tematem. Nie generuj nowego HTML podczas prowadzenia mnie, chyba że poproszę.
+</pre></details></section><section id="zrodla"><h2>Źródła i zakres sprawdzenia</h2><ul><li><a href="https://developer.apple.com/help/account/certificates/create-a-certificate-signing-request/">Apple: CSR</a></li><li><a href="https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile/">Apple: profil App Store</a></li><li><a href="https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api">Apple: klucze API</a></li><li><a href="https://developer.apple.com/help/app-store-connect/manage-builds/upload-builds/">Apple: wysyłanie buildów</a></li><li><a href="https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers/">Apple: testerzy wewnętrzni</a></li><li><a href="https://developer.apple.com/testflight/">Apple: TestFlight</a></li><li><a href="https://docs.openssl.org/3.0/man1/openssl-req/">OpenSSL: req</a> i <a href="https://docs.openssl.org/3.0/man1/openssl-pkcs12/">pkcs12</a></li><li><a href="https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-variables">GitHub: Variables</a> i <a href="https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions">Secrets</a></li></ul><p>Przetwarzanie 2-3 minuty i udany upload z Developer to obserwacje z opisanej konfiguracji. Czas przetwarzania, interfejs i wymagania usług mogą się zmieniać. Anonimizowane ilustracje są poglądowe; nazwy przycisków i kolejność działań opisuje tekst.</p></section><section id="seria"><h2>Wszystkie części tutorialu iOS</h2><ol><li><a href="/ios-new-app-tutorial-1">1. Nowa aplikacja w App Store Connect</a></li><li><a href="/ios-testflight-tutorial-2">2. TestFlight</a></li><li><a href="/ios-macos-cable-tutorial-3">3. Instalacja przez kabel z Maca</a></li></ol></section><footer><div class="series"><a href="/ios-new-app-tutorial-1">← Tutorial 1</a><a href="/ios-macos-cable-tutorial-3">Tutorial 3 →</a></div></footer><p class="note">Zrzuty ekranu zostały zanonimizowane. Przykładowe nazwy i identyfikatory zastępują dane autora; niektóre fragmenty ilustracji odtworzono podczas anonimizacji.</p></main></div></body></html>

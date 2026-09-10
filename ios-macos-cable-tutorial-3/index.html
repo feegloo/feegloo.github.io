@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="pl"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>iPhone przez kabel z Maca - tutorial iOS 3</title><meta content="Zbuduj aplikację iOS w GitHub Actions i zainstaluj na iPhonie przez USB. Certyfikat Development, UDID, profil i skrypt instalujący build dla SHA." name="description"/><link href="https://aleksanderfigiel.pl/ios-macos-cable-tutorial-3" rel="canonical"/><meta content="iPhone przez kabel z Maca - tutorial iOS 3" property="og:title"/><meta content="article" property="og:type"/><meta content="https://aleksanderfigiel.pl/ios-macos-cable-tutorial-3" property="og:url"/><link href="../tutoriale/style.css" rel="stylesheet"/></head><body><a class="skip" href="#tresc">Przejdź do treści</a><header class="top"><a class="brand" href="/ios-new-app-tutorial-1">Aplikacja iOS <span>/ krok po kroku</span></a><a href="#prompt">Prompt dla asystenta AI ↓</a></header><div class="layout"><aside><p class="eyebrow">Tutorial 03</p><nav aria-label="Spis treści"><a href="#przygotowanie">1. Co przygotowujemy</a><a href="#certyfikat">2. Certyfikat: co można wykorzystać ponownie</a><a href="#csr">3. Nie masz CSR? Utwórz go na Macu</a><a href="#wystawienie">4. Wystaw Apple Development</a><a href="#eksport">5. Wyeksportuj certyfikat i klucz do .p12</a><a href="#secrets-certyfikat">6. Dodaj certyfikat do GitHub Secrets</a><a href="#udid">7. Podłącz iPhone’a i skopiuj UDID</a><a href="#urzadzenie">8. Zarejestruj urządzenie w Apple Developer</a><a href="#profil">9. Utwórz profil iOS App Development</a><a href="#secrets-profil">10. Dodaj profil i sprawdź Variables</a><a href="#workflow">11. Dodaj workflow i zbuduj artefakt</a><a href="#narzedzia">12. Przygotuj narzędzia na Macu</a><a href="#polaczenie">13. Zaloguj GitHub CLI i sprawdź telefon</a><a href="#instalacja">14. Pobierz skrypt i zainstaluj build</a><a href="#efekt">15. Sprawdź aplikację na iPhonie</a><a href="#porownanie">16. Kabel czy TestFlight?</a><a href="#problemy">17. Gdy coś nie działa</a><a href="#prompt">Prompt dla asystenta AI</a><a href="#zrodla">Źródła i zakres sprawdzenia</a><a href="#seria">Wszystkie części</a></nav></aside><main id="tresc"><div class="intro"><p class="eyebrow">GitHub Actions + macOS + iPhone</p><h1>Aplikacja na iPhonie.<br/>Instalacja przez kabel z Maca.</h1><p class="lead">Zbuduj w chmurze. Pobierz wybrany build. Wgraj przez USB.</p><p class="meta">17 kroków · certyfikat Development · najnowszy build lub SHA</p></div><section class="step" id="przygotowanie"><div class="step-heading"><span class="number">01</span><h2>Co przygotowujemy</h2></div><div class="step-body"><p>GitHub Actions zbuduje podpisaną aplikację, a Mac pobierze ją i zainstaluje na iPhonie przez USB. Kolejne instalacje wykonasz jedną komendą, wybierając najnowszy dostępny build albo konkretny commit.</p><p>Potrzebujesz Maca, iPhone’a z kablem do przesyłania danych, aktywnego Apple Developer Program oraz repozytorium z projektem iOS. App ID przygotujesz w <a href="/ios-new-app-tutorial-1">części 1</a>. Jeśli masz konfigurację z <a href="/ios-testflight-tutorial-2">części 2: TestFlight</a>, wykorzystamy istniejące App ID i zmienne repozytorium.</p><p>Przykłady używają <code>jankowalski/testowa-apka</code>, projektu <code>TestowaApka</code> i Bundle ID <code>pl.jankowalski.testowaapka</code>. Zastąp je swoimi danymi. Dane na screenach są przykładowe; identyfikatorów urządzeń nie kopiuj.</p><p>Dołączony workflow jest przeznaczony dla projektu generowanego przez XcodeGen z pliku <code>project.yml</code> w katalogu głównym. Zakłada jedną aplikację i zgodne nazwy projektu, schematu oraz produktu. Własny projekt z workspace, rozszerzeniami lub innymi nazwami wymaga dostosowania polecenia build i podpisywania.</p></div></section><section class="step" id="certyfikat"><div class="step-heading"><span class="number">02</span><h2>Certyfikat: co można wykorzystać ponownie</h2></div><div class="step-body"><div class="table-wrap"><table><thead><tr><th>Plik / element</th><th>Do czego służy</th></tr></thead><tbody><tr><td><code>CertificateSigningRequest.certSigningRequest</code></td><td>CSR, czyli wniosek o certyfikat. Nie jest certyfikatem ani kluczem prywatnym.</td></tr><tr><td><code>development.cer</code></td><td>Certyfikat Apple Development wystawiony przez Apple.</td></tr><tr><td><code>DevelopmentCertificate.p12</code></td><td>Eksport certyfikatu razem z kluczem prywatnym, chroniony hasłem.</td></tr><tr><td>Profil Development</td><td>Łączy App ID, certyfikat i zarejestrowane urządzenia.</td></tr></tbody></table></div><p><strong>Masz materiały z tutorialu TestFlight?</strong> Możesz ponownie użyć pliku CSR, jeśli na Macu nadal masz odpowiadający mu klucz prywatny. Przejdź wtedy do <a href="#wystawienie">wystawienia Apple Development</a>. Certyfikat Apple Distribution z TestFlight pełni inną rolę i nie zastępuje Apple Development w tym workflow.</p><p>Jeśli masz już ważny Apple Development z kluczem prywatnym dla tego zespołu, nie twórz kolejnego: przejdź do <a href="#eksport">eksportu .p12</a>. Jeśli nie masz CSR albo odpowiadającego mu klucza, wykonaj następny krok.</p></div></section><section class="step" id="csr"><div class="step-heading"><span class="number">03</span><h2>Nie masz CSR? Utwórz go na Macu</h2></div><div class="step-body"><p>Otwórz aplikację <strong>Dostęp do pęku kluczy</strong>, np. wyszukując ją w Spotlight. Z górnego menu wybierz <strong>Dostęp do pęku kluczy → Asystent certyfikatów → Wniosek o wydanie certyfikatu z urzędu certyfikacji…</strong>.</p><figure><a href="resources/10.14.59.png" rel="noopener" target="_blank"><img alt="Menu tworzenia wniosku CSR." loading="lazy" src="resources/10.14.59.png"/></a><figcaption>Menu tworzenia wniosku CSR. Kliknij, aby powiększyć.</figcaption></figure><p>Wpisz swój adres e-mail i nazwę powszechną, np. imię i nazwisko. Pole <strong>Adres email CA</strong> zostaw puste. Zaznacz <strong>zachowane na dysku</strong>, kliknij <strong>Dalej</strong> i zapisz <code>CertificateSigningRequest.certSigningRequest</code> na Biurku. Klucz prywatny zostanie w pęku kluczy tego Maca.</p><figure><a href="resources/10.15.55.png" rel="noopener" target="_blank"><img alt="Formularz CSR z przykładowymi danymi." loading="lazy" src="resources/10.15.55.png"/></a><figcaption>Formularz CSR z przykładowymi danymi. Kliknij, aby powiększyć.</figcaption></figure><p><a href="https://developer.apple.com/help/account/certificates/create-a-certificate-signing-request/">Instrukcja Apple: tworzenie CSR</a>.</p></div></section><section class="step" id="wystawienie"><div class="step-heading"><span class="number">04</span><h2>Wystaw Apple Development</h2></div><div class="step-body"><p>Otwórz <a href="https://developer.apple.com/account/resources/certificates/list">Certificates</a> w Apple Developer. Kliknij <strong>+</strong>, wybierz <strong>Apple Development</strong> i kliknij <strong>Continue</strong>.</p><figure><a href="resources/10.11.13.png" rel="noopener" target="_blank"><img alt="Wybierz certyfikat Apple Development." loading="lazy" src="resources/10.11.13.png"/></a><figcaption>Wybierz certyfikat Apple Development. Kliknij, aby powiększyć.</figcaption></figure><p>Kliknij <strong>Choose File</strong> i wskaż zapisany lub zachowany wcześniej plik CSR. Kliknij <strong>Continue</strong>, a po wystawieniu certyfikatu <strong>Download</strong>. Pobrany plik to zwykle <code>development.cer</code>.</p><figure><a href="resources/10.19.06.png" rel="noopener" target="_blank"><img alt="CSR wybrany do wystawienia certyfikatu." loading="lazy" src="resources/10.19.06.png"/></a><figcaption>CSR wybrany do wystawienia certyfikatu. Kliknij, aby powiększyć.</figcaption></figure><p>Otwórz <code>development.cer</code> dwuklikiem i dodaj do pęku <strong>Logowanie</strong>. W Dostępie do pęku kluczy wybierz <strong>Moje certyfikaty</strong>, wyszukaj „development” i rozwiń certyfikat. Powinien mieć pod sobą <strong>klucz prywatny</strong>.</p><figure><a href="resources/10.24.10.png" rel="noopener" target="_blank"><img alt="Certyfikat Development z rozwiniętym kluczem prywatnym." loading="lazy" src="resources/10.24.10.png"/></a><figcaption>Certyfikat Development z rozwiniętym kluczem prywatnym. Kliknij, aby powiększyć.</figcaption></figure><p>Nazwa klucza może zawierać „Distribution”, jeśli powstał przy wcześniejszym CSR. Liczy się jego dopasowanie do certyfikatu. Brak klucza oznacza, że sam plik .cer nie wystarczy do podpisywania: użyj Maca z właściwym kluczem lub utwórz nowy CSR i certyfikat.</p><p>Jeśli widzisz komunikat o braku zaufania, nie ustawiaj ręcznie „Zawsze ufaj”. Sprawdź datę systemu oraz łańcuch certyfikatów Apple, zwłaszcza certyfikat pośredni WWDR. <a href="https://developer.apple.com/support/wwdr-intermediate-certificate/">Pomoc Apple dotycząca WWDR</a>.</p><details><summary>Dodatkowe ekrany tego kroku</summary><figure><a href="resources/10.10.51.png" rel="noopener" target="_blank"><img alt="Lista certyfikatów przed utworzeniem Apple Development." loading="lazy" src="resources/10.10.51.png"/></a><figcaption>Lista certyfikatów przed utworzeniem Apple Development.</figcaption></figure><figure><a href="resources/10.11.57.png" rel="noopener" target="_blank"><img alt="Ekran wgrywania CSR." loading="lazy" src="resources/10.11.57.png"/></a><figcaption>Ekran wgrywania CSR.</figcaption></figure><figure><a href="resources/10.22.30.png" rel="noopener" target="_blank"><img alt="Lista po dodaniu Apple Development." loading="lazy" src="resources/10.22.30.png"/></a><figcaption>Lista po dodaniu Apple Development.</figcaption></figure></details></div></section><section class="step" id="eksport"><div class="step-heading"><span class="number">05</span><h2>Wyeksportuj certyfikat i klucz do .p12</h2></div><div class="step-body"><p>W <strong>Moje certyfikaty</strong> kliknij prawym przyciskiem certyfikat Apple Development z dopasowanym kluczem i wybierz <strong>Eksportuj…</strong>.</p><figure><a href="resources/10.25.41.png" rel="noopener" target="_blank"><img alt="Eksport certyfikatu z pęku kluczy." loading="lazy" src="resources/10.25.41.png"/></a><figcaption>Eksport certyfikatu z pęku kluczy. Kliknij, aby powiększyć.</figcaption></figure><p>Zapisz na Biurku jako <code>DevelopmentCertificate.p12</code>. Format: <strong>Wymiana danych osobistych (.p12)</strong>. Jeśli .p12 jest niedostępne, sprawdź obecność klucza prywatnego.</p><figure><a href="resources/10.26.01.png" rel="noopener" target="_blank"><img alt="Zapis pliku DevelopmentCertificate.p12." loading="lazy" src="resources/10.26.01.png"/></a><figcaption>Zapis pliku DevelopmentCertificate.p12. Kliknij, aby powiększyć.</figcaption></figure><p>Ustaw hasło chroniące eksport i zapamiętaj je. Będzie potrzebne w GitHub Actions. Następne okno może poprosić o hasło logowania do Maca, aby zezwolić na eksport klucza. To dwa różne hasła.</p><figure><a href="resources/10.26.12.png" rel="noopener" target="_blank"><img alt="Hasło chroniące eksport .p12." loading="lazy" src="resources/10.26.12.png"/></a><figcaption>Hasło chroniące eksport .p12. Kliknij, aby powiększyć.</figcaption></figure></div></section><section class="step" id="secrets-certyfikat"><div class="step-heading"><span class="number">06</span><h2>Dodaj certyfikat do GitHub Secrets</h2></div><div class="step-body"><p>W Terminalu na Macu wykonaj:</p><pre><code>base64 -i ~/Desktop/DevelopmentCertificate.p12 | pbcopy</code></pre><p>Polecenie koduje plik i kopiuje wynik do schowka. Nic nie musi pojawić się w Terminalu. Jeśli zapisałeś plik w innym miejscu, zmień ścieżkę.</p><p>W repozytorium wejdź w <strong>Settings → Secrets and variables → Actions → Secrets → New repository secret</strong>.</p><figure><a href="resources/10.30.38.png" rel="noopener" target="_blank"><img alt="Ustawienia sekretów repozytorium." loading="lazy" src="resources/10.30.38.png"/></a><figcaption>Ustawienia sekretów repozytorium. Kliknij, aby powiększyć.</figcaption></figure><div class="table-wrap"><table><thead><tr><th>Name</th><th>Secret</th></tr></thead><tbody><tr><td><code>DEVICE_CERTIFICATE_P12_BASE64</code></td><td>Wklej całą zawartość schowka.</td></tr><tr><td><code>DEVICE_CERTIFICATE_PASSWORD</code></td><td>Wpisz hasło ustawione przy eksporcie .p12, bez kodowania Base64.</td></tr></tbody></table></div><figure><a href="resources/10.31.16.png" rel="noopener" target="_blank"><img alt="Nowy sekret z certyfikatem zakodowanym Base64." loading="lazy" src="resources/10.31.16.png"/></a><figcaption>Nowy sekret z certyfikatem zakodowanym Base64. Kliknij, aby powiększyć.</figcaption></figure><figure><a href="resources/10.32.14.png" rel="noopener" target="_blank"><img alt="Osobny sekret z hasłem pliku .p12." loading="lazy" src="resources/10.32.14.png"/></a><figcaption>Osobny sekret z hasłem pliku .p12. Kliknij, aby powiększyć.</figcaption></figure><p>Dla każdego wpisu kliknij <strong>Add secret</strong>. Base64 nie szyfruje danych. Zawartości .p12 i sekretów nie dodawaj do kodu, promptu ani screenshotów.</p></div></section><section class="step" id="udid"><div class="step-heading"><span class="number">07</span><h2>Podłącz iPhone’a i skopiuj UDID</h2></div><div class="step-body"><p>Podłącz iPhone’a kablem do Maca, odblokuj go i zaakceptuj <strong>Zaufaj temu komputerowi</strong>, jeśli pojawi się taki komunikat. W Finderze wybierz iPhone’a w sekcji <strong>Miejsca</strong>.</p><figure><a href="resources/10.41.20.png" rel="noopener" target="_blank"><img alt="iPhone w Finderze po podłączeniu przez USB." loading="lazy" src="resources/10.41.20.png"/></a><figcaption>iPhone w Finderze po podłączeniu przez USB. Kliknij, aby powiększyć.</figcaption></figure><p><strong>Kliknij wiersz informacji bezpośrednio pod nagłówkiem z nazwą urządzenia „iPhone Air”</strong> - ten, który początkowo pokazuje model, pojemność i baterię. Klikaj do momentu wyświetlenia <strong>UDID</strong>. To linia pod nazwą, a nie sama nazwa iPhone’a.</p><figure><a href="resources/10.41.34.png" rel="noopener" target="_blank"><img alt="Ten sam wiersz po przełączeniu na UDID i EID." loading="lazy" src="resources/10.41.34.png"/></a><figcaption>Ten sam wiersz po przełączeniu na UDID i EID. Kliknij, aby powiększyć.</figcaption></figure><p>Skopiuj wartość UDID, np. przez menu pod prawym przyciskiem na tym wierszu. Nie kopiuj EID. Używamy nazwy <strong>UDID</strong>, nie UUID. Wartości na ilustracji zostały zastąpione fikcyjnymi.</p></div></section><section class="step" id="urzadzenie"><div class="step-heading"><span class="number">08</span><h2>Zarejestruj urządzenie w Apple Developer</h2></div><div class="step-body"><p>Otwórz <a href="https://developer.apple.com/account/resources/devices/list">Devices</a>. Jeśli Twój iPhone o tym UDID już jest zarejestrowany i aktywny, przejdź do profilu. Nie usuwaj ani nie wyłączaj go tylko po to, żeby odtworzyć tutorial.</p><p>Dla nowego urządzenia kliknij <strong>+</strong>. W sekcji <strong>Register a Device</strong> wybierz platformę obejmującą iOS, wpisz rozpoznawalną <strong>Device Name</strong> i wklej swój <strong>Device ID (UDID)</strong>. Kliknij <strong>Continue</strong>.</p><figure><a href="resources/10.43.26.png" rel="noopener" target="_blank"><img alt="Formularz rejestracji nowego urządzenia." loading="lazy" src="resources/10.43.26.png"/></a><figcaption>Formularz rejestracji nowego urządzenia. Kliknij, aby powiększyć.</figcaption></figure><p>Porównaj podsumowanie z UDID w Finderze, znak po znaku. Dopiero wtedy kliknij <strong>Register</strong>. Nazwa urządzenia nie decyduje o jego dopasowaniu - robi to UDID.</p><figure><a href="resources/10.44.32.png" rel="noopener" target="_blank"><img alt="Potwierdzenie danych przed Register." loading="lazy" src="resources/10.44.32.png"/></a><figcaption>Potwierdzenie danych przed Register. Kliknij, aby powiększyć.</figcaption></figure><p>Apple pozwala wyłączać urządzenia w trakcie roku członkostwa, ale nie odzyskuje to miejsca w limicie. Wyłączenie urządzenia unieważnia zawierające je profile. <a href="https://developer.apple.com/help/account/devices/disable-or-enable-a-device/">Zasady Apple</a>.</p><details><summary>Dodatkowe ekrany tego kroku</summary><figure><a href="resources/10.40.17.png" rel="noopener" target="_blank"><img alt="Lista Devices przed rejestracją." loading="lazy" src="resources/10.40.17.png"/></a><figcaption>Lista Devices przed rejestracją.</figcaption></figure></details></div></section><section class="step" id="profil"><div class="step-heading"><span class="number">09</span><h2>Utwórz profil iOS App Development</h2></div><div class="step-body"><p>Otwórz <a href="https://developer.apple.com/account/resources/profiles/list">Profiles</a> i kliknij <strong>+</strong>. Istniejący profil App Store zostaw dla TestFlight. Teraz wybierz <strong>iOS App Development</strong> i <strong>Continue</strong>.</p><figure><a href="resources/10.45.32.png" rel="noopener" target="_blank"><img alt="Typ profilu: iOS App Development." loading="lazy" src="resources/10.45.32.png"/></a><figcaption>Typ profilu: iOS App Development. Kliknij, aby powiększyć.</figcaption></figure><p>Wybierz <strong>App ID dokładnie zgodne z Bundle ID projektu</strong>. Nie twórz nowego identyfikatora dla tej samej aplikacji. Pozostaw <strong>Offline support: No</strong>; wariant offline ma tylko 7 dni ważności. Kliknij <strong>Continue</strong>.</p><figure><a href="resources/10.46.19.png" rel="noopener" target="_blank"><img alt="Wybór App ID i ustawienia offline." loading="lazy" src="resources/10.46.19.png"/></a><figcaption>Wybór App ID i ustawienia offline. Kliknij, aby powiększyć.</figcaption></figure><p>Zaznacz certyfikat <strong>Apple Development</strong>, który wyeksportowano do .p12 i dodano do sekretu. Kliknij <strong>Continue</strong>.</p><figure><a href="resources/10.47.47.png" rel="noopener" target="_blank"><img alt="Certyfikat używany do podpisywania buildu." loading="lazy" src="resources/10.47.47.png"/></a><figcaption>Certyfikat używany do podpisywania buildu. Kliknij, aby powiększyć.</figcaption></figure><p>Zaznacz swój zarejestrowany iPhone. Możesz dodać więcej urządzeń, jeśli chcesz na nich instalować tę aplikację. Kliknij <strong>Continue</strong>.</p><figure><a href="resources/10.48.20.png" rel="noopener" target="_blank"><img alt="Wybór urządzeń dopuszczonych przez profil." loading="lazy" src="resources/10.48.20.png"/></a><figcaption>Wybór urządzeń dopuszczonych przez profil. Kliknij, aby powiększyć.</figcaption></figure><p>Nadaj nazwę, np. <code>TestowaApka-Development</code>. Sprawdź typ Development, App ID, certyfikat i urządzenia. Kliknij <strong>Generate</strong>.</p><figure><a href="resources/10.49.04.png" rel="noopener" target="_blank"><img alt="Podsumowanie profilu i jego nazwa." loading="lazy" src="resources/10.49.04.png"/></a><figcaption>Podsumowanie profilu i jego nazwa. Kliknij, aby powiększyć.</figcaption></figure><p>Kliknij <strong>Download</strong>. Przenieś plik na Biurko. W przykładzie nazywa się <code>TestowaApkaDevelopment.mobileprovision</code>; Apple może usunąć myślnik z nazwy pobieranego pliku. Używaj rzeczywistej nazwy pobranego pliku.</p><figure><a href="resources/10.49.53.png" rel="noopener" target="_blank"><img alt="Pobieranie gotowego profilu Development." loading="lazy" src="resources/10.49.53.png"/></a><figcaption>Pobieranie gotowego profilu Development. Kliknij, aby powiększyć.</figcaption></figure><p><a href="https://developer.apple.com/help/account/provisioning-profiles/create-a-development-provisioning-profile/">Instrukcja Apple: profil Development</a>.</p><details><summary>Dodatkowe ekrany tego kroku</summary><figure><a href="resources/10.45.09.png" rel="noopener" target="_blank"><img alt="Profil App Store pozostaje na liście dla TestFlight." loading="lazy" src="resources/10.45.09.png"/></a><figcaption>Profil App Store pozostaje na liście dla TestFlight.</figcaption></figure></details></div></section><section class="step" id="secrets-profil"><div class="step-heading"><span class="number">10</span><h2>Dodaj profil i sprawdź Variables</h2></div><div class="step-body"><pre><code>base64 -i ~/Desktop/TestowaApkaDevelopment.mobileprovision | pbcopy</code></pre><p>W GitHub dodaj <strong>Repository secret</strong> o nazwie <code>DEVICE_PROVISIONING_PROFILE_BASE64</code>. Jako wartość wklej cały schowek i kliknij <strong>Add secret</strong>.</p><figure><a href="resources/10.51.09.png" rel="noopener" target="_blank"><img alt="Sekret zawierający profil Development." loading="lazy" src="resources/10.51.09.png"/></a><figcaption>Sekret zawierający profil Development. Kliknij, aby powiększyć.</figcaption></figure><p><strong>To inny profil niż <code>APP_STORE_PROVISIONING_PROFILE_BASE64</code>.</strong> Profil App Store służy do TestFlight, a Development do instalacji na wskazanych urządzeniach. Zmiana samej nazwy sekretu nie zmienia typu profilu.</p><p>W zakładce <strong>Variables</strong> sprawdź dwie zmienne. Jeśli po tutorialu TestFlight już mają właściwe wartości, nie twórz duplikatów.</p><div class="table-wrap"><table><thead><tr><th>Repository variable</th><th>Wartość</th></tr></thead><tbody><tr><td><code>APPLE_TEAM_ID</code></td><td>Twój 10-znakowy Team ID z konta Apple Developer.</td></tr><tr><td><code>XCODE_PROJECT</code></td><td>Nazwa projektu i schematu, bez .xcodeproj, np. <code>TestowaApka</code>. W tym szablonie także nazwa produktu .app.</td></tr></tbody></table></div><figure><a href="resources/10.53.22.png" rel="noopener" target="_blank"><img alt="Variables z przykładowymi wartościami." loading="lazy" src="resources/10.53.22.png"/></a><figcaption>Variables z przykładowymi wartościami. Kliknij, aby powiększyć.</figcaption></figure><p>Zmienne <code>ASC_ISSUER_ID</code> i <code>ASC_KEY_ID</code> należą do wysyłania przez TestFlight. Ten workflow ich nie używa.</p></div></section><section class="step" id="workflow"><div class="step-heading"><span class="number">11</span><h2>Dodaj workflow i zbuduj artefakt</h2></div><div class="step-body"><p>W swoim repozytorium dodaj plik pod dokładną ścieżką <code>.github/workflows/device-build.yml</code>. <a download="device-build.yml" href="code/device-build.yml">Pobierz workflow</a>. Dodaj też <a download="" href="code/scripts/install-latest-device-build.sh">skrypt instalacyjny</a> jako <code>scripts/install-latest-device-build.sh</code>. Oba pliki są też w katalogu <code>code</code> tego tutorialu.</p><p>Przed commitem sprawdź, czy <code>project.yml</code> generuje projekt i schemat zgodne z <code>XCODE_PROJECT</code>, a Bundle ID pasuje do profilu. Szablon zakłada pojedynczy produkt .app o tej samej nazwie. Jeśli projekt nie używa XcodeGen, dostosuj etap generowania zamiast dodawać fikcyjny plik konfiguracji.</p><p>Zapisz commit i wyślij go do repozytorium. Workflow uruchamia się po pushu do <code>main</code> i gałęzi pasujących do <code>[0-9]*/**</code>. Jeśli domyślna gałąź ma inną nazwę, zmień filtr. Możesz też uruchomić go ręcznie: <strong>Actions → Build signed iPhone artifact → Run workflow</strong>, wybierz gałąź i zatwierdź. Ręczne uruchomienie wymaga obecności workflow na gałęzi domyślnej.</p><p>Otwórz uruchomienie i poczekaj na zakończenie. W <strong>Artifacts</strong> pojawi się <code>device-app</code> zawierający <code>device-app.zip</code> z podpisaną aplikacją. Build wykonuje runner macOS w GitHub Actions. Nie wysyła on aplikacji do App Store Connect.</p><p>Artefakt jest przypisany do konkretnego <strong>uruchomienia workflow</strong>, a to uruchomienie wskazuje commit przez <code>head_sha</code>. Skrypt pobiera właśnie ten artefakt. SHA nie jest numerem uruchomienia ani nazwą pliku workflow. Retencja ustawiona w szablonie to 90 dni, w granicach polityki repozytorium.</p><details><summary>Pokaż pełny workflow</summary><pre><code>name: Build signed iPhone artifact
+
+on:
+  push:
+    branches:
+      - main
+      - '[0-9]*/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  XCODE_PROJECT: ${{ vars.XCODE_PROJECT }}
+  APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+
+jobs:
+  device-build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate repository variables
+        run: |
+          [[ "$XCODE_PROJECT" =~ ^[A-Za-z0-9_-]+$ ]] || { echo "Set XCODE_PROJECT to the project and scheme name (without .xcodeproj)"; exit 1; }
+          [[ "$APPLE_TEAM_ID" =~ ^[A-Z0-9]{10}$ ]] || { echo "Set APPLE_TEAM_ID"; exit 1; }
+
+      - name: Install XcodeGen
+        run: |
+          brew untap aws/tap &gt;/dev/null 2&gt;&amp;1 || true
+          brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Prepare signing assets
+        env:
+          DEVICE_CERTIFICATE_P12_BASE64: ${{ secrets.DEVICE_CERTIFICATE_P12_BASE64 }}
+          DEVICE_CERTIFICATE_PASSWORD: ${{ secrets.DEVICE_CERTIFICATE_PASSWORD }}
+          DEVICE_PROVISIONING_PROFILE_BASE64: ${{ secrets.DEVICE_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          umask 077
+          CERTIFICATE_PATH="$RUNNER_TEMP/device-signing.p12"
+          PROFILE_PATH="$RUNNER_TEMP/${XCODE_PROJECT}.mobileprovision"
+          PROFILE_PLIST_PATH="$RUNNER_TEMP/${XCODE_PROJECT}-profile.plist"
+
+          # Decode the binary signing files stored as base64 GitHub secrets.
+          printf '%s' "$DEVICE_CERTIFICATE_P12_BASE64" | base64 --decode &gt; "$CERTIFICATE_PATH"
+          printf '%s' "$DEVICE_PROVISIONING_PROFILE_BASE64" | base64 --decode &gt; "$PROFILE_PATH"
+
+          # Fail early with a useful message if a secret was empty or decoded incorrectly.
+          test -s "$CERTIFICATE_PATH" || { echo "Decoded .p12 certificate is empty"; exit 1; }
+          test -s "$PROFILE_PATH" || { echo "Decoded provisioning profile is empty"; exit 1; }
+
+          # A .mobileprovision file is a CMS container. OpenSSL reliably extracts the embedded plist
+          # on GitHub-hosted macOS runners, where `security cms` can fail depending on runner version.
+          openssl smime \
+            -inform der \
+            -verify \
+            -noverify \
+            -in "$PROFILE_PATH" \
+            -out "$PROFILE_PLIST_PATH"
+
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$PROFILE_PLIST_PATH")
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PROFILE_PLIST_PATH")
+
+          # Install the provisioning profile where Xcode can resolve it during manual signing.
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILES_DIR"
+          cp "$PROFILE_PATH" "$PROFILES_DIR/$PROFILE_UUID.mobileprovision"
+
+          echo "DEVICE_PROFILE_NAME=$PROFILE_NAME" &gt;&gt; "$GITHUB_ENV"
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/device-build.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+
+          # Import the reusable Apple Development certificate into a temporary CI keychain.
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" \
+            -P "$DEVICE_CERTIFICATE_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+      - name: Build signed app for registered iPhone
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild \
+            -project "$XCODE_PROJECT.xcodeproj" \
+            -scheme "$XCODE_PROJECT" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Development" \
+            PROVISIONING_PROFILE_SPECIFIER="$DEVICE_PROFILE_NAME" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            clean archive
+
+      - name: Package signed app
+        run: |
+          APP_PATH="$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive/Products/Applications/${XCODE_PROJECT}.app"
+          ZIP_PATH="$RUNNER_TEMP/device-app.zip"
+
+          test -d "$APP_PATH"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
+
+          echo "DEVICE_ZIP_PATH=$ZIP_PATH" &gt;&gt; "$GITHUB_ENV"
+
+      - name: Upload signed app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: device-app
+          path: ${{ env.DEVICE_ZIP_PATH }}
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+      - name: Clean signing assets
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/device-build.keychain-db" 2&gt;/dev/null || true
+          rm -f "$RUNNER_TEMP/device-signing.p12" "$RUNNER_TEMP/${XCODE_PROJECT}.mobileprovision" "$RUNNER_TEMP/${XCODE_PROJECT}-profile.plist"
+</code></pre></details></div></section><section class="step" id="narzedzia"><div class="step-heading"><span class="number">12</span><h2>Przygotuj narzędzia na Macu</h2></div><div class="step-body"><p>Otwórz Terminal i sprawdź, co już masz:</p><pre><code>command -v gh
+xcrun --find devicectl
+command -v ios-deploy</code></pre><p>Brak ścieżki lub błąd oznacza, że dane narzędzie nie jest dostępne. Potrzebujesz <strong>gh oraz jednego instalatora: devicectl albo ios-deploy</strong>.</p><div class="table-wrap"><table><thead><tr><th>Co masz</th><th>Co robisz</th></tr></thead><tbody><tr><td>gh + devicectl</td><td>Przejdź dalej. Homebrew i ios-deploy nie są potrzebne.</td></tr><tr><td>gh + ios-deploy, bez devicectl</td><td>Przejdź dalej. Skrypt użyje ios-deploy.</td></tr><tr><td>devicectl, ale brak gh</td><td>Zainstaluj tylko GitHub CLI.</td></tr><tr><td>Brak obu instalatorów</td><td>Zainstaluj ios-deploy przez Homebrew; doinstaluj gh, jeśli go brakuje.</td></tr></tbody></table></div><p><code>devicectl</code> jest dostarczane z nowszym Xcode. Same Command Line Tools go nie zawierają. Jeśli masz Xcode, ale aktywny katalog to <code>/Library/Developer/CommandLineTools</code>, sprawdź <code>xcode-select -p</code>. Dla Xcode w standardowej lokalizacji możesz wybrać go poleceniem:</p><pre><code>sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+xcrun --find devicectl</code></pre><p>Wykonuj zmianę tylko, jeśli Xcode faktycznie jest tam zainstalowany. Jeśli nie masz Xcode, skorzystaj z gałęzi ios-deploy. Zgodność ios-deploy zależy od wersji iOS i narzędzia; wykrycie urządzenia samo w sobie nie gwarantuje udanej instalacji. W przebiegu tej instrukcji instalacja przez ios-deploy została sprawdzona na fizycznym iPhonie.</p><h3>Nie masz Homebrew?</h3><p>Jeśli potrzebujesz go do instalacji brakujących narzędzi, użyj polecenia z <a href="https://brew.sh/">oficjalnej strony Homebrew</a>:</p><pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre><p>Przeczytaj komunikaty instalatora i wykonaj jego <strong>Next steps</strong>, w szczególności polecenia dodające Homebrew do PATH. Następnie otwórz nowy Terminal i sprawdź <code>brew --version</code>. Zainstaluj tylko brakujące pakiety:</p><pre><code>brew install gh
+brew install ios-deploy</code></pre><p>Druga komenda jest potrzebna tylko bez devicectl i bez istniejącego ios-deploy. Samo <code>gh</code> możesz też pobrać bez Homebrew z <a href="https://github.com/cli/cli#installation">oficjalnych wydań GitHub CLI</a>.</p></div></section><section class="step" id="polaczenie"><div class="step-heading"><span class="number">13</span><h2>Zaloguj GitHub CLI i sprawdź telefon</h2></div><div class="step-body"><pre><code>gh auth status</code></pre><p>Jeśli konto jest zalogowane i ma dostęp do repozytorium, nic nie zmieniaj. W przeciwnym razie uruchom:</p><pre><code>gh auth login</code></pre><p>Wybierz GitHub.com, HTTPS i logowanie przez przeglądarkę. Zaloguj konto z dostępem do repozytorium i jego artefaktów. Potwierdź wynik ponownie przez <code>gh auth status</code>. Nie wklejaj tokenu do rozmowy.</p><p>Podłącz i odblokuj iPhone’a. Dla ios-deploy sprawdź:</p><pre><code>ios-deploy --detect</code></pre><p>Dla devicectl użyj:</p><pre><code>xcrun devicectl list devices</code></pre><p>Na iPhonie włącz <strong>Ustawienia → Prywatność i ochrona → Tryb dewelopera</strong>. Jeśli system poprosi, uruchom telefon ponownie i potwierdź włączenie. Gdy opcja nie jest widoczna, sprawdź parowanie urządzenia z narzędziami deweloperskimi. <a href="https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device">Tryb dewelopera w dokumentacji Apple</a>.</p></div></section><section class="step" id="instalacja"><div class="step-heading"><span class="number">14</span><h2>Pobierz skrypt i zainstaluj build</h2></div><div class="step-body"><p>Pobierz <a download="" href="code/scripts/install-latest-device-build.sh">install-latest-device-build.sh</a> i przenieś na Biurko. Możesz też pobrać jego wersję ze swojego repozytorium, po dodaniu pliku w kroku 11:</p><pre><code>gh api repos/jankowalski/testowa-apka/contents/scripts/install-latest-device-build.sh \
+  -H "Accept: application/vnd.github.raw+json" \
+  &gt; ~/Desktop/install-latest-device-build.sh</code></pre><p>Zastąp <code>jankowalski/testowa-apka</code> swoim repozytorium. Po udanym pobraniu nadaj uprawnienie do uruchamiania:</p><pre><code>chmod +x ~/Desktop/install-latest-device-build.sh</code></pre><p><strong>Jeśli masz devicectl</strong>, ustaw urządzenie dla bieżącej sesji Terminala. Wpisz jego nazwę lub identyfikator z <code>devicectl list devices</code>:</p><pre><code>export DEVICE_ID="iPhone Air"</code></pre><p>Przy ios-deploy i jednym podłączonym telefonie możesz pominąć tę zmienną. Jeśli telefonów jest kilka, ustaw <code>DEVICE_ID</code> na UDID docelowego urządzenia. Skrypt preferuje devicectl, gdy jest dostępne.</p><h3>Wariant A: najnowszy dostępny build</h3><pre><code>~/Desktop/install-latest-device-build.sh jankowalski/testowa-apka</code></pre><p>Skrypt szuka najnowszego uruchomienia z niewygasłym artefaktem na <strong>domyślnej gałęzi repozytorium</strong>. To nie musi być ostatni commit: jeśli nie ma jeszcze artefaktu, może wybrać wcześniejszy build. Wypisze SHA i numer wybranego uruchomienia przed instalacją.</p><h3>Wariant B: wskazany commit SHA</h3><p>Skopiuj skrócony lub pełny SHA commita z GitHub, np. ze strony udanego uruchomienia workflow. Zastąp poniższy przykładowy hash swoim:</p><pre><code>~/Desktop/install-latest-device-build.sh jankowalski/testowa-apka abc1234</code></pre><p>Skrypt rozwiąże SHA do pełnego identyfikatora i wybierze artefakt uruchomienia dla tego commita. Jeśli go nie ma lub wygasł, zakończy się komunikatem. Nie podmieni go na build innego commita.</p><h3>Opcjonalnie: inna gałąź</h3><pre><code>DEVICE_BRANCH="12/moja-zmiana" ~/Desktop/install-latest-device-build.sh jankowalski/testowa-apka</code></pre><p><code>DEVICE_BRANCH</code> działa tylko bez argumentu SHA. Skrypt działa również z Biurka; nie wymaga lokalnego klona repozytorium. Pobiera i rozpakowuje gotową .app, instaluje ją, a następnie usuwa pliki tymczasowe. Oba warianty - domyślny i z SHA - zostały przetestowane w przebiegu tego tutorialu.</p><details><summary>Pokaż pełny skrypt instalacyjny</summary><pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage: install-latest-device-build.sh OWNER/REPO [COMMIT_SHA]
+# Optional: DEVICE_ID for devicectl or a specific USB device;
+# DEVICE_BRANCH to choose a branch when COMMIT_SHA is omitted.
+if [[ "${1:-}" == "--help" ]]; then
+  echo "Usage: $0 OWNER/REPO [COMMIT_SHA]"
+  echo "Without SHA: latest available build on the repository default branch."
+  echo "Optional environment: DEVICE_ID, DEVICE_BRANCH."
+  exit 0
+fi
+if [[ $# -lt 1 || $# -gt 2 || ! "$1" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+  echo "Usage: $0 OWNER/REPO [COMMIT_SHA]" &gt;&amp;2
+  exit 2
+fi
+REPO="$1"
+REQUESTED_COMMIT="${2:-}"
+DEVICE="${DEVICE_ID:-}"
+if [[ -n "$REQUESTED_COMMIT" &amp;&amp; ! "$REQUESTED_COMMIT" =~ ^[0-9a-fA-F]{4,40}$ ]]; then
+  echo "COMMIT_SHA must be a short or full hexadecimal commit hash." &gt;&amp;2
+  exit 2
+fi
+
+if ! command -v gh &gt;/dev/null 2&gt;&amp;1; then
+  echo "GitHub CLI (gh) is required. Install it with: brew install gh"
+  exit 1
+fi
+
+if ! gh auth status &gt;/dev/null 2&gt;&amp;1; then
+  echo "GitHub CLI is not authenticated. Run: gh auth login"
+  exit 1
+fi
+
+# Prefer Apple's devicectl when the active Xcode provides it. Older Xcode versions
+# do not include devicectl, so fall back to ios-deploy for USB installation.
+HAS_DEVICECTL=false
+if command -v xcrun &gt;/dev/null 2&gt;&amp;1 &amp;&amp; xcrun --find devicectl &gt;/dev/null 2&gt;&amp;1; then
+  HAS_DEVICECTL=true
+fi
+
+if [[ "$HAS_DEVICECTL" == false ]] &amp;&amp; ! command -v ios-deploy &gt;/dev/null 2&gt;&amp;1; then
+  echo "This Mac does not provide devicectl and ios-deploy is not installed."
+  echo "Install the lightweight USB installer once with:"
+  echo "  brew install ios-deploy"
+  exit 1
+fi
+
+if [[ "$HAS_DEVICECTL" == true &amp;&amp; -z "$DEVICE" ]]; then
+  echo "devicectl is available, but no target device was specified."
+  echo "Set DEVICE_ID to your iPhone name or identifier."
+  echo
+  xcrun devicectl list devices
+  exit 2
+fi
+
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+find_run_with_device_artifact() {
+  local runs_endpoint="$1"
+  local run_id
+  local artifact_id
+  local run_ids
+  run_ids="$(gh api --method GET --paginate "$runs_endpoint" "${RUN_FILTER[@]}" --jq '.workflow_runs[].id')" || return 2
+
+  while IFS= read -r run_id; do
+    [[ -n "$run_id" ]] || continue
+
+    artifact_id="$(
+      gh api \
+        "repos/${REPO}/actions/runs/${run_id}/artifacts?per_page=100" \
+        --jq '[.artifacts[] | select((.name == "device-app" or (.name | endswith("-device"))) and .expired == false)] | first | .id // empty'
+    )" || return 2
+
+    if [[ -n "$artifact_id" ]]; then
+      printf '%s\n' "$run_id"
+      return 0
+    fi
+  done &lt;&lt;&lt; "$run_ids"
+
+  return 1
+}
+
+RUN_FILTER=()
+if [[ -n "$REQUESTED_COMMIT" ]]; then
+  # Resolve short or full commit hashes to the canonical SHA first.
+  if ! COMMIT_SHA="$(gh api "repos/${REPO}/commits/${REQUESTED_COMMIT}" --jq '.sha')"; then
+    echo "Could not resolve commit: $REQUESTED_COMMIT"
+    exit 1
+  fi
+
+  RUN_FILTER=(-f "head_sha=$COMMIT_SHA")
+  if ! RUN_ID="$(find_run_with_device_artifact \
+    "repos/${REPO}/actions/workflows/device-build.yml/runs?per_page=100")"; then
+    echo "No non-expired device build artifact was found for commit $COMMIT_SHA."
+    exit 1
+  fi
+else
+  TARGET_BRANCH="${DEVICE_BRANCH:-}"
+  if [[ -z "$TARGET_BRANCH" ]]; then
+    TARGET_BRANCH="$(gh api "repos/$REPO" --jq '.default_branch')"
+  fi
+
+  RUN_FILTER=(-f "branch=$TARGET_BRANCH")
+  if ! RUN_ID="$(find_run_with_device_artifact \
+    "repos/${REPO}/actions/workflows/device-build.yml/runs?per_page=100")"; then
+    echo "No non-expired device build artifact was found on branch $TARGET_BRANCH."
+    exit 1
+  fi
+
+  COMMIT_SHA="$(gh api "repos/${REPO}/actions/runs/${RUN_ID}" --jq '.head_sha')"
+fi
+
+RUN_CONCLUSION="$(gh api "repos/${REPO}/actions/runs/${RUN_ID}" --jq '.conclusion // "in_progress"')"
+if [[ "$RUN_CONCLUSION" != "success" ]]; then
+  echo "Workflow conclusion is '$RUN_CONCLUSION'; installing the device artifact anyway."
+fi
+
+SHORT_SHA="${COMMIT_SHA:0:9}"
+echo "Downloading build for $SHORT_SHA from Actions run $RUN_ID..."
+
+# Support both the generic artifact and older project-device artifacts.
+ARTIFACT_NAME="$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/artifacts?per_page=100" \
+  --jq '[.artifacts[] | select((.name == "device-app" or (.name | endswith("-device"))) and .expired == false)] | first | .name')"
+
+# GH_REPO avoids relying on the --repo flag, which is missing from some older gh subcommands.
+if ! GH_REPO="$REPO" gh run download "$RUN_ID" \
+  --name "$ARTIFACT_NAME" \
+  --dir "$TMP_DIR"; then
+  echo "Could not download the artifact for $SHORT_SHA. It may have expired after the 90-day retention period."
+  exit 1
+fi
+
+ZIP_PATH="$TMP_DIR/${ARTIFACT_NAME}.zip"
+if [[ ! -f "$ZIP_PATH" ]]; then
+  echo "$ARTIFACT_NAME.zip was not found in the downloaded Actions artifact."
+  exit 1
+fi
+
+ditto -x -k "$ZIP_PATH" "$TMP_DIR/app"
+APP_PATH="$(find "$TMP_DIR/app" -maxdepth 2 -type d -name '*.app' -print -quit)"
+
+if [[ -z "$APP_PATH" ]]; then
+  echo "An .app bundle was not found in the downloaded artifact."
+  exit 1
+fi
+
+if [[ "$HAS_DEVICECTL" == true ]]; then
+  echo "Installing $SHORT_SHA on $DEVICE with devicectl..."
+  xcrun devicectl device install app --device "$DEVICE" "$APP_PATH"
+else
+  # ios-deploy automatically uses the connected iPhone when only one device is attached.
+  echo "Installing $SHORT_SHA on the connected iPhone with ios-deploy..."
+  if [[ -n "$DEVICE" ]]; then
+    ios-deploy --id "$DEVICE" --bundle "$APP_PATH"
+  else
+    ios-deploy --bundle "$APP_PATH"
+  fi
+fi
+
+echo "Done."
+</code></pre></details></div></section><section class="step" id="efekt"><div class="step-heading"><span class="number">15</span><h2>Sprawdź aplikację na iPhonie</h2></div><div class="step-body"><p>Podczas instalacji na ikonie aplikacji może być widoczna animacja postępu. W naszym przebiegu była widoczna i pomagała potwierdzić, że trwa wgrywanie. Poczekaj na zakończenie komendy i komunikat <code>Done.</code>, a następnie otwórz aplikację i sprawdź oczekiwaną zmianę.</p><p>Przy tym samym Bundle ID i zgodnym podpisywaniu wersja wgrana przez kabel zastępuje wcześniejszą wersję z TestFlight. Analogicznie instalacja przez TestFlight zastępuje wersję z kabla. Nie powstają dwie osobne ikony.</p><p>Jeśli chcesz sprawdzić czystą instalację, możesz najpierw usunąć aplikację z iPhone’a i uruchomić skrypt ponownie. <strong>Usunięcie aplikacji usuwa też jej lokalne dane.</strong> Nie jest to wymagane przy każdej aktualizacji.</p></div></section><section class="step" id="porownanie"><div class="step-heading"><span class="number">16</span><h2>Kabel czy TestFlight?</h2></div><div class="step-body"><div class="table-wrap"><table><thead><tr><th></th><th>Kabel</th><th>TestFlight</th></tr></thead><tbody><tr><td>Oczekiwanie po buildzie</td><td>Pobranie artefaktu i instalacja. Bez uploadu do App Store Connect i Processing.</td><td>Upload, Processing i udostępnienie buildu testerom.</td></tr><tr><td>Sprzęt przy instalacji</td><td>Mac oraz iPhone po USB.</td><td>iPhone z aplikacją TestFlight i internetem, bez kabla.</td></tr><tr><td>Zmiana kodu bez komputera</td><td>Kod możesz zmienić w GitHub, ale do tej instalacji wracasz do Maca.</td><td>Przy skonfigurowanym workflow możesz poprawić kod w GitHub na telefonie, uruchomić build i zainstalować go bez Maca.</td></tr><tr><td>Ograniczenia</td><td>Pomija ograniczenia uploadu do App Store Connect. Nadal obowiązują zasady podpisywania, urządzeń i limity GitHub Actions.</td><td>Obowiązują zasady TestFlight i App Store Connect oraz limity GitHub Actions.</td></tr></tbody></table></div><p>Kabel skraca drogę od gotowego buildu do telefonu. TestFlight przydaje się do testów bez dostępu do komputera i udostępniania kolejnych wersji testerom.</p></div></section><section class="step" id="problemy"><div class="step-heading"><span class="number">17</span><h2>Gdy coś nie działa</h2></div><div class="step-body"><div class="table-wrap"><table><thead><tr><th>Objaw</th><th>Co sprawdzić</th></tr></thead><tbody><tr><td>Brak artefaktu</td><td>Właściwe repozytorium, gałąź lub SHA; czy workflow zdążył utworzyć device-app; retencję artefaktu.</td></tr><tr><td>Build nie przechodzi</td><td>Log konkretnego kroku, trzy sekrety DEVICE_*, hasło .p12, zgodność Team ID, Bundle ID i certyfikatu z profilem.</td></tr><tr><td>Telefon odrzuca aplikację</td><td>Czy jego rzeczywisty UDID jest w profilu, czy włączono Tryb dewelopera i czy urządzenie jest odblokowane.</td></tr><tr><td>Dodano kolejny iPhone</td><td>Zarejestruj go, wygeneruj profil obejmujący urządzenie, zaktualizuj sekret profilu i wykonaj nowy build. Stary artefakt ma stary profil.</td></tr><tr><td>devicectl wymaga urządzenia</td><td>Ustaw DEVICE_ID na nazwę lub identyfikator z listy urządzeń.</td></tr><tr><td>ios-deploy wykrywa, ale nie instaluje</td><td>Sprawdź błąd i zgodność narzędzia z iOS; w razie braku wsparcia użyj devicectl z odpowiedniego Xcode.</td></tr><tr><td>Brak zaufania / weryfikacji</td><td>Sprawdź połączenie internetowe telefonu przy pierwszej instalacji, datę systemu i certyfikaty Apple. Nie obchodź walidacji przez Always Trust.</td></tr></tbody></table></div><p>Skrypt wybiera uruchomienie z artefaktem, nawet jeśli cały workflow ma inny status niż success, i wypisuje wtedy ostrzeżenie. Przed instalacją sprawdź przyczynę takiego statusu w Actions.</p></div></section><section class="prompt-section" id="prompt"><h2>Prompt dla asystenta AI</h2><div class="step-body"><p>Wklej prompt do nowej rozmowy. Asystent poprowadzi Cię po jednym kroku i dopasuje przykłady do Twojej aplikacji.</p><div class="actions"><button data-copy-status="copy-status" data-copy-target="prompt-text" id="copy-prompt" type="button">Kopiuj prompt</button><a download="" href="prompt.txt">Pobierz .txt</a><span aria-live="polite" id="copy-status" role="status"></span></div><details><summary>Pokaż pełny prompt</summary><pre id="prompt-text">Materiały źródłowe do tej serii:
+1. Nowa aplikacja: https://aleksanderfigiel.pl/ios-new-app-tutorial-1
+2. TestFlight: https://aleksanderfigiel.pl/ios-testflight-tutorial-2
+3. Instalacja przez kabel: https://aleksanderfigiel.pl/ios-macos-cable-tutorial-3
+
+Przed rozpoczęciem otwórz i przeczytaj stronę części, której dotyczy ten prompt. Korzystaj z jej instrukcji, ilustracji i kodu. Pozostałe części traktuj jako kontekst i sięgaj do nich, gdy wymaga tego bieżący krok. Zachowaj zakres tej części i prowadź mnie po jednym kroku. Jeśli nie masz dostępu do strony lub nie została jeszcze opublikowana, powiedz o tym i poproś o jej treść albo pliki; nie udawaj, że ją przeczytałeś.
+
+
+Poprowadź mnie po polsku przez tutorial 3: budowanie aplikacji iOS w GitHub Actions i instalację na iPhonie przez kabel z Maca. Pracuj po jednym małym kroku na wiadomość, czekaj na moje potwierdzenie. Nie wymagaj screenshotów, jeśli opis lub wynik polecenia wystarcza. Nie proś o hasła, tokeny, zawartość certyfikatów ani sekrety.
+Najpierw sprawdź, czy mam Maca, iPhone'a, Apple Developer Program, App ID i repozytorium z aplikacją. Korzystaj z mojego OWNER/REPO, Bundle ID i nazw projektu, nigdy z przykładów jako moich danych.
+CSR nie jest certyfikatem. Jeśli mam CSR z TestFlight i odpowiadający klucz prywatny, użyj go do wystawienia Apple Development. Apple Distribution nie zastępuje Apple Development. Jeśli mam już ważny Apple Development z kluczem, pomiń wystawianie. W przeciwnym razie przejdź przez CSR, wystawienie i import development.cer oraz eksport DevelopmentCertificate.p12 z hasłem.
+Dodaj trzy Repository secrets: DEVICE_CERTIFICATE_P12_BASE64, DEVICE_CERTIFICATE_PASSWORD, DEVICE_PROVISIONING_PROFILE_BASE64. Hasło jest surowym tekstem, pliki są kodowane Base64. Profil APP_STORE_PROVISIONING_PROFILE_BASE64 zostaje dla TestFlight i nie może być użyty jako profil Development.
+Pokaż początkującemu USB, zaufanie do Maca i Finder. UDID pojawia się po kliknięciu wiersza informacji bezpośrednio pod nazwą iPhone'a (model / pojemność / bateria), nie samej nazwy. Nie myl UDID z EID. Nie każ wyłączać ani rejestrować ponownie istniejącego urządzenia. Użytkownik sam sprawdza swój UDID, nie musi publikować go w czacie.
+Przejdź przez profil iOS App Development: istniejący App ID zgodny z kodem, offline No, właściwy Apple Development, rzeczywiste urządzenie, Generate i Download. Nowy profil zakoduj do właściwego sekretu. Sprawdź APPLE_TEAM_ID i XCODE_PROJECT w Variables, wykorzystaj istniejące poprawne wartości.
+Użyj dołączonych device-build.yml i install-latest-device-build.sh. Workflow wymaga XcodeGen project.yml, zgodnej nazwy projektu/schematu/produktu .app oraz jednego celu. Dostosuj do rzeczywistego repozytorium, jeśli się różni. Nie deklaruj kompatybilności bez sprawdzenia. Nie zmieniaj samowolnie Bundle ID ani TestFlight. Nie dodawaj tagu [testflight] do commita dotyczącego tylko kabla.
+Sprawdź gh i devicectl; jeśli devicectl jest dostępne, nie wymagaj ios-deploy. Bez niego użyj ios-deploy. Homebrew instaluj tylko jeśli jest potrzebne; podaj komendę z brew.sh i przypomnij Next steps. GitHub CLI ma też oficjalne wydania bez Homebrew. Sprawdź gh auth status i w razie potrzeby gh auth login, potem połączenie USB i Tryb dewelopera. Samo wykrycie urządzenia nie oznacza, że instalacja działa.
+Po buildzie przeprowadź przez pobranie skryptu, chmod +x i instalację. Dla devicectl ustaw DEVICE_ID. Bez SHA skrypt wybiera najnowsze uruchomienie z niewygasłym artefaktem na domyślnej gałęzi, niekoniecznie ostatni commit. Z SHA bierze artefakt uruchomienia workflow o tym head_sha, bez fallbacku na inny commit. DEVICE_BRANCH działa tylko bez SHA. Sprawdź oba warianty, jeśli użytkownik chce pełną weryfikację. Nie twierdź, że testowałeś na jego sprzęcie bez jego potwierdzenia.
+Wyjaśnij zastępowanie wersji TestFlight i kabla przy zgodnym Bundle ID/podpisie, możliwą animację ikony i sprawdzenie wyniku w Terminalu. Opcjonalna czysta instalacja przez usunięcie aplikacji usuwa lokalne dane. Kabel pomija App Store Connect Processing, TestFlight działa bez kabla i Maca przy skonfigurowanym cloud build. Nie podawaj 30 buildów dziennie jako zweryfikowanego limitu bez oficjalnego źródła.
+W przypadku błędu zajmij się konkretnym komunikatem. Nie omijaj zaufania certyfikatu przez Always Trust. Korzystaj z oficjalnej dokumentacji i faktycznego stanu użytkownika. Nie używaj znaku em dash. Zakończ po potwierdzonej instalacji aplikacji; nie publikuj jej w App Store.
+</pre></details></div></section><section class="step" id="zrodla"><h2>Źródła i zakres sprawdzenia</h2><div class="step-body"><p>Przebieg przygotowano na podstawie konfiguracji i udanej instalacji na fizycznym iPhonie we wrześniu 2026. Potwierdzono pobieranie najnowszego artefaktu oraz artefaktu dla wskazanego SHA. Wariant devicectl jest alternatywą w skrypcie; nie był częścią tego testu na urządzeniu. Ilustracje zanonimizowano i zastąpiono fikcyjnymi danymi.</p><ul><li><a href="https://developer.apple.com/help/account/certificates/create-a-certificate-signing-request/">Apple: CSR</a></li><li><a href="https://developer.apple.com/help/account/provisioning-profiles/create-a-development-provisioning-profile/">Apple: profil Development</a></li><li><a href="https://developer.apple.com/help/account/devices/disable-or-enable-a-device/">Apple: urządzenia</a></li><li><a href="https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device">Apple: Tryb dewelopera</a></li><li><a href="https://brew.sh/">Homebrew: instalacja</a></li><li><a href="https://github.com/cli/cli#installation">GitHub CLI: instalacja</a></li><li><a href="https://github.com/ios-control/ios-deploy">ios-deploy: dokumentacja i zgodność</a></li><li><a href="https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/downloading-workflow-artifacts">GitHub: pobieranie artefaktów</a></li></ul></div></section><section id="seria"><h2>Wszystkie części tutorialu iOS</h2><ol><li><a href="/ios-new-app-tutorial-1">1. Nowa aplikacja w App Store Connect</a></li><li><a href="/ios-testflight-tutorial-2">2. TestFlight</a></li><li><a href="/ios-macos-cable-tutorial-3">3. Instalacja przez kabel z Maca</a></li></ol></section><footer>Tutorial 03 / Instalacja aplikacji iOS przez kabel</footer></main></div><script src="../tutoriale/app.js"></script></body></html>
