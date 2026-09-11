@@ -1,2 +1,4 @@
 User-agent: *
 Disallow: /*.pdf$
+
+Sitemap: https://aleksanderfigiel.pl/sitemap.xml
