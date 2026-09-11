@@ -1,0 +1,116 @@
+/* Modal screenshotów. */
+
+main figure a:has(img) {
+  cursor: zoom-in;
+}
+
+.screenshot-modal {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 64px 24px 24px;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  overscroll-behavior: contain;
+}
+
+.screenshot-modal[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.screenshot-modal::backdrop {
+  background: rgba(45, 49, 55, .76);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.screenshot-modal.is-visible,
+.screenshot-modal.is-visible::backdrop {
+  opacity: 1;
+}
+
+.screenshot-modal-image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, .2);
+}
+
+.screenshot-modal-close {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(16px, env(safe-area-inset-right));
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  color: #fff;
+  background: transparent;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  font: 300 42px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+
+.screenshot-modal-close:hover,
+.screenshot-modal-close:active {
+  background: transparent;
+  opacity: .8;
+}
+
+.screenshot-modal-close:focus-visible {
+  outline: none;
+  text-shadow: 0 0 8px rgba(255, 255, 255, .8);
+}
+
+.screenshot-modal-status {
+  position: absolute;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  left: 12px;
+  right: 12px;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .screenshot-modal {
+    padding:
+      max(64px, calc(env(safe-area-inset-top) + 56px))
+      10px
+      max(16px, env(safe-area-inset-bottom));
+  }
+
+  .screenshot-modal-image {
+    border-radius: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screenshot-modal,
+  .screenshot-modal::backdrop,
+  .screenshot-modal-close {
+    transition: none;
+  }
+}
