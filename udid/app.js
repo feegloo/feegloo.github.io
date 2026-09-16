@@ -1,5 +1,5 @@
 "use strict";
-const endpoint = "https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/udid-service/profile";
+const endpoint = "https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/udid-service-301/profile";
 const status = document.getElementById("status");
 const storageKey = "udid-profile-session";
 const result = new URLSearchParams(location.hash.slice(1));
