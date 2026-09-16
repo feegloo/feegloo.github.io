@@ -1,8 +1,6 @@
 name: Renew UDID profile certificate
 
 on:
-  schedule:
-    - cron: "17 4 * * 1"
   workflow_dispatch:
     inputs:
       force:
@@ -69,35 +67,57 @@ jobs:
 
       - name: Issue certificate
         if: steps.expiry.outputs.renew == 'true'
+        timeout-minutes: 90
         env:
-          AUTH_HOOK: ${{ runner.temp }}/acme-auth.sh
+          AUTH_HOOK: ${{ runner.temp }}/acme-dns-auth.sh
+          CLEANUP_HOOK: ${{ runner.temp }}/acme-dns-cleanup.sh
         run: |
           cat > "$AUTH_HOOK" <<'SCRIPT'
           #!/usr/bin/env bash
           set -euo pipefail
-          challenge_dir=".well-known/acme-challenge"
-          mkdir -p "$challenge_dir"
-          touch .nojekyll
-          printf '%s' "$CERTBOT_VALIDATION" > "$challenge_dir/$CERTBOT_TOKEN"
-          git add .nojekyll "$challenge_dir/$CERTBOT_TOKEN"
-          git commit -m "Publish Let's Encrypt challenge [skip ci]"
-          git push origin HEAD:main
-          gh workflow run pages.yml --ref main
-          url="https://aleksanderfigiel.pl/$challenge_dir/$CERTBOT_TOKEN"
-          for attempt in $(seq 1 60); do
-            if [[ "$(curl --silent --fail "$url" || true)" == "$CERTBOT_VALIDATION" ]]; then
+          record="_acme-challenge.$CERTBOT_DOMAIN"
+          value="$CERTBOT_VALIDATION"
+
+          {
+            echo "## DNS verification required"
+            echo
+            echo "Add this TXT record in Cyber_Folks:"
+            echo
+            echo "- Name: _acme-challenge"
+            echo "- Type: TXT"
+            echo "- Value: $value"
+            echo "- TTL: lowest available value"
+            echo
+            echo "The workflow will continue automatically after the record becomes visible."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "::notice title=Add DNS TXT record::Name: _acme-challenge | Value: $value"
+          echo "Waiting for TXT $record to contain the expected value..."
+
+          for attempt in $(seq 1 180); do
+            if dig +short TXT "$record" @1.1.1.1 | tr -d '"' | grep -Fxq "$value"; then
+              echo "DNS challenge detected."
               exit 0
             fi
-            sleep 10
+            sleep 20
           done
-          echo "GitHub Pages did not publish the ACME challenge in time"
+
+          echo "::error title=DNS challenge timed out::The TXT record was not detected within 60 minutes."
           exit 1
           SCRIPT
-          chmod 700 "$AUTH_HOOK"
+
+          cat > "$CLEANUP_HOOK" <<'SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          echo "After this workflow succeeds, remove the temporary TXT record _acme-challenge from Cyber_Folks." >> "$GITHUB_STEP_SUMMARY"
+          SCRIPT
+
+          chmod 700 "$AUTH_HOOK" "$CLEANUP_HOOK"
           certbot certonly \
             --manual \
-            --preferred-challenges http \
+            --preferred-challenges dns \
             --manual-auth-hook "$AUTH_HOOK" \
+            --manual-cleanup-hook "$CLEANUP_HOOK" \
             --non-interactive \
             --agree-tos \
             --email "$LETSENCRYPT_EMAIL" \
@@ -147,8 +167,7 @@ jobs:
           live="$RUNNER_TEMP/letsencrypt/config/live/$DOMAIN"
           mkdir -p "$(dirname "$CERT_PATH")"
           cp "$live/fullchain.pem" "$CERT_PATH"
-          find .well-known/acme-challenge -type f -delete 2>/dev/null || true
-          git add "$CERT_PATH" .well-known/acme-challenge
+          git add "$CERT_PATH"
           git commit -m "Renew UDID profile signing certificate [skip ci]"
           git push origin HEAD:main
           gh workflow run pages.yml --ref main
