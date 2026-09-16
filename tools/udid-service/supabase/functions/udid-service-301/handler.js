@@ -25,14 +25,23 @@ function pemToDer(pem, label) {
   return Uint8Array.from(binary, character => character.charCodeAt(0)).buffer;
 }
 
+function certificatesFromPem(pem) {
+  const blocks = pem.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g) || [];
+  if (!blocks.length) throw new Error("Invalid certificate chain PEM");
+  return blocks.map(block => {
+    const der = pemToDer(block, "CERTIFICATE");
+    const parsed = asn1js.fromBER(der);
+    if (parsed.offset !== der.byteLength) throw new Error("Invalid certificate in chain");
+    return new Certificate({ schema: parsed.result });
+  });
+}
+
 function createProfileSigner(privateKeyBase64, certificateBase64) {
   if (!privateKeyBase64 || !certificateBase64) throw new Error("Missing profile signing configuration");
   const privateKeyPem = new TextDecoder().decode(Uint8Array.from(atob(privateKeyBase64), character => character.charCodeAt(0)));
   const certificatePem = new TextDecoder().decode(Uint8Array.from(atob(certificateBase64), character => character.charCodeAt(0)));
-  const certificateDer = pemToDer(certificatePem, "CERTIFICATE");
-  const certificateAsn1 = asn1js.fromBER(certificateDer);
-  if (certificateAsn1.offset !== certificateDer.byteLength) throw new Error("Invalid signing certificate");
-  const certificate = new Certificate({ schema: certificateAsn1.result });
+  const certificates = certificatesFromPem(certificatePem);
+  const certificate = certificates[0];
   const privateKey = crypto.subtle.importKey(
     "pkcs8",
     pemToDer(privateKeyPem, "PRIVATE KEY"),
@@ -49,7 +58,7 @@ function createProfileSigner(privateKeyBase64, certificateBase64) {
         eContentType: "1.2.840.113549.1.7.1",
         eContent: new asn1js.OctetString({ valueHex: profileBytes.buffer }),
       }),
-      certificates: [certificate],
+      certificates,
       signerInfos: [new SignerInfo({
         version: 1,
         sid: new IssuerAndSerialNumber({ issuer: certificate.issuer, serialNumber: certificate.serialNumber }),

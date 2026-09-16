@@ -1,0 +1,130 @@
+name: Renew UDID profile certificate
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Renew even when the current certificate is still valid
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: renew-udid-profile-certificate
+  cancel-in-progress: false
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    env:
+      DOMAIN: aleksanderfigiel.pl
+      PROJECT_REF: gwfdnwlhonszocjizrnl
+      CERT_PATH: tools/udid-service/certificates/fullchain.pem
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check configuration
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "Missing SUPABASE_ACCESS_TOKEN"; exit 1; }
+          test -n "$LETSENCRYPT_EMAIL" || { echo "Missing LETSENCRYPT_EMAIL"; exit 1; }
+
+      - name: Check certificate expiry
+        id: expiry
+        shell: bash
+        run: |
+          if [[ "${{ inputs.force || 'false' }}" == "true" ]] || \
+             [[ ! -f "$CERT_PATH" ]] || \
+             ! openssl x509 -checkend 2592000 -noout -in "$CERT_PATH"; then
+            echo "renew=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "renew=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Certbot
+        if: steps.expiry.outputs.renew == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y certbot
+
+      - uses: supabase/setup-cli@v1
+        if: steps.expiry.outputs.renew == 'true'
+        with:
+          version: latest
+
+      - name: Configure Git
+        if: steps.expiry.outputs.renew == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Issue certificate
+        if: steps.expiry.outputs.renew == 'true'
+        env:
+          AUTH_HOOK: ${{ runner.temp }}/acme-auth.sh
+        run: |
+          cat > "$AUTH_HOOK" <<'SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          challenge_dir=".well-known/acme-challenge"
+          mkdir -p "$challenge_dir"
+          printf '%s' "$CERTBOT_VALIDATION" > "$challenge_dir/$CERTBOT_TOKEN"
+          git add "$challenge_dir/$CERTBOT_TOKEN"
+          git commit -m "Publish Let's Encrypt challenge [skip ci]"
+          git push origin HEAD:main
+          url="https://aleksanderfigiel.pl/$challenge_dir/$CERTBOT_TOKEN"
+          for attempt in $(seq 1 60); do
+            if [[ "$(curl --silent --fail "$url" || true)" == "$CERTBOT_VALIDATION" ]]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "GitHub Pages did not publish the ACME challenge in time"
+          exit 1
+          SCRIPT
+          chmod 700 "$AUTH_HOOK"
+          certbot certonly \
+            --manual \
+            --preferred-challenges http \
+            --manual-auth-hook "$AUTH_HOOK" \
+            --non-interactive \
+            --agree-tos \
+            --email "$LETSENCRYPT_EMAIL" \
+            --config-dir "$RUNNER_TEMP/letsencrypt/config" \
+            --work-dir "$RUNNER_TEMP/letsencrypt/work" \
+            --logs-dir "$RUNNER_TEMP/letsencrypt/logs" \
+            --domain "$DOMAIN"
+
+      - name: Update Supabase signing secrets
+        if: steps.expiry.outputs.renew == 'true'
+        shell: bash
+        run: |
+          live="$RUNNER_TEMP/letsencrypt/config/live/$DOMAIN"
+          secrets_file="$RUNNER_TEMP/udid-signing.env"
+          key_base64="$(base64 -w 0 "$live/privkey.pem")"
+          chain_base64="$(base64 -w 0 "$live/fullchain.pem")"
+          echo "::add-mask::$key_base64"
+          echo "::add-mask::$chain_base64"
+          chmod 700 "$RUNNER_TEMP"
+          printf 'UDID_SIGNING_KEY_BASE64=%s\nUDID_SIGNING_CERT_BASE64=%s\n' \
+            "$key_base64" "$chain_base64" > "$secrets_file"
+          chmod 600 "$secrets_file"
+          supabase secrets set --project-ref "$PROJECT_REF" --env-file "$secrets_file"
+
+      - name: Store public certificate chain
+        if: steps.expiry.outputs.renew == 'true'
+        run: |
+          live="$RUNNER_TEMP/letsencrypt/config/live/$DOMAIN"
+          mkdir -p "$(dirname "$CERT_PATH")"
+          cp "$live/fullchain.pem" "$CERT_PATH"
+          find .well-known/acme-challenge -type f -delete 2>/dev/null || true
+          git add "$CERT_PATH" .well-known/acme-challenge
+          git commit -m "Renew UDID profile signing certificate [skip ci]"
+          git push origin HEAD:main
