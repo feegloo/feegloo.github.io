@@ -12,7 +12,7 @@ const unbase64url = value => Uint8Array.from(atob(value.replaceAll("-", "+").rep
 const reply = (text, status) => new Response(text, { status, headers });
 
 // Domain-separated derivation: the platform secret never leaves the function.
-export function createHandler(secret, now = () => Math.floor(Date.now() / 1000)) {
+export function createHandler(secret, now = () => Math.floor(Date.now() / 1000), log = event => console.log(JSON.stringify(event))) {
   const key = (async () => {
     if (!secret || secret.length < 32) throw new Error("Missing server secret");
     const material = await crypto.subtle.importKey("raw", encoder.encode(secret), "HKDF", false, ["deriveKey"]);
@@ -29,11 +29,22 @@ export function createHandler(secret, now = () => Math.floor(Date.now() / 1000))
     return match[2];
   }
   return async request => {
+    const requestId = crypto.randomUUID();
+    const started = Date.now();
+    const pathName = new URL(request.url).pathname;
+    const route = pathName.endsWith('/profile') ? 'profile' : pathName.endsWith('/receive') ? 'receive' : 'other';
+    const method = ['GET', 'POST', 'OPTIONS', 'HEAD'].includes(request.method) ? request.method : 'other';
+    let stage = 'routing', bytesRead = 0;
+    const emit = fields => { try { log({ service: 'udid', revision: 'diagnostics-v1', request_id: requestId, route, method, ...fields }); } catch {} };
+    emit({ event: 'request_started' });
+    const process = async () => {
     try {
       const path = new URL(request.url).pathname;
       if (request.method === "GET" && path.endsWith("/profile")) {
+        stage = 'profile_state';
         const state = new URL(request.url).searchParams.get("state") || "";
         if (!/^[a-f0-9]{64}$/.test(state)) return reply("Invalid session. Start at aleksanderfigiel.pl/udid/", 400);
+        stage = 'profile_challenge';
         const token = await issue(state);
         const profile = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -51,12 +62,15 @@ export function createHandler(secret, now = () => Math.floor(Date.now() / 1000))
 <key>PayloadIdentifier</key><string>pl.aleksanderfigiel.udid</string>
 <key>PayloadUUID</key><string>${crypto.randomUUID()}</string>
 </dict></plist>`;
+        stage = 'profile_issued';
         return new Response(profile, { headers: { ...headers, "Content-Type": "application/x-apple-aspen-config", "Content-Disposition": 'attachment; filename="udid.mobileconfig"' } });
       }
       if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers: { ...headers, Allow: "GET, POST" } });
       if (!path.endsWith("/receive")) return reply("Not found", 404);
+      stage = 'content_type';
       const type = (request.headers.get("content-type") || "").split(";")[0].toLowerCase();
       if (!["application/pkcs7-signature", "application/x-pkcs7-signature", "application/octet-stream"].includes(type)) return reply("Expected signed device response", 415);
+      stage = 'body_read';
       if (Number(request.headers.get("content-length")) > LIMIT) return reply("Request too large", 413);
       const reader = request.body?.getReader();
       if (!reader) return reply("Empty body", 400);
@@ -64,12 +78,13 @@ export function createHandler(secret, now = () => Math.floor(Date.now() / 1000))
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        total += value.length;
+        total += value.length; bytesRead = total;
         if (total > LIMIT) { await reader.cancel(); return reply("Request too large", 413); }
         chunks.push(value);
       }
       const bytes = new Uint8Array(total); let offset = 0;
       for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+      stage = 'cms_parse';
       const parsed = asn1js.fromBER(bytes.buffer);
       if (parsed.offset !== total || parsed.offset < 0) throw new Error("Invalid CMS");
       const envelope = new ContentInfo({ schema: parsed.result });
@@ -77,18 +92,30 @@ export function createHandler(secret, now = () => Math.floor(Date.now() / 1000))
       const signed = new SignedData({ schema: envelope.content });
       if (signed.signerInfos.length !== 1 || signed.encapContentInfo.eContentType !== "1.2.840.113549.1.7.1" || !signed.encapContentInfo.eContent) throw new Error("Invalid signed content");
       // Integrity check only. Not Apple attestation and never used for login or automatic registration.
+      stage = 'cms_signature';
       if (!await signed.verify({ signer: 0, checkChain: false })) throw new Error("Invalid CMS signature");
+      stage = 'plist_decode';
       const xml = new TextDecoder("utf-8", { fatal: true }).decode(signed.encapContentInfo.eContent.getValue());
+      stage = 'plist_parse';
       const values = readDevicePlist(xml);
+      stage = 'challenge_verify';
       const state = await check(values.CHALLENGE || "");
+      stage = 'udid_format';
       const udid = (values.UDID || "").toUpperCase();
       if (!/^(?:[A-F0-9]{8}-[A-F0-9]{16}|[A-F0-9]{40})$/.test(udid)) throw new Error("Invalid UDID");
+      stage = 'redirect_issued';
       const fragment = new URLSearchParams({ udid, state });
       return new Response(null, { status: 303, headers: { ...headers, Location: `${RESULT}#${fragment}` } });
     } catch {
-      // Never log request bodies, tokens or device identifiers.
+      // Stage only: library exception messages may contain submitted data.
       return reply("Nie można odczytać UDID. Pobierz nowy profil z aleksanderfigiel.pl/udid/ i spróbuj ponownie.", 400);
     }
+    };
+    const response = await process();
+    response.headers.set('X-UDID-Request-ID', requestId);
+    response.headers.set('X-UDID-Debug-Revision', 'diagnostics-v1');
+    emit({ event: 'request_finished', stage, status: response.status, bytes_read: bytesRead, duration_ms: Date.now() - started });
+    return response;
   };
 }
 

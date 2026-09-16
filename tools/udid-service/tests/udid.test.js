@@ -11,7 +11,8 @@ const state = "a".repeat(64);
 const secret = "test-only-secret-not-used-in-deployment";
 const udid = "00000000-0000000000000001";
 let clock = 1800000000;
-const handler = createHandler(secret, () => clock);
+const events = [];
+const handler = createHandler(secret, () => clock, event => events.push(event));
 function request(body, extra = {}) {
   return new Request(`${base}/receive`, { method: "POST", headers: { "content-type": "application/pkcs7-signature", ...extra }, body });
 }
@@ -34,6 +35,9 @@ test("signed callback round trip, errors and challenge expiry", async () => {
     const body = sign(challenge);
     const response = await handler(request(body));
     assert.equal(response.status, 303);
+    assert.equal(events.at(-1).stage, 'redirect_issued');
+    assert.equal(events.at(-1).request_id, response.headers.get('X-UDID-Request-ID'));
+    assert.equal(response.headers.get('X-UDID-Debug-Revision'), 'diagnostics-v1');
     const url = new URL(response.headers.get("location"));
     assert.equal(url.origin, "https://aleksanderfigiel.pl");
     assert.equal(url.search, "");
@@ -43,6 +47,7 @@ test("signed callback round trip, errors and challenge expiry", async () => {
     assert.equal((await handler(request(changed))).status, 400);
     const wrong = challenge.slice(0,-2) + (challenge.endsWith("AA") ? "BB" : "AA");
     assert.equal((await handler(request(sign(wrong)))).status, 400);
+    assert.equal(events.at(-1).stage, 'challenge_verify');
     clock += 1801;
     assert.equal((await handler(request(body))).status, 400);
     assert.equal((await handler(request(new Uint8Array(65537)))).status, 413);
@@ -50,6 +55,9 @@ test("signed callback round trip, errors and challenge expiry", async () => {
     assert.equal((await handler(request("not CMS"))).status, 400);
     assert.equal((await handler(new Request(`${base}/profile?state=invalid`))).status, 400);
     assert.equal((await handler(new Request(`${base}/receive`))).status, 405);
+    const logged = JSON.stringify(events);
+    for (const sensitive of [udid, challenge, state, secret, 'Test fixture']) assert.ok(!logged.includes(sensitive));
+    assert.ok(events.some(e => e.stage === 'cms_signature' && e.status === 400));
   } finally { rmSync(folder, { recursive: true, force: true }); }
 });
 

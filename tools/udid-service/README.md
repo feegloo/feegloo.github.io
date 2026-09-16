@@ -29,3 +29,20 @@ supabase functions deploy udid-service --project-ref gwfdnwlhonszocjizrnl --no-v
 The function uses its own challenge validation because iOS does not supply a Supabase JWT. Bundling avoids a CommonJS dependency compatibility issue in the hosted runtime. Commit source and lockfile; build handler.bundle.js before deploying. Do not publish node_modules or secrets. Backend changes require a function deployment; Pages only publishes the frontend.
 
 Local tests use synthetic CMS responses, including tampering, expiry, oversize bodies, invalid XML, and frontend state mismatch. Hosted profile GET and signed POST were checked successfully (200 then 303). These tests do not replace installation on a real iPhone: open Safari, download, install through Settings, confirm return, copy UDID, then clear result. Profile download tokens expire after 30 minutes. No device passcode is collected by the website.
+
+## Diagnostics (diagnostics-v1)
+
+Open Supabase dashboard > Edge Functions > udid-service > Logs. Filter for `udid` or `diagnostics-v1`, use the timestamp of the installation attempt. Each request has request_started and request_finished sharing a random request_id. Responses also include X-UDID-Request-ID and X-UDID-Debug-Revision. Application logs contain only route/method categories, stage, HTTP status, body byte count and elapsed milliseconds. No URL, headers, raw error messages, body, UDID, challenge, state or certificate data are logged. Platform Invocations metadata is separate and may include sensitive headers: share only the custom JSON log lines.
+
+- profile_issued / 200: profile generated. Does not prove device installation.
+- receive + request_started: POST reached the function.
+- content_type / 415: unsupported MIME type.
+- body_read / 413: body exceeds limit.
+- cms_parse / 400: cannot decode signed envelope.
+- cms_signature / 400: signature validation failed or unsupported algorithm.
+- plist_decode or plist_parse / 400: signed payload cannot be decoded/parsed.
+- challenge_verify / 400: token absent, expired or invalid.
+- udid_format / 400: missing or malformed identifier.
+- redirect_issued / 303: callback completed; next investigate iOS redirect handling / frontend session.
+
+No POST logs: inspect Invocations for gateway rejection first; if absent there too, investigate the device/profile/network. A start without finish suggests a runtime interruption. Absence of logs alone is not proof that no request was sent (filters/retention/platform limits also apply).
