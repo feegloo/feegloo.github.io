@@ -1,6 +1,8 @@
 name: Renew UDID profile certificate
 
 on:
+  schedule:
+    - cron: "17 4 * * 1"
   workflow_dispatch:
     inputs:
       force:
@@ -25,7 +27,9 @@ jobs:
       CERT_PATH: tools/udid-service/certificates/fullchain.pem
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       LETSENCRYPT_EMAIL: ${{ vars.LETSENCRYPT_EMAIL }}
-      GH_TOKEN: ${{ github.token }}
+      ACME_DNS_USERNAME: ${{ secrets.ACME_DNS_USERNAME }}
+      ACME_DNS_PASSWORD: ${{ secrets.ACME_DNS_PASSWORD }}
+      ACME_DNS_SUBDOMAIN: ${{ secrets.ACME_DNS_SUBDOMAIN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,6 +39,9 @@ jobs:
         run: |
           test -n "$SUPABASE_ACCESS_TOKEN" || { echo "Missing SUPABASE_ACCESS_TOKEN"; exit 1; }
           test -n "$LETSENCRYPT_EMAIL" || { echo "Missing LETSENCRYPT_EMAIL"; exit 1; }
+          test -n "$ACME_DNS_USERNAME" || { echo "Missing ACME_DNS_USERNAME"; exit 1; }
+          test -n "$ACME_DNS_PASSWORD" || { echo "Missing ACME_DNS_PASSWORD"; exit 1; }
+          test -n "$ACME_DNS_SUBDOMAIN" || { echo "Missing ACME_DNS_SUBDOMAIN"; exit 1; }
 
       - name: Check certificate expiry
         id: expiry
@@ -67,68 +74,46 @@ jobs:
 
       - name: Issue certificate
         if: steps.expiry.outputs.renew == 'true'
-        timeout-minutes: 90
         env:
           AUTH_HOOK: ${{ runner.temp }}/acme-dns-auth.sh
-          CLEANUP_HOOK: ${{ runner.temp }}/acme-dns-cleanup.sh
         run: |
           cat > "$AUTH_HOOK" <<'SCRIPT'
           #!/usr/bin/env bash
           set -euo pipefail
-          record="_acme-challenge.$CERTBOT_DOMAIN"
-          value="$CERTBOT_VALIDATION"
-          challenge_file="tools/udid-service/dns-challenge.txt"
 
-          mkdir -p "$(dirname "$challenge_file")"
-          printf '%s\n' "$value" > "$challenge_file"
-          git add "$challenge_file"
-          git commit -m "Publish Let's Encrypt DNS challenge [skip ci]"
-          git push origin HEAD:main
+          payload="$(printf '{\"subdomain\":\"%s\",\"txt\":\"%s\"}' \
+            "$ACME_DNS_SUBDOMAIN" "$CERTBOT_VALIDATION")"
+          response="$(curl --silent --show-error --fail \
+            --request POST \
+            --header "X-Api-User: $ACME_DNS_USERNAME" \
+            --header "X-Api-Key: $ACME_DNS_PASSWORD" \
+            --header "Content-Type: application/json" \
+            --data "$payload" \
+            https://auth.acme-dns.io/update)"
 
-          {
-            echo "## DNS verification required"
-            echo
-            echo "Add this TXT record in Cyber_Folks:"
-            echo
-            echo "- Name: _acme-challenge"
-            echo "- Type: TXT"
-            echo "- Value: $value"
-            echo "- TTL: lowest available value"
-            echo
-            echo "The workflow will continue automatically after the record becomes visible."
-          } >> "$GITHUB_STEP_SUMMARY"
+          if ! grep -Fq "$CERTBOT_VALIDATION" <<< "$response"; then
+            echo "::error title=acme-dns update failed::The API did not confirm the DNS challenge value."
+            exit 1
+          fi
 
-          echo "::notice title=Add DNS TXT record::Name: _acme-challenge | Value: $value"
-          echo "Waiting for TXT $record to contain the expected value..."
-
-          for attempt in $(seq 1 180); do
-            if dig +short TXT "$record" @8.8.8.8 | tr -d '"' | grep -Fxq "$value"; then
-              echo "DNS challenge detected."
+          record="$ACME_DNS_SUBDOMAIN.auth.acme-dns.io"
+          echo "Waiting for TXT $record..."
+          for attempt in $(seq 1 90); do
+            if dig +short TXT "$record" @8.8.8.8 | tr -d '\"' | grep -Fxq "$CERTBOT_VALIDATION"; then
+              echo "acme-dns challenge detected."
               exit 0
             fi
-            sleep 20
+            sleep 5
           done
 
-          echo "::error title=DNS challenge timed out::The TXT record was not detected within 60 minutes."
+          echo "::error title=acme-dns propagation timed out::The expected TXT record was not visible within 7.5 minutes."
           exit 1
           SCRIPT
-
-          cat > "$CLEANUP_HOOK" <<'SCRIPT'
-          #!/usr/bin/env bash
-          set -euo pipefail
-          challenge_file="tools/udid-service/dns-challenge.txt"
-          git rm -f "$challenge_file"
-          git commit -m "Remove Let's Encrypt DNS challenge [skip ci]"
-          git push origin HEAD:main
-          echo "After this workflow succeeds, remove the temporary TXT record _acme-challenge from Cyber_Folks." >> "$GITHUB_STEP_SUMMARY"
-          SCRIPT
-
-          chmod 700 "$AUTH_HOOK" "$CLEANUP_HOOK"
+          chmod 700 "$AUTH_HOOK"
           certbot certonly \
             --manual \
             --preferred-challenges dns \
             --manual-auth-hook "$AUTH_HOOK" \
-            --manual-cleanup-hook "$CLEANUP_HOOK" \
             --non-interactive \
             --agree-tos \
             --key-type rsa \
@@ -174,6 +159,29 @@ jobs:
 
           printf '%s\n' "$supabase_output"
 
+      - name: Verify signed profile
+        if: steps.expiry.outputs.renew == 'true'
+        shell: bash
+        run: |
+          state="$(printf 'a%.0s' {1..64})"
+          profile="$RUNNER_TEMP/udid.mobileconfig"
+          payload="$RUNNER_TEMP/udid.plist"
+          url="https://$PROJECT_REF.supabase.co/functions/v1/udid-service-301/profile?state=$state"
+
+          for attempt in $(seq 1 24); do
+            status="$(curl --silent --show-error --output "$profile" --write-out '%{http_code}' "$url" || true)"
+            if [[ "$status" == "200" ]]; then
+              break
+            fi
+            sleep 5
+          done
+
+          test "$status" = "200" || { echo "Profile endpoint returned HTTP $status"; exit 1; }
+          openssl smime -verify -inform DER -in "$profile" -noverify -out "$payload"
+          openssl pkcs7 -inform DER -in "$profile" -print_certs -noout | grep -Fq "CN = $DOMAIN"
+          grep -Fq "<key>PayloadType</key><string>Profile Service</string>" "$payload"
+          echo "Signed profile verification passed."
+
       - name: Store public certificate chain
         if: steps.expiry.outputs.renew == 'true'
         run: |
@@ -183,4 +191,3 @@ jobs:
           git add -f "$CERT_PATH"
           git commit -m "Renew UDID profile signing certificate [skip ci]"
           git push origin HEAD:main
-          gh workflow run pages.yml --ref main
