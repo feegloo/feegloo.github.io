@@ -77,6 +77,13 @@ jobs:
           set -euo pipefail
           record="_acme-challenge.$CERTBOT_DOMAIN"
           value="$CERTBOT_VALIDATION"
+          challenge_file="tools/udid-service/dns-challenge.txt"
+
+          mkdir -p "$(dirname "$challenge_file")"
+          printf '%s\n' "$value" > "$challenge_file"
+          git add "$challenge_file"
+          git commit -m "Publish Let's Encrypt DNS challenge [skip ci]"
+          git push origin HEAD:main
 
           {
             echo "## DNS verification required"
@@ -109,6 +116,10 @@ jobs:
           cat > "$CLEANUP_HOOK" <<'SCRIPT'
           #!/usr/bin/env bash
           set -euo pipefail
+          challenge_file="tools/udid-service/dns-challenge.txt"
+          git rm -f "$challenge_file"
+          git commit -m "Remove Let's Encrypt DNS challenge [skip ci]"
+          git push origin HEAD:main
           echo "After this workflow succeeds, remove the temporary TXT record _acme-challenge from Cyber_Folks." >> "$GITHUB_STEP_SUMMARY"
           SCRIPT
 
