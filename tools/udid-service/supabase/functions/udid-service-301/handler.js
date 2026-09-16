@@ -1,5 +1,12 @@
 import * as asn1js from "asn1js";
-import { ContentInfo, SignedData } from "pkijs";
+import {
+  Certificate,
+  ContentInfo,
+  EncapsulatedContentInfo,
+  IssuerAndSerialNumber,
+  SignedData,
+  SignerInfo,
+} from "pkijs";
 
 const RESULT = "https://aleksanderfigiel.pl/udid/";
 const CALLBACK = "https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/udid-service-301/receive";
@@ -11,8 +18,54 @@ const base64url = bytes => btoa(String.fromCharCode(...bytes)).replaceAll("+", "
 const unbase64url = value => Uint8Array.from(atob(value.replaceAll("-", "+").replaceAll("_", "/")), c => c.charCodeAt(0));
 const reply = (text, status) => new Response(text, { status, headers });
 
+function pemToDer(pem, label) {
+  const match = new RegExp(`-----BEGIN ${label}-----([\\s\\S]+?)-----END ${label}-----`).exec(pem);
+  if (!match) throw new Error(`Invalid ${label} PEM`);
+  const binary = atob(match[1].replace(/\\s/g, ""));
+  return Uint8Array.from(binary, character => character.charCodeAt(0)).buffer;
+}
+
+function createProfileSigner(privateKeyBase64, certificateBase64) {
+  if (!privateKeyBase64 || !certificateBase64) throw new Error("Missing profile signing configuration");
+  const privateKeyPem = new TextDecoder().decode(Uint8Array.from(atob(privateKeyBase64), character => character.charCodeAt(0)));
+  const certificatePem = new TextDecoder().decode(Uint8Array.from(atob(certificateBase64), character => character.charCodeAt(0)));
+  const certificateDer = pemToDer(certificatePem, "CERTIFICATE");
+  const certificateAsn1 = asn1js.fromBER(certificateDer);
+  if (certificateAsn1.offset !== certificateDer.byteLength) throw new Error("Invalid signing certificate");
+  const certificate = new Certificate({ schema: certificateAsn1.result });
+  const privateKey = crypto.subtle.importKey(
+    "pkcs8",
+    pemToDer(privateKeyPem, "PRIVATE KEY"),
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+
+  return async profile => {
+    const profileBytes = encoder.encode(profile);
+    const signedData = new SignedData({
+      version: 1,
+      encapContentInfo: new EncapsulatedContentInfo({
+        eContentType: "1.2.840.113549.1.7.1",
+        eContent: new asn1js.OctetString({ valueHex: profileBytes.buffer }),
+      }),
+      certificates: [certificate],
+      signerInfos: [new SignerInfo({
+        version: 1,
+        sid: new IssuerAndSerialNumber({ issuer: certificate.issuer, serialNumber: certificate.serialNumber }),
+      })],
+    });
+    await signedData.sign(await privateKey, 0, "SHA-256");
+    return new ContentInfo({
+      contentType: "1.2.840.113549.1.7.2",
+      content: signedData.toSchema(true),
+    }).toSchema().toBER(false);
+  };
+}
+
 // Domain-separated derivation: the platform secret never leaves the function.
-export function createHandler(secret, now = () => Math.floor(Date.now() / 1000), log = event => console.log(JSON.stringify(event))) {
+export function createHandler(secret, signing, now = () => Math.floor(Date.now() / 1000), log = event => console.log(JSON.stringify(event))) {
+  const signProfile = createProfileSigner(signing?.privateKeyBase64, signing?.certificateBase64);
   const key = (async () => {
     if (!secret || secret.length < 32) throw new Error("Missing server secret");
     const material = await crypto.subtle.importKey("raw", encoder.encode(secret), "HKDF", false, ["deriveKey"]);
@@ -35,7 +88,7 @@ export function createHandler(secret, now = () => Math.floor(Date.now() / 1000),
     const route = pathName.endsWith('/profile') ? 'profile' : pathName.endsWith('/receive') ? 'receive' : 'other';
     const method = ['GET', 'POST', 'OPTIONS', 'HEAD'].includes(request.method) ? request.method : 'other';
     let stage = 'routing', bytesRead = 0;
-    const emit = fields => { try { log({ service: 'udid', revision: 'permanent-redirect-v1', request_id: requestId, route, method, ...fields }); } catch {} };
+    const emit = fields => { try { log({ service: 'udid', revision: 'signed-profile-v1', request_id: requestId, route, method, ...fields }); } catch {} };
     emit({ event: 'request_started' });
     const process = async () => {
     try {
@@ -62,8 +115,10 @@ export function createHandler(secret, now = () => Math.floor(Date.now() / 1000),
 <key>PayloadIdentifier</key><string>pl.aleksanderfigiel.udid</string>
 <key>PayloadUUID</key><string>${crypto.randomUUID()}</string>
 </dict></plist>`;
+        stage = 'profile_signing';
+        const signedProfile = await signProfile(profile);
         stage = 'profile_issued';
-        return new Response(profile, { headers: { ...headers, "Content-Type": "application/x-apple-aspen-config", "Content-Disposition": 'attachment; filename="udid.mobileconfig"' } });
+        return new Response(signedProfile, { headers: { ...headers, "Content-Type": "application/x-apple-aspen-config", "Content-Disposition": 'attachment; filename="udid.mobileconfig"' } });
       }
       if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers: { ...headers, Allow: "GET, POST" } });
       if (!path.endsWith("/receive")) return reply("Not found", 404);
@@ -113,7 +168,7 @@ export function createHandler(secret, now = () => Math.floor(Date.now() / 1000),
     };
     const response = await process();
     response.headers.set('X-UDID-Request-ID', requestId);
-    response.headers.set('X-UDID-Debug-Revision', 'permanent-redirect-v1');
+    response.headers.set('X-UDID-Debug-Revision', 'signed-profile-v1');
     emit({ event: 'request_finished', stage, status: response.status, bytes_read: bytesRead, duration_ms: Date.now() - started });
     return response;
   };
