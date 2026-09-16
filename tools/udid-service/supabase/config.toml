@@ -1,0 +1,5 @@
+project_id = "gwfdnwlhonszocjizrnl"
+
+[functions.udid-service]
+# iOS cannot send a Supabase JWT. The POST validates an HMAC challenge issued in the profile.
+verify_jwt = false

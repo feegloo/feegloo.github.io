@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="color-scheme" content="dark">
+  <title>Odczyt UDID | Aleksander Figiel</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<main>
+  <p class="brand">aleksanderfigiel.pl</p>
+  <h1>Odczyt UDID</h1>
+  <section id="start">
+    <p>Dodaj swojego iPhone’a do testów aplikacji Ad Hoc.</p>
+    <ol>
+      <li>Otwórz tę stronę w Safari i pobierz profil.</li>
+      <li>Otwórz <strong>Ustawienia → Profil pobrany</strong> i wybierz <strong>Instaluj</strong>. Jeśli iPhone zapyta o kod, wpisz go wyłącznie w Ustawieniach.</li>
+      <li>Po powrocie tutaj skopiuj UDID i prześlij go Aleksandrowi.</li>
+    </ol>
+    <p class="notice">Profil prosi wyłącznie o UDID. Nie nadaje dostępu do zdjęć, wiadomości ani zarządzania telefonem. Na tym etapie profil nie jest podpisany zaufanym certyfikatem, więc iOS pokaże informację o braku podpisu.</p>
+    <button id="download" type="button">Pobierz profil</button>
+    <p class="small">Profil jest ważny przez 30 minut od pobrania. Odczyt UDID nie wymaga Trybu dewelopera.</p>
+  </section>
+  <section id="result" hidden>
+    <p>Twój UDID</p>
+    <input id="udid" readonly aria-label="UDID iPhone’a" autocomplete="off" spellcheck="false">
+    <button id="copy" type="button">Kopiuj UDID</button>
+    <p>Wklej ten identyfikator w wiadomości do Aleksandra.</p>
+    <button id="clear" class="secondary" type="button">Wyczyść wynik</button>
+  </section>
+  <p id="status" role="status" aria-live="polite"></p>
+  <footer>UDID jest przetwarzany przez endpoint w Supabase wyłącznie w celu wyświetlenia wyniku. Nasz kod nie zapisuje go w bazie ani logach. Dostawcy hostingu mogą prowadzić techniczne logi połączeń. Ta strona nie używa analityki ani reklam.</footer>
+  <noscript>Włącz JavaScript, aby rozpocząć odczyt i skopiować wynik.</noscript>
+</main>
+</body>
+</html>

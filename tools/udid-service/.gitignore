@@ -1,0 +1,6 @@
+node_modules/
+*.key
+*.pem
+*.p12
+.env*
+supabase/functions/udid-service/handler.bundle.js

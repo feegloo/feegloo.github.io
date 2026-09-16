@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "asn1js": "3.0.6",
+    "pkijs": "3.4.0"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "build": "esbuild supabase/functions/udid-service/handler.js --bundle --format=esm --platform=browser --outfile=supabase/functions/udid-service/handler.bundle.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  },
+  "name": "udid-service"
+}
