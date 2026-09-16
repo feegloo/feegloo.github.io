@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "pkijs": "npm:pkijs@3.4.0",
-    "asn1js": "npm:asn1js@3.0.6"
-  }
-}
