@@ -77,8 +77,9 @@ jobs:
           set -euo pipefail
           challenge_dir=".well-known/acme-challenge"
           mkdir -p "$challenge_dir"
+          touch .nojekyll
           printf '%s' "$CERTBOT_VALIDATION" > "$challenge_dir/$CERTBOT_TOKEN"
-          git add "$challenge_dir/$CERTBOT_TOKEN"
+          git add .nojekyll "$challenge_dir/$CERTBOT_TOKEN"
           git commit -m "Publish Let's Encrypt challenge [skip ci]"
           git push origin HEAD:main
           gh workflow run pages.yml --ref main
