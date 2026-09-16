@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: renew-udid-profile-certificate
@@ -26,6 +27,7 @@ jobs:
       CERT_PATH: tools/udid-service/certificates/fullchain.pem
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -79,6 +81,7 @@ jobs:
           git add "$challenge_dir/$CERTBOT_TOKEN"
           git commit -m "Publish Let's Encrypt challenge [skip ci]"
           git push origin HEAD:main
+          gh workflow run pages.yml --ref main
           url="https://aleksanderfigiel.pl/$challenge_dir/$CERTBOT_TOKEN"
           for attempt in $(seq 1 60); do
             if [[ "$(curl --silent --fail "$url" || true)" == "$CERTBOT_VALIDATION" ]]; then
@@ -128,3 +131,4 @@ jobs:
           git add "$CERT_PATH" .well-known/acme-challenge
           git commit -m "Renew UDID profile signing certificate [skip ci]"
           git push origin HEAD:main
+          gh workflow run pages.yml --ref main
