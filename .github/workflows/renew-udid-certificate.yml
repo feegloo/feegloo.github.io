@@ -131,6 +131,8 @@ jobs:
             --manual-cleanup-hook "$CLEANUP_HOOK" \
             --non-interactive \
             --agree-tos \
+            --key-type rsa \
+            --rsa-key-size 2048 \
             --email "$LETSENCRYPT_EMAIL" \
             --config-dir "$RUNNER_TEMP/letsencrypt/config" \
             --work-dir "$RUNNER_TEMP/letsencrypt/work" \
