@@ -178,7 +178,7 @@ jobs:
           live="$RUNNER_TEMP/letsencrypt/config/live/$DOMAIN"
           mkdir -p "$(dirname "$CERT_PATH")"
           cp "$live/fullchain.pem" "$CERT_PATH"
-          git add "$CERT_PATH"
+          git add -f "$CERT_PATH"
           git commit -m "Renew UDID profile signing certificate [skip ci]"
           git push origin HEAD:main
           gh workflow run pages.yml --ref main
