@@ -26,7 +26,7 @@ jobs:
       PROJECT_REF: gwfdnwlhonszocjizrnl
       CERT_PATH: tools/udid-service/certificates/fullchain.pem
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
+      LETSENCRYPT_EMAIL: ${{ vars.LETSENCRYPT_EMAIL }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
@@ -119,7 +119,26 @@ jobs:
           printf 'UDID_SIGNING_KEY_BASE64=%s\nUDID_SIGNING_CERT_BASE64=%s\n' \
             "$key_base64" "$chain_base64" > "$secrets_file"
           chmod 600 "$secrets_file"
-          supabase secrets set --project-ref "$PROJECT_REF" --env-file "$secrets_file"
+          set +e
+          supabase_output="$(supabase secrets set \
+            --project-ref "$PROJECT_REF" \
+            --env-file "$secrets_file" 2>&1)"
+          supabase_status=$?
+          set -e
+
+          if [[ $supabase_status -ne 0 ]]; then
+            if grep -Eqi '401|unauthorized|invalid([^[:alnum:]]+)(access[ _-]?)?token|token([^[:alnum:]]+)expired|expired([^[:alnum:]]+)token' <<< "$supabase_output"; then
+              echo "::error title=Supabase access token expired or invalid::Create a new Supabase access token and replace the SUPABASE_ACCESS_TOKEN GitHub Actions secret."
+            elif grep -Eqi '403|forbidden|insufficient([^[:alnum:]]+)permission|permission([^[:alnum:]]+)denied' <<< "$supabase_output"; then
+              echo "::error title=Supabase token lacks permission::Grant the token write access to Edge Function secrets for project $PROJECT_REF."
+            else
+              echo "::error title=Failed to update Supabase secrets::The Supabase CLI command failed. See its output below."
+            fi
+            printf '%s\n' "$supabase_output"
+            exit "$supabase_status"
+          fi
+
+          printf '%s\n' "$supabase_output"
 
       - name: Store public certificate chain
         if: steps.expiry.outputs.renew == 'true'
