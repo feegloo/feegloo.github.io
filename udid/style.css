@@ -10,6 +10,7 @@ a:hover { color: #70b5ff; }
 ol { min-width: 0; padding-left: 28px; }
 li { min-width: 0; padding-left: 4px; margin-bottom: 16px; font-size: 15px; line-height: 1.45; }
 li button { margin-top: 16px; }
+.step-note { margin: 12px 0 0; color: #c7c7cc; }
 .instruction-image-wrap {
   position: relative;
   display: block;
@@ -33,6 +34,7 @@ li button { margin-top: 16px; }
   width: 100%;
   height: auto;
   opacity: 1;
+  transition: opacity 140ms ease-out;
 }
 @media (hover: hover) {
   .instruction-image-wrap:hover .instruction-image { opacity: .8; }
