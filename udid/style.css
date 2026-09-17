@@ -33,13 +33,9 @@ li button { margin-top: 16px; }
   width: 100%;
   height: auto;
   opacity: 1;
-  transition: opacity 130ms ease;
 }
 @media (hover: hover) {
   .instruction-image-wrap:hover .instruction-image { opacity: .8; }
-}
-.instruction-image-wrap.is-changing .instruction-image {
-  opacity: 0;
 }
 .profile-highlight {
   position: absolute;
@@ -68,6 +64,3 @@ input { display: block; width: 100%; min-width: 0; padding: 18px 10px; border-ra
   h2 span { white-space: normal; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .instruction-image { transition: none; }
-}
