@@ -27,9 +27,9 @@ jobs:
       CERT_PATH: tools/udid-service/certificates/fullchain.pem
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       LETSENCRYPT_EMAIL: ${{ vars.LETSENCRYPT_EMAIL }}
-      ACME_DNS_USERNAME: ${{ secrets.ACME_DNS_USERNAME }}
+      ACME_DNS_USERNAME: ${{ vars.ACME_DNS_USERNAME }}
       ACME_DNS_PASSWORD: ${{ secrets.ACME_DNS_PASSWORD }}
-      ACME_DNS_SUBDOMAIN: ${{ secrets.ACME_DNS_SUBDOMAIN }}
+      ACME_DNS_SUBDOMAIN: ${{ vars.ACME_DNS_SUBDOMAIN }}
     steps:
       - uses: actions/checkout@v4
         with:
