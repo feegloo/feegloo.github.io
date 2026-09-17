@@ -17,6 +17,7 @@ let instructionImageChanging = false;
 function advanceInstructionImage() {
   if (instructionImageChanging) return;
   instructionImageChanging = true;
+  profileHighlight.hidden = true;
   instructionCarousel.classList.add("is-changing");
 
   window.setTimeout(() => {
