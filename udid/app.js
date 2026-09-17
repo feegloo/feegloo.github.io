@@ -9,17 +9,21 @@ const instructionImages = [
   "ios-install-udid-profile.jpeg",
   "ios-enter-device-passcode.jpeg",
   "ios-confirm-profile-installation.jpeg",
-  "ios-security-delay-complete.jpeg",
   "ios-udid-result-redacted.jpeg",
+  "ios-remove-downloaded-profile.jpeg",
+  "ios-security-delay-complete.jpeg",
+  "ios-profile-downloaded-confirmation.jpeg",
 ];
 const instructionImageAlts = {
   "ios-downloaded-profile-settings.jpeg": "Ekran Ustawień iOS z widoczną opcją Profil pobrany",
   "ios-downloaded-udid-profile.jpeg": "Ekran VPN i urządzenia zarządzane z widocznym pobranym profilem Odczyt UDID",
-  "ios-install-udid-profile.jpeg": "Ekran instalowania profilu Odczyt UDID z przyciskiem Instaluj",
+  "ios-install-udid-profile.jpeg": "Ekran instalowania profilu Odczyt UDID z wyróżnionym przyciskiem Instaluj",
   "ios-enter-device-passcode.jpeg": "Ekran iOS proszący o kod używany do odblokowywania iPhone'a",
   "ios-confirm-profile-installation.jpeg": "Potwierdzenie instalacji profilu Odczyt UDID",
-  "ios-security-delay-complete.jpeg": "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa",
   "ios-udid-result-redacted.jpeg": "Strona z odczytanym i zanonimizowanym UDID",
+  "ios-remove-downloaded-profile.jpeg": "Ekran instalowania profilu z wyróżnionym przyciskiem Usuń pobrany profil",
+  "ios-security-delay-complete.jpeg": "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa",
+  "ios-profile-downloaded-confirmation.jpeg": "Komunikat iOS Profil pobrany po ponownym pobraniu profilu",
 };
 const instructionImageHighlights = {
   "ios-downloaded-profile-settings.jpeg": {
@@ -33,6 +37,18 @@ const instructionImageHighlights = {
     top: "39.1%",
     width: "92.3%",
     height: "8.1%",
+  },
+  "ios-install-udid-profile.jpeg": {
+    left: "73.7%",
+    top: "9.6%",
+    width: "21.5%",
+    height: "5.0%",
+  },
+  "ios-remove-downloaded-profile.jpeg": {
+    left: "4.7%",
+    top: "48.2%",
+    width: "90.6%",
+    height: "5.9%",
   },
 };
 const instructionCarousel = document.getElementById("instruction-carousel");
