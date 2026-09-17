@@ -9,6 +9,14 @@ a:hover { color: #70b5ff; }
 ol { padding-left: 28px; }
 li { padding-left: 4px; margin-bottom: 16px; }
 li button { margin-top: 16px; }
+.instruction-image {
+  display: block;
+  width: min(100%, 360px);
+  height: auto;
+  margin: 18px auto 6px;
+  border: 1px solid #38383a;
+  border-radius: 22px;
+}
 .notice { padding: 20px; background: #1c1c1e; border-radius: 20px; font-size: 15px; color: #c7c7cc; }
 button { border: 0; border-radius: 16px; background: #0a84ff; color: #fff; min-height: 52px; padding: 12px 20px; font: inherit; font-weight: 650; cursor: pointer; width: 100%; }
 button:active { opacity: .75; } button:focus-visible, input:focus-visible { outline: 2px solid white; outline-offset: 4px; }
