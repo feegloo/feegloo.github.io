@@ -59,6 +59,7 @@ function advanceInstructionImage() {
   const fileName = instructionImages[instructionImageIndex];
   const highlight = instructionImageHighlights[fileName];
 
+  instructionImage.style.opacity = "0";
   instructionImage.src = `images/${fileName}`;
   instructionImage.alt = instructionImageAlts[fileName];
   profileHighlight.hidden = !highlight;
@@ -67,6 +68,10 @@ function advanceInstructionImage() {
       profileHighlight.style.setProperty(`--highlight-${property}`, value);
     });
   }
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    instructionImage.style.removeProperty("opacity");
+  }));
 }
 
 instructionCarousel.addEventListener("click", advanceInstructionImage);
