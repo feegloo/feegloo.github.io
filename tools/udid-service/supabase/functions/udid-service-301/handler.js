@@ -117,7 +117,7 @@ export function createHandler(secret, signing, now = () => Math.floor(Date.now()
 <key>Challenge</key><string>${token}</string>
 </dict>
 <key>PayloadOrganization</key><string>aleksanderfigiel.pl</string>
-<key>PayloadDisplayName</key><string>Odczyt UDID</string>
+<key>PayloadDisplayName</key><string>Device UDID</string>
 <key>PayloadDescription</key><string>UDID for AdHoc app development</string>
 <key>PayloadType</key><string>Profile Service</string>
 <key>PayloadVersion</key><integer>1</integer>
