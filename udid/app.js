@@ -7,7 +7,6 @@ const instructionImages = [
   "ios-downloaded-profile-settings.jpeg",
   "ios-downloaded-udid-profile.jpeg",
   "ios-install-udid-profile.jpeg",
-  "ios-enter-device-passcode.jpeg",
   "ios-confirm-profile-installation.jpeg",
   "ios-udid-result-redacted.jpeg",
   "ios-remove-downloaded-profile.jpeg",
@@ -55,37 +54,20 @@ const instructionCarousel = document.getElementById("instruction-carousel");
 const instructionImage = instructionCarousel.querySelector(".instruction-image");
 const profileHighlight = instructionCarousel.querySelector(".profile-highlight");
 let instructionImageIndex = 0;
-let instructionImageChanging = false;
 
 function advanceInstructionImage() {
-  if (instructionImageChanging) return;
-  instructionImageChanging = true;
-  profileHighlight.hidden = true;
-  instructionCarousel.classList.add("is-changing");
+  instructionImageIndex = (instructionImageIndex + 1) % instructionImages.length;
+  const fileName = instructionImages[instructionImageIndex];
+  const highlight = instructionImageHighlights[fileName];
 
-  window.setTimeout(() => {
-    instructionImageIndex = (instructionImageIndex + 1) % instructionImages.length;
-    const fileName = instructionImages[instructionImageIndex];
-
-    instructionImage.style.transition = "none";
-    instructionImage.style.opacity = "0";
-    instructionCarousel.classList.remove("is-changing");
-    instructionImage.src = `images/${fileName}`;
-    instructionImage.alt = instructionImageAlts[fileName];
-    const highlight = instructionImageHighlights[fileName];
-    profileHighlight.hidden = !highlight;
-    if (highlight) {
-      Object.entries(highlight).forEach(([property, value]) => {
-        profileHighlight.style.setProperty(`--highlight-${property}`, value);
-      });
-    }
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      instructionImage.style.removeProperty("transition");
-      instructionImage.style.removeProperty("opacity");
-      instructionImageChanging = false;
-    }));
-  }, 130);
+  instructionImage.src = `images/${fileName}`;
+  instructionImage.alt = instructionImageAlts[fileName];
+  profileHighlight.hidden = !highlight;
+  if (highlight) {
+    Object.entries(highlight).forEach(([property, value]) => {
+      profileHighlight.style.setProperty(`--highlight-${property}`, value);
+    });
+  }
 }
 
 instructionCarousel.addEventListener("click", advanceInstructionImage);
