@@ -15,7 +15,7 @@ const instructionImages = [
 const instructionImageAlts = {
   "ios-downloaded-profile-settings.jpeg": "Ekran Ustawień iOS z widoczną opcją Profil pobrany",
   "ios-downloaded-udid-profile.jpeg": "Ekran VPN i urządzenia zarządzane z widocznym pobranym profilem Odczyt UDID",
-  "ios-install-udid-profile.jpeg": "Ekran instalowania profilu Odczyt UDID z wyróżnionym przyciskiem Instaluj",
+  "ios-install-udid-profile.jpeg": "Ekran instalowania profilu Device UDID z wyróżnionym przyciskiem Instaluj",
   "ios-udid-result-redacted.jpeg": "Strona z odczytanym i zanonimizowanym UDID",
   "ios-remove-downloaded-profile.jpeg": "Ekran instalowania profilu z wyróżnionym przyciskiem Usuń pobrany profil",
   "ios-security-delay-complete.jpeg": "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa",
@@ -42,16 +42,16 @@ const instructionImageHighlights = {
     height: "8.1%",
   },
   "ios-install-udid-profile.jpeg": {
-    left: "73.7%",
-    top: "9.6%",
-    width: "21.5%",
-    height: "5.0%",
+    left: "73.1%",
+    top: "10.1%",
+    width: "22.5%",
+    height: "5.2%",
   },
   "ios-remove-downloaded-profile.jpeg": {
     left: "4.7%",
-    top: "48.2%",
+    top: "50.2%",
     width: "90.6%",
-    height: "5.9%",
+    height: "6.2%",
   },
 };
 const instructionCarousel = document.getElementById("instruction-carousel");
