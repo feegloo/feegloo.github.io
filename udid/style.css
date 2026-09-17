@@ -45,10 +45,10 @@ li button { margin-top: 16px; }
 }
 .profile-highlight {
   position: absolute;
-  left: 4.7%;
-  top: 39.7%;
-  width: 90.6%;
-  height: 5.8%;
+  left: var(--highlight-left, 4.7%);
+  top: var(--highlight-top, 39.7%);
+  width: var(--highlight-width, 90.6%);
+  height: var(--highlight-height, 5.8%);
   border: clamp(2px, .8vw, 4px) solid #ff3b30;
   border-radius: 4% / 32%;
   box-shadow: 0 0 0 1px rgb(0 0 0 / 35%);
