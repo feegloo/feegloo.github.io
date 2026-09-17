@@ -8,7 +8,7 @@ h1 span { white-space: nowrap; }
 a { color: #409cff; text-underline-offset: 3px; }
 a:hover { color: #70b5ff; }
 ol { min-width: 0; padding-left: 28px; }
-li { min-width: 0; padding-left: 4px; margin-bottom: 16px; }
+li { min-width: 0; padding-left: 4px; margin-bottom: 16px; font-size: 15px; line-height: 1.45; }
 li button { margin-top: 16px; }
 .instruction-image-wrap {
   position: relative;
