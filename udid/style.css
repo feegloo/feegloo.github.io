@@ -9,15 +9,32 @@ a:hover { color: #70b5ff; }
 ol { min-width: 0; padding-left: 28px; }
 li { min-width: 0; padding-left: 4px; margin-bottom: 16px; }
 li button { margin-top: 16px; }
-.instruction-image {
+.instruction-image-wrap {
+  position: relative;
   display: block;
   width: 100%;
   max-width: 360px;
   min-width: 0;
-  height: auto;
   margin: 18px auto 6px;
+  overflow: hidden;
   border: 1px solid #38383a;
   border-radius: 22px;
+}
+.instruction-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.profile-highlight {
+  position: absolute;
+  left: 4.7%;
+  top: 39.7%;
+  width: 90.6%;
+  height: 5.8%;
+  border: clamp(2px, .8vw, 4px) solid #ff3b30;
+  border-radius: 4% / 32%;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 35%);
+  pointer-events: none;
 }
 .notice { padding: 20px; background: #1c1c1e; border-radius: 20px; font-size: 15px; color: #c7c7cc; }
 .notice p { margin: 0 0 14px; }
