@@ -6,12 +6,18 @@ const result = new URLSearchParams(location.hash.slice(1));
 const instructionImages = [
   "ios-downloaded-profile-settings.jpeg",
   "ios-downloaded-udid-profile.jpeg",
+  "ios-install-udid-profile.jpeg",
+  "ios-enter-device-passcode.jpeg",
+  "ios-confirm-profile-installation.jpeg",
   "ios-security-delay-complete.jpeg",
   "ios-udid-result-redacted.jpeg",
 ];
 const instructionImageAlts = {
   "ios-downloaded-profile-settings.jpeg": "Ekran Ustawień iOS z widoczną opcją Profil pobrany",
   "ios-downloaded-udid-profile.jpeg": "Ekran VPN i urządzenia zarządzane z widocznym pobranym profilem Odczyt UDID",
+  "ios-install-udid-profile.jpeg": "Ekran instalowania profilu Odczyt UDID z przyciskiem Instaluj",
+  "ios-enter-device-passcode.jpeg": "Ekran iOS proszący o kod używany do odblokowywania iPhone'a",
+  "ios-confirm-profile-installation.jpeg": "Potwierdzenie instalacji profilu Odczyt UDID",
   "ios-security-delay-complete.jpeg": "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa",
   "ios-udid-result-redacted.jpeg": "Strona z odczytanym i zanonimizowanym UDID",
 };
