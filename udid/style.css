@@ -35,6 +35,9 @@ li button { margin-top: 16px; }
   transform: translateX(0);
   transition: opacity 130ms ease, transform 130ms ease;
 }
+@media (hover: hover) {
+  .instruction-image-wrap:hover .instruction-image { opacity: .9; }
+}
 .instruction-image-wrap.is-changing .instruction-image {
   opacity: 0;
   transform: translateX(-7%);
