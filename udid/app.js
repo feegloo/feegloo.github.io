@@ -17,7 +17,6 @@ const instructionImageAlts = {
   "ios-downloaded-profile-settings.jpeg": "Ekran Ustawień iOS z widoczną opcją Profil pobrany",
   "ios-downloaded-udid-profile.jpeg": "Ekran VPN i urządzenia zarządzane z widocznym pobranym profilem Odczyt UDID",
   "ios-install-udid-profile.jpeg": "Ekran instalowania profilu Odczyt UDID z wyróżnionym przyciskiem Instaluj",
-  "ios-enter-device-passcode.jpeg": "Ekran iOS proszący o kod używany do odblokowywania iPhone'a",
   "ios-confirm-profile-installation.jpeg": "Potwierdzenie instalacji profilu Odczyt UDID",
   "ios-udid-result-redacted.jpeg": "Strona z odczytanym i zanonimizowanym UDID",
   "ios-remove-downloaded-profile.jpeg": "Ekran instalowania profilu z wyróżnionym przyciskiem Usuń pobrany profil",
