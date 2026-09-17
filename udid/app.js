@@ -6,7 +6,13 @@ const result = new URLSearchParams(location.hash.slice(1));
 const instructionImages = [
   "ios-downloaded-profile-settings.jpeg",
   "ios-security-delay-complete.jpeg",
+  "ios-udid-result-redacted.jpeg",
 ];
+const instructionImageAlts = {
+  "ios-downloaded-profile-settings.jpeg": "Ekran Ustawień iOS z widoczną opcją Profil pobrany",
+  "ios-security-delay-complete.jpeg": "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa",
+  "ios-udid-result-redacted.jpeg": "Strona z odczytanym i zanonimizowanym UDID",
+};
 const highlightedInstructionImage = "ios-downloaded-profile-settings.jpeg";
 const instructionCarousel = document.getElementById("instruction-carousel");
 const instructionImage = instructionCarousel.querySelector(".instruction-image");
@@ -29,9 +35,7 @@ function advanceInstructionImage() {
     instructionImage.style.transform = "translateX(7%)";
     instructionCarousel.classList.remove("is-changing");
     instructionImage.src = `images/${fileName}`;
-    instructionImage.alt = fileName === highlightedInstructionImage
-      ? "Ekran Ustawień iOS z widoczną opcją Profil pobrany"
-      : "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa";
+    instructionImage.alt = instructionImageAlts[fileName];
     profileHighlight.hidden = fileName !== highlightedInstructionImage;
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
