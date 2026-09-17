@@ -5,15 +5,30 @@ const storageKey = "udid-profile-session";
 const result = new URLSearchParams(location.hash.slice(1));
 const instructionImages = [
   "ios-downloaded-profile-settings.jpeg",
+  "ios-downloaded-udid-profile.jpeg",
   "ios-security-delay-complete.jpeg",
   "ios-udid-result-redacted.jpeg",
 ];
 const instructionImageAlts = {
   "ios-downloaded-profile-settings.jpeg": "Ekran Ustawień iOS z widoczną opcją Profil pobrany",
+  "ios-downloaded-udid-profile.jpeg": "Ekran VPN i urządzenia zarządzane z widocznym pobranym profilem Odczyt UDID",
   "ios-security-delay-complete.jpeg": "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa",
   "ios-udid-result-redacted.jpeg": "Strona z odczytanym i zanonimizowanym UDID",
 };
-const highlightedInstructionImage = "ios-downloaded-profile-settings.jpeg";
+const instructionImageHighlights = {
+  "ios-downloaded-profile-settings.jpeg": {
+    left: "4.7%",
+    top: "39.7%",
+    width: "90.6%",
+    height: "5.8%",
+  },
+  "ios-downloaded-udid-profile.jpeg": {
+    left: "3.8%",
+    top: "39.1%",
+    width: "92.3%",
+    height: "8.1%",
+  },
+};
 const instructionCarousel = document.getElementById("instruction-carousel");
 const instructionImage = instructionCarousel.querySelector(".instruction-image");
 const profileHighlight = instructionCarousel.querySelector(".profile-highlight");
@@ -36,7 +51,13 @@ function advanceInstructionImage() {
     instructionCarousel.classList.remove("is-changing");
     instructionImage.src = `images/${fileName}`;
     instructionImage.alt = instructionImageAlts[fileName];
-    profileHighlight.hidden = fileName !== highlightedInstructionImage;
+    const highlight = instructionImageHighlights[fileName];
+    profileHighlight.hidden = !highlight;
+    if (highlight) {
+      Object.entries(highlight).forEach(([property, value]) => {
+        profileHighlight.style.setProperty(`--highlight-${property}`, value);
+      });
+    }
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
       instructionImage.style.removeProperty("transition");
