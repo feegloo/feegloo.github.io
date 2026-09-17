@@ -79,4 +79,3 @@ document.getElementById("copy").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(input.value); status.textContent = "Skopiowano UDID."; }
   catch { input.focus(); input.select(); input.setSelectionRange(0, input.value.length); status.textContent = "Przytrzymaj zaznaczony identyfikator i wybierz Kopiuj."; }
 });
-document.getElementById("clear").addEventListener("click", () => location.replace(location.pathname));
