@@ -69,7 +69,6 @@ function advanceInstructionImage() {
 
     instructionImage.style.transition = "none";
     instructionImage.style.opacity = "0";
-    instructionImage.style.transform = "translateX(7%)";
     instructionCarousel.classList.remove("is-changing");
     instructionImage.src = `images/${fileName}`;
     instructionImage.alt = instructionImageAlts[fileName];
@@ -84,7 +83,6 @@ function advanceInstructionImage() {
     requestAnimationFrame(() => requestAnimationFrame(() => {
       instructionImage.style.removeProperty("transition");
       instructionImage.style.removeProperty("opacity");
-      instructionImage.style.removeProperty("transform");
       instructionImageChanging = false;
     }));
   }, 130);
