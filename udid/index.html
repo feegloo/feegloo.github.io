@@ -13,18 +13,20 @@
 </head>
 <body>
 <main>
-  <p class="brand">aleksanderfigiel.pl</p>
-  <h1>Odczyt UDID</h1>
+  <h1>Odczyt UDID <span>(Unique Device Identifier)</span></h1>
   <section id="start">
-    <p>Dodaj swojego iPhone’a do testów aplikacji Ad Hoc.</p>
+    <p>Pobierz profil, zainstaluj go na iOS i skopiuj UDID, aby dodać urządzenie do testów aplikacji przez <a href="https://developer.apple.com/documentation/xcode/distributing-your-app-to-registered-devices">Apple Developer Ad Hoc</a>.</p>
+    <p>Następną wersję testową aplikacji będziesz mógł zainstalować przez link.</p>
     <ol>
-      <li>Otwórz tę stronę w Safari i pobierz profil.</li>
+      <li>
+        Otwórz tę stronę na iPhonie lub iPadzie i pobierz profil.
+        <button id="download" type="button">Pobierz profil</button>
+      </li>
       <li>Otwórz <strong>Ustawienia → Profil pobrany</strong> i wybierz <strong>Instaluj</strong>. Jeśli iPhone zapyta o kod, wpisz go wyłącznie w Ustawieniach.</li>
-      <li>Po powrocie tutaj skopiuj UDID i prześlij go Aleksandrowi.</li>
+      <li>Po instalacji wrócisz na tę stronę z UDID. Skopiuj go i przekaż w odpowiednie miejsce, aby rozpocząć testy Ad Hoc. Następnie możesz usunąć profil.</li>
+      <li>Przed uruchomieniem aplikacji włącz <strong>Ustawienia → Prywatność i ochrona → Tryb dewelopera</strong>, uruchom ponownie iPhone’a i potwierdź.</li>
     </ol>
-    <p class="notice">Profil prosi wyłącznie o UDID. Nie nadaje dostępu do zdjęć, wiadomości ani zarządzania telefonem. Na tym etapie profil nie jest podpisany zaufanym certyfikatem, więc iOS pokaże informację o braku podpisu.</p>
-    <button id="download" type="button">Pobierz profil</button>
-    <p class="small">Profil jest ważny przez 30 minut od pobrania. Odczyt UDID nie wymaga Trybu dewelopera.</p>
+    <p class="notice">Profil prosi wyłącznie o UDID. Nie nadaje dostępu do zdjęć, wiadomości ani zarządzania telefonem. UDID jest przetwarzany przez endpoint w Supabase wyłącznie w celu wyświetlenia wyniku. Nasz kod nie zapisuje go w bazie ani logach. Dostawcy hostingu mogą prowadzić techniczne logi połączeń.</p>
   </section>
   <section id="result" hidden>
     <p>Twój UDID</p>
@@ -34,7 +36,6 @@
     <button id="clear" class="secondary" type="button">Wyczyść wynik</button>
   </section>
   <p id="status" role="status" aria-live="polite"></p>
-  <footer>UDID jest przetwarzany przez endpoint w Supabase wyłącznie w celu wyświetlenia wyniku. Nasz kod nie zapisuje go w bazie ani logach. Dostawcy hostingu mogą prowadzić techniczne logi połączeń. Ta strona nie używa analityki ani reklam.</footer>
   <noscript>Włącz JavaScript, aby rozpocząć odczyt i skopiować wynik.</noscript>
 </main>
 </body>
