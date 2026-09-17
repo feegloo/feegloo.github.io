@@ -37,7 +37,7 @@ li button { margin-top: 16px; }
   transition: opacity 130ms ease, transform 130ms ease;
 }
 @media (hover: hover) {
-  .instruction-image-wrap:hover .instruction-image { opacity: .9; }
+  .instruction-image-wrap:hover .instruction-image { opacity: .8; }
 }
 .instruction-image-wrap.is-changing .instruction-image {
   opacity: 0;
