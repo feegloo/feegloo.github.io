@@ -20,6 +20,8 @@ li button { margin-top: 16px; }
   border-radius: 22px;
 }
 .notice { padding: 20px; background: #1c1c1e; border-radius: 20px; font-size: 15px; color: #c7c7cc; }
+.notice p { margin: 0 0 14px; }
+.notice p:last-child { margin-bottom: 0; }
 button { border: 0; border-radius: 16px; background: #0a84ff; color: #fff; min-height: 52px; padding: 12px 20px; font: inherit; font-weight: 650; cursor: pointer; width: 100%; }
 button:active { opacity: .75; } button:focus-visible, input:focus-visible { outline: 2px solid white; outline-offset: 4px; }
 .secondary { background: #1c1c1e; color: #0a84ff; }
