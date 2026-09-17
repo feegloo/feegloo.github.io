@@ -3,6 +3,51 @@ const endpoint = "https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/udid-ser
 const status = document.getElementById("status");
 const storageKey = "udid-profile-session";
 const result = new URLSearchParams(location.hash.slice(1));
+const instructionImages = [
+  "ios-downloaded-profile-settings.jpeg",
+  "ios-security-delay-complete.jpeg",
+];
+const highlightedInstructionImage = "ios-downloaded-profile-settings.jpeg";
+const instructionCarousel = document.getElementById("instruction-carousel");
+const instructionImage = instructionCarousel.querySelector(".instruction-image");
+const profileHighlight = instructionCarousel.querySelector(".profile-highlight");
+let instructionImageIndex = 0;
+let instructionImageChanging = false;
+
+function advanceInstructionImage() {
+  if (instructionImageChanging) return;
+  instructionImageChanging = true;
+  instructionCarousel.classList.add("is-changing");
+
+  window.setTimeout(() => {
+    instructionImageIndex = (instructionImageIndex + 1) % instructionImages.length;
+    const fileName = instructionImages[instructionImageIndex];
+
+    instructionImage.style.transition = "none";
+    instructionImage.style.opacity = "0";
+    instructionImage.style.transform = "translateX(7%)";
+    instructionCarousel.classList.remove("is-changing");
+    instructionImage.src = `images/${fileName}`;
+    instructionImage.alt = fileName === highlightedInstructionImage
+      ? "Ekran Ustawień iOS z widoczną opcją Profil pobrany"
+      : "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa";
+    profileHighlight.hidden = fileName !== highlightedInstructionImage;
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      instructionImage.style.removeProperty("transition");
+      instructionImage.style.removeProperty("opacity");
+      instructionImage.style.removeProperty("transform");
+      instructionImageChanging = false;
+    }));
+  }, 130);
+}
+
+instructionCarousel.addEventListener("click", advanceInstructionImage);
+instructionCarousel.addEventListener("keydown", event => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  advanceInstructionImage();
+});
 // Clear the fragment before any further interaction. UDID is never stored by this script.
 history.replaceState(null, "", location.pathname);
 if (result.has("udid")) {
