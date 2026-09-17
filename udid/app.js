@@ -21,6 +21,13 @@ const instructionImageAlts = {
   "ios-security-delay-complete.jpeg": "Powiadomienie iOS informujące o zakończeniu odliczania bezpieczeństwa",
   "ios-profile-downloaded-confirmation.jpeg": "Komunikat iOS Profil pobrany po ponownym pobraniu profilu",
 };
+const preloadedInstructionImages = instructionImages.slice(1).map(fileName => {
+  const image = new Image();
+  image.decoding = "async";
+  image.src = `images/${fileName}`;
+  return image;
+});
+
 const instructionImageHighlights = {
   "ios-downloaded-profile-settings.jpeg": {
     left: "4.7%",
