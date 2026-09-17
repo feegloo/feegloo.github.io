@@ -19,11 +19,25 @@ li button { margin-top: 16px; }
   overflow: hidden;
   border: 1px solid #38383a;
   border-radius: 22px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.instruction-image-wrap:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
 }
 .instruction-image {
   display: block;
   width: 100%;
   height: auto;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 130ms ease, transform 130ms ease;
+}
+.instruction-image-wrap.is-changing .instruction-image {
+  opacity: 0;
+  transform: translateX(-7%);
 }
 .profile-highlight {
   position: absolute;
@@ -50,4 +64,8 @@ input { display: block; width: 100%; min-width: 0; padding: 18px 10px; border-ra
   main { padding-top: 32px; }
   h1 { font-size: 31px; }
   h1 span { white-space: normal; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .instruction-image { transition: none; }
 }
