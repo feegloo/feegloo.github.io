@@ -70,6 +70,12 @@
       margin-bottom: 22px;
     }
 
+    .field-subtext {
+      margin: -2px 0 9px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
     label,
     legend {
       display: block;
@@ -207,8 +213,8 @@
 <body>
   <main>
     <p class="eyebrow">Invitation only</p>
-    <h1>Create your iOS app</h1>
-    <p class="lead">Tell me what you want to build. Your invitation identifies the workspace that will be created for this app.</p>
+    <h1>Create your iOS app from prompt and install on iPhone</h1>
+    <p class="lead">Tell me what you want to build.</p>
 
     <div id="invitation-error" class="invitation-error" role="alert">
       This invitation link is invalid. Use the full invitation URL you received.
@@ -230,13 +236,14 @@
       </div>
 
       <div class="field" data-field="initialPrompt">
-        <label for="initial-prompt">Initial prompt</label>
+        <label for="initial-prompt">Describe the app you want to build</label>
+        <p class="field-subtext">Describe it fully - you only have one prompt to build it!</p>
         <textarea
           id="initial-prompt"
           name="initialPrompt"
           required
           aria-describedby="initial-prompt-error"
-          placeholder="Describe the iOS app you want to build. For example: Create a simple app for tracking daily water intake, with a clean home screen, daily goal, history and reminders."
+          placeholder="Example: 'A daily task app. Show a list of my tasks, a big progress circle at the top, and a bright green button at the bottom to add a new one.'"
         ></textarea>
         <p id="initial-prompt-error" class="error-message" role="tooltip">Describe the app you want to create.</p>
       </div>
@@ -244,7 +251,7 @@
       <div id="agreement-field" class="agreement">
         <input id="agreement" name="agreement" type="checkbox" required aria-describedby="agreement-error">
         <div>
-          <label for="agreement">I accept the agreement and confirm that the information above is correct.</label>
+          <label for="agreement">I agree to use this Apple Developer app-building process solely for educational purposes.</label>
           <p id="agreement-error" class="error-message" role="tooltip">You must accept the agreement to continue.</p>
         </div>
       </div>
@@ -342,7 +349,7 @@
         const payload = Object.fromEntries(new FormData(form).entries());
         payload.agreement = document.getElementById('agreement').checked;
 
-        console.log('create-ios-app payload', payload);
+        console.log('vibe-ios-app payload', payload);
         status.textContent = 'The form is valid. Submission backend is not connected yet.';
       });
     })();
