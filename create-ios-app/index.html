@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Create iOS App</title>
+  <meta name="description" content="Create a new iOS app from an invitation.">
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      color-scheme: light;
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --line: #d2d2d7;
+      --focus: #0071e3;
+      --error: #d70015;
+      --error-bg: #fff2f3;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(100% - 32px, 680px);
+      margin: 0 auto;
+      padding: 64px 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 7vw, 56px);
+      line-height: 1.02;
+      letter-spacing: -.04em;
+    }
+
+    .lead {
+      max-width: 560px;
+      margin: 18px 0 32px;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .card {
+      padding: 28px;
+      border: 1px solid rgba(0, 0, 0, .08);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: 0 14px 50px rgba(0, 0, 0, .07);
+    }
+
+    .field {
+      margin-bottom: 22px;
+    }
+
+    label,
+    legend {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 650;
+    }
+
+    input[type="email"],
+    input[type="text"],
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    input[type="email"],
+    input[type="text"] {
+      height: 48px;
+      padding: 0 14px;
+    }
+
+    textarea {
+      min-height: 170px;
+      padding: 13px 14px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 4px rgba(0, 113, 227, .13);
+    }
+
+    .field.invalid input,
+    .field.invalid textarea,
+    .agreement.invalid {
+      border-color: var(--error);
+      background: var(--error-bg);
+      box-shadow: 0 0 0 3px rgba(215, 0, 21, .08);
+    }
+
+    .error-message {
+      display: none;
+      margin: 7px 0 0;
+      color: var(--error);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .invalid .error-message {
+      display: block;
+    }
+
+    .agreement {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      margin: 2px 0 24px;
+      padding: 13px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+    }
+
+    .agreement input {
+      width: 18px;
+      height: 18px;
+      margin: 2px 0 0;
+      flex: 0 0 auto;
+      accent-color: var(--focus);
+    }
+
+    .agreement label {
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .agreement .error-message {
+      margin-top: 5px;
+    }
+
+    button {
+      width: 100%;
+      min-height: 50px;
+      border: 0;
+      border-radius: 13px;
+      background: #0071e3;
+      color: #fff;
+      font: 700 16px/1.2 inherit;
+      cursor: pointer;
+      transition: background .15s ease, transform .05s ease;
+    }
+
+    button:hover { background: #0077ed; }
+    button:active { transform: translateY(1px); }
+
+    button:focus-visible {
+      outline: 3px solid rgba(0, 113, 227, .35);
+      outline-offset: 3px;
+    }
+
+    .status {
+      min-height: 22px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .invitation-error {
+      display: none;
+      margin: 0 0 20px;
+      padding: 13px 14px;
+      border: 1px solid rgba(215, 0, 21, .3);
+      border-radius: 12px;
+      background: var(--error-bg);
+      color: var(--error);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .invitation-error.visible { display: block; }
+
+    @media (max-width: 560px) {
+      main { padding: 36px 0; }
+      .card { padding: 20px; border-radius: 20px; }
+      .lead { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Invitation only</p>
+    <h1>Create your iOS app</h1>
+    <p class="lead">Tell me what you want to build. Your invitation identifies the workspace that will be created for this app.</p>
+
+    <div id="invitation-error" class="invitation-error" role="alert">
+      This invitation link is invalid. Use the full invitation URL you received.
+    </div>
+
+    <form id="create-ios-app-form" class="card" novalidate>
+      <input id="invitation-hash" name="invitationHash" type="hidden">
+
+      <div class="field" data-field="email">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error">
+        <p id="email-error" class="error-message" role="tooltip">Enter a valid email address.</p>
+      </div>
+
+      <div class="field" data-field="appName">
+        <label for="app-name">App name</label>
+        <input id="app-name" name="appName" type="text" autocomplete="off" required aria-describedby="app-name-error">
+        <p id="app-name-error" class="error-message" role="tooltip">Enter the name of your app.</p>
+      </div>
+
+      <div class="field" data-field="initialPrompt">
+        <label for="initial-prompt">Initial prompt</label>
+        <textarea
+          id="initial-prompt"
+          name="initialPrompt"
+          required
+          aria-describedby="initial-prompt-error"
+          placeholder="Describe the iOS app you want to build. For example: Create a simple app for tracking daily water intake, with a clean home screen, daily goal, history and reminders."
+        ></textarea>
+        <p id="initial-prompt-error" class="error-message" role="tooltip">Describe the app you want to create.</p>
+      </div>
+
+      <div id="agreement-field" class="agreement">
+        <input id="agreement" name="agreement" type="checkbox" required aria-describedby="agreement-error">
+        <div>
+          <label for="agreement">I accept the agreement and confirm that the information above is correct.</label>
+          <p id="agreement-error" class="error-message" role="tooltip">You must accept the agreement to continue.</p>
+        </div>
+      </div>
+
+      <button type="submit">Create iOS app</button>
+      <p id="form-status" class="status" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.getElementById('create-ios-app-form');
+      const invitationInput = document.getElementById('invitation-hash');
+      const invitationError = document.getElementById('invitation-error');
+      const status = document.getElementById('form-status');
+
+      const rawQuery = window.location.search.slice(1);
+      const invitationHash = rawQuery && !rawQuery.includes('=') ? decodeURIComponent(rawQuery) : '';
+      const invitationIsValid = /^[A-Za-z0-9]{32}$/.test(invitationHash);
+
+      invitationInput.value = invitationIsValid ? invitationHash : '';
+      invitationError.classList.toggle('visible', !invitationIsValid);
+
+      const fields = [
+        {
+          element: document.getElementById('email'),
+          wrapper: document.querySelector('[data-field="email"]'),
+          isValid: function (element) {
+            return element.value.trim() !== '' && element.validity.valid;
+          }
+        },
+        {
+          element: document.getElementById('app-name'),
+          wrapper: document.querySelector('[data-field="appName"]'),
+          isValid: function (element) {
+            return element.value.trim() !== '';
+          }
+        },
+        {
+          element: document.getElementById('initial-prompt'),
+          wrapper: document.querySelector('[data-field="initialPrompt"]'),
+          isValid: function (element) {
+            return element.value.trim() !== '';
+          }
+        },
+        {
+          element: document.getElementById('agreement'),
+          wrapper: document.getElementById('agreement-field'),
+          isValid: function (element) {
+            return element.checked;
+          }
+        }
+      ];
+
+      function setValidity(field, valid) {
+        field.wrapper.classList.toggle('invalid', !valid);
+        field.element.setAttribute('aria-invalid', String(!valid));
+      }
+
+      fields.forEach(function (field) {
+        const eventName = field.element.type === 'checkbox' ? 'change' : 'input';
+        field.element.addEventListener(eventName, function () {
+          if (field.wrapper.classList.contains('invalid')) {
+            setValidity(field, field.isValid(field.element));
+          }
+        });
+      });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        status.textContent = '';
+
+        let firstInvalidElement = null;
+
+        fields.forEach(function (field) {
+          const valid = field.isValid(field.element);
+          setValidity(field, valid);
+
+          if (!valid && !firstInvalidElement) {
+            firstInvalidElement = field.element;
+          }
+        });
+
+        if (!invitationIsValid) {
+          invitationError.classList.add('visible');
+          invitationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+
+        if (firstInvalidElement) {
+          firstInvalidElement.focus();
+          return;
+        }
+
+        const payload = Object.fromEntries(new FormData(form).entries());
+        payload.agreement = document.getElementById('agreement').checked;
+
+        console.log('create-ios-app payload', payload);
+        status.textContent = 'The form is valid. Submission backend is not connected yet.';
+      });
+    })();
+  </script>
+</body>
+</html>
