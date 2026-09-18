@@ -14,7 +14,7 @@
   {% endif %}
 
   <meta name="robots" content="{% if page.noindex %}noindex, nofollow{% else %}index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1{% endif %}">
-  <meta name="googlebot" content="{% if page.noindex %}noindex, nofollow{% else %}index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1{% endif %}">
+  <meta name="googlebot" content="{% if page.noindex %}noindex, nofollow{% else %}index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1, notranslate{% endif %}">
   <meta name="theme-color" content="#f5efe8">
 
   <link rel="canonical" href="{{ page.url | replace:'index.html','' | absolute_url }}">
