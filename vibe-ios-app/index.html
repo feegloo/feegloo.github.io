@@ -174,7 +174,7 @@
       border-radius: 13px;
       background: #0071e3;
       color: #fff;
-      font: 700 19px/1.2 inherit;
+      font: 700 25px/1.2 inherit;
       cursor: pointer;
       transition: background .15s ease, transform .05s ease;
     }
@@ -213,7 +213,10 @@
     .invitation-error.visible { display: block; }
 
     @media (max-width: 560px) {
-      main { padding: 2px 0 0; }
+      main {
+        margin: 0 auto;
+        padding: 8px 0 0;
+      }
       .card { padding: 18px 18px 10px; border-radius: 18px; }
       h1 { font-size: 28px; }
       input[type="email"],
