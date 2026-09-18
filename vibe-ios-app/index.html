@@ -213,9 +213,12 @@
     .invitation-error.visible { display: block; }
 
     @media (max-width: 560px) {
-      main { padding: 16px 0; }
-      .card { padding: 18px; border-radius: 18px; }
+      main { padding: 10px 0 0; }
+      .card { padding: 18px 18px 10px; border-radius: 18px; }
       h1 { font-size: 28px; }
+      input[type="email"],
+      input[type="text"],
+      textarea { font-size: 16px; }
       button { font-size: 19px; }
       .agreement label { white-space: normal; }
     }
