@@ -32,13 +32,13 @@
     main {
       width: min(100% - 32px, 680px);
       margin: 0 auto;
-      padding: 64px 0;
+      padding: 42px 0;
     }
 
     .eyebrow {
       margin: 0 0 8px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
@@ -46,8 +46,8 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(30px, 5.5vw, 44px);
-      line-height: 1.02;
+      font-size: clamp(26px, 4.8vw, 38px);
+      line-height: 1.04;
       letter-spacing: -.04em;
     }
 
@@ -59,19 +59,20 @@
     }
 
     .card {
-      padding: 28px;
+      margin-top: 22px;
+      padding: 22px;
       border: 1px solid rgba(0, 0, 0, .08);
-      border-radius: 24px;
+      border-radius: 20px;
       background: var(--card);
       box-shadow: 0 14px 50px rgba(0, 0, 0, .07);
     }
 
     .field {
-      margin-bottom: 22px;
+      margin-bottom: 16px;
     }
 
     .field-subtext {
-      margin: -2px 0 9px;
+      margin: -2px 0 7px;
       color: var(--muted);
       font-size: 13px;
     }
@@ -79,7 +80,8 @@
     label,
     legend {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      font-size: 14px;
       font-weight: 650;
     }
 
@@ -91,20 +93,20 @@
       border-radius: 12px;
       background: #fff;
       color: var(--text);
-      font: inherit;
+      font: 15px/1.4 inherit;
       outline: none;
       transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
     }
 
     input[type="email"],
     input[type="text"] {
-      height: 48px;
-      padding: 0 14px;
+      height: 42px;
+      padding: 0 12px;
     }
 
     textarea {
-      min-height: 170px;
-      padding: 13px 14px;
+      min-height: 138px;
+      padding: 11px 12px;
       resize: vertical;
     }
 
@@ -138,8 +140,8 @@
       display: flex;
       align-items: flex-start;
       gap: 11px;
-      margin: 2px 0 24px;
-      padding: 13px;
+      margin: 0 0 18px;
+      padding: 10px 11px;
       border: 1px solid transparent;
       border-radius: 12px;
     }
@@ -163,12 +165,12 @@
 
     button {
       width: 100%;
-      min-height: 50px;
+      min-height: 46px;
       border: 0;
       border-radius: 13px;
       background: #0071e3;
       color: #fff;
-      font: 700 16px/1.2 inherit;
+      font: 700 18px/1.2 inherit;
       cursor: pointer;
       transition: background .15s ease, transform .05s ease;
     }
@@ -183,9 +185,9 @@
 
     .status {
       min-height: 22px;
-      margin: 14px 0 0;
+      margin: 10px 0 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       text-align: center;
     }
 
@@ -204,9 +206,10 @@
     .invitation-error.visible { display: block; }
 
     @media (max-width: 560px) {
-      main { padding: 36px 0; }
-      .card { padding: 20px; border-radius: 20px; }
-      .lead { font-size: 17px; }
+      main { padding: 28px 0; }
+      .card { padding: 18px; border-radius: 18px; }
+      h1 { font-size: 28px; }
+      button { font-size: 17px; }
     }
   </style>
 </head>
