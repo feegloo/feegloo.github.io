@@ -312,7 +312,7 @@
       const createAppEndpoint = 'https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/create-app';
 
       const invitationHash = window.location.search.slice(1);
-      const invitationIsValid = invitationHash.length > 0;
+      const invitationIsValid = /[A-Za-z]/.test(invitationHash);
 
       invitationInput.value = invitationIsValid ? invitationHash : '';
       invitationError.classList.toggle('visible', !invitationIsValid);
