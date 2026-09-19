@@ -309,9 +309,8 @@
       const invitationError = document.getElementById('invitation-error');
       const status = document.getElementById('form-status');
 
-      const rawQuery = window.location.search.slice(1);
-      const invitationHash = rawQuery && !rawQuery.includes('=') ? decodeURIComponent(rawQuery) : '';
-      const invitationIsValid = /^[A-Za-z0-9]{32}$/.test(invitationHash);
+      const invitationHash = window.location.search.slice(1);
+      const invitationIsValid = invitationHash.length > 0;
 
       invitationInput.value = invitationIsValid ? invitationHash : '';
       invitationError.classList.toggle('visible', !invitationIsValid);
