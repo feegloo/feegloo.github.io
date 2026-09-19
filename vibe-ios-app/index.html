@@ -671,7 +671,7 @@
 
           if (result && result.status === 'invalid_invitation') {
             setButton('Invalid invitation', true);
-            showBanner('Invalid invitation. Your request has been saved.');
+            showBanner('Invalid invitation. Your form has been submitted.');
             return;
           }
 
@@ -712,7 +712,7 @@
 
           if (result.status === 'invalid_invitation') {
             setButton('Invalid invitation', true);
-            showBanner('Invalid invitation. Your request has been saved.');
+            showBanner('Invalid invitation. Your form has been submitted.');
             return;
           }
 
@@ -791,7 +791,7 @@
 
           if (response.status === 202 && result.status === 'missing_invitation') {
             setButton('Request saved', true);
-            showBanner('Missing invitation. Your request has been saved.');
+            showBanner('Missing invitation. Your form has been submitted.');
             return;
           }
 
@@ -803,7 +803,7 @@
 
           if (response.status === 422) {
             setButton('Invalid invitation', true);
-            showBanner('Invalid invitation. Your request has been saved.');
+            showBanner('Invalid invitation. Your form has been submitted.');
             return;
           }
 
