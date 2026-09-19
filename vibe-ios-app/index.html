@@ -80,7 +80,7 @@
     }
 
     .card {
-      margin-top: 20px;
+      margin-top: 0;
       padding: 22px;
       border: 1px solid rgba(0, 0, 0, .06);
       border-radius: 20px;
@@ -245,18 +245,16 @@
     }
 
     .invitation-error {
-      display: none;
-      margin: 0 0 20px;
-      padding: 13px 14px;
-      border: 1px solid rgba(215, 0, 21, .3);
-      border-radius: 12px;
-      background: var(--error-bg);
+      min-height: 20px;
+      margin: 0;
       color: var(--error);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
+      line-height: 20px;
+      visibility: hidden;
     }
 
-    .invitation-error.visible { display: block; }
+    .invitation-error.visible { visibility: visible; }
 
     @media (max-width: 560px) {
       main {
