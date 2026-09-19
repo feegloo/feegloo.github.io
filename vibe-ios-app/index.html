@@ -656,6 +656,10 @@
         statusPollTimer = window.setTimeout(pollInvitationStatus, 2000);
       }
 
+      function isCreatingStatus(value) {
+        return ['created', 'repository_created', 'issue_created', 'pr_created'].includes(value);
+      }
+
       async function pollInvitationStatus() {
         if (!invitationIsPresent) {
           return;
@@ -675,9 +679,9 @@
             return;
           }
 
-          if (result && result.status === 'created') {
+          if (result && isCreatingStatus(result.status)) {
             startButtonAnimation(
-              result.attachmentStatus === 'uploading'
+              result.status === 'created' && result.attachmentStatus === 'uploading'
                 ? 'Uploading images'
                 : 'Creating app'
             );
@@ -716,9 +720,9 @@
             return;
           }
 
-          if (result.status === 'created') {
+          if (isCreatingStatus(result.status)) {
             startButtonAnimation(
-              result.attachmentStatus === 'uploading'
+              result.status === 'created' && result.attachmentStatus === 'uploading'
                 ? 'Uploading images'
                 : 'Creating app'
             );
