@@ -273,7 +273,7 @@
       <div class="field" data-field="appName">
         <label for="app-name">App name</label>
         <input id="app-name" name="appName" type="text" autocomplete="off" required aria-describedby="app-name-error">
-        <p id="app-name-error" class="error-message" role="tooltip">Enter the name of your app.</p>
+        <p id="app-name-error" class="error-message" role="tooltip">App name must be between 2 and 30 characters.</p>
       </div>
 
       <div class="field" data-field="initialPrompt">
@@ -328,7 +328,8 @@
           element: document.getElementById('app-name'),
           wrapper: document.querySelector('[data-field="appName"]'),
           isValid: function (element) {
-            return element.value.trim() !== '';
+            const appName = element.value.trim();
+            return appName.length >= 2 && appName.length <= 30;
           }
         },
         {
