@@ -91,11 +91,11 @@
     }
 
     .field {
-      margin-bottom: 9px;
+      margin-bottom: 5px;
     }
 
     .field-subtext {
-      margin: -2px 0 7px;
+      margin: -1px 0 4px;
       color: var(--muted);
       font-size: 12px;
     }
@@ -103,7 +103,7 @@
     label,
     legend {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       font-size: 14px;
       font-weight: 650;
     }
@@ -124,19 +124,19 @@
 
     input[type="email"],
     input[type="text"] {
-      height: 38px;
-      padding: 0 12px;
+      height: 34px;
+      padding: 0 10px;
     }
 
     textarea {
-      min-height: 116px;
-      padding: 11px 12px;
+      min-height: 84px;
+      padding: 8px 10px;
       resize: vertical;
     }
 
     textarea::placeholder {
       color: #9a9aa1;
-      font-size: 13px;
+      font-size: 12px;
       opacity: 1;
     }
 
@@ -155,12 +155,12 @@
     }
 
     .error-message {
-      min-height: 14px;
-      margin: 2px 0 0;
+      min-height: 12px;
+      margin: 1px 0 0;
       color: var(--error);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      line-height: 14px;
+      line-height: 12px;
       visibility: hidden;
     }
 
@@ -171,16 +171,16 @@
     .agreement {
       display: flex;
       align-items: flex-start;
-      gap: 8px;
-      margin: 0 0 5px;
-      padding: 4px 8px;
+      gap: 7px;
+      margin: 0 0 3px;
+      padding: 2px 6px;
       border: 1px solid transparent;
       border-radius: 12px;
     }
 
     .agreement input {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       margin: 0;
       flex: 0 0 auto;
       accent-color: var(--focus);
@@ -188,24 +188,24 @@
 
     .agreement label {
       margin: 0;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
-      line-height: 18px;
+      line-height: 16px;
       white-space: nowrap;
     }
 
     [data-field="initialPrompt"] .error-message {
-      margin-bottom: 5px;
+      margin-bottom: 2px;
     }
 
     .agreement .error-message {
       margin-top: 1px;
     }
 
-    button {
+    button[type="submit"] {
       width: 100%;
-      margin-top: 6px;
-      min-height: 46px;
+      margin-top: 4px;
+      min-height: 42px;
       border: 0;
       border-radius: 13px;
       background: #0071e3;
@@ -215,20 +215,20 @@
       transition: background .15s ease, transform .05s ease;
     }
 
-    button:hover { background: #0077ed; }
-    button:active { transform: translateY(1px); }
+    button[type="submit"]:hover { background: #0077ed; }
+    button[type="submit"]:active { transform: translateY(1px); }
 
-    button:disabled {
+    button[type="submit"]:disabled {
       cursor: default;
       opacity: .72;
       transform: none;
     }
 
-    button:disabled:hover {
+    button[type="submit"]:disabled:hover {
       background: #0071e3;
     }
 
-    button:focus-visible {
+    button[type="submit"]:focus-visible {
       outline: 3px solid rgba(0, 113, 227, .35);
       outline-offset: 3px;
     }
@@ -255,6 +255,126 @@
     }
 
     .invitation-error.visible { visibility: visible; }
+
+    .attachments-field {
+      margin: 0 0 4px;
+    }
+
+    .attachments-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .attachments-title {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .attachments-hint {
+      color: var(--muted);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .attachments-row {
+      display: flex;
+      align-items: center;
+      min-height: 34px;
+      gap: 6px;
+    }
+
+    .attachment-input {
+      display: none;
+    }
+
+    .attachment-picker {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      margin: 0;
+      flex: 0 0 34px;
+      place-items: center;
+      border: 1px dashed #c5c5ca;
+      border-radius: 9px;
+      background: #fafafa;
+      color: var(--muted);
+      font-size: 22px;
+      font-weight: 400;
+      line-height: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .attachment-picker:hover {
+      border-color: #9a9aa1;
+      color: var(--text);
+    }
+
+    .attachment-picker.disabled {
+      cursor: default;
+      opacity: .4;
+      pointer-events: none;
+    }
+
+    .attachment-previews {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .attachment-preview {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      overflow: visible;
+      border-radius: 8px;
+    }
+
+    .attachment-preview img {
+      width: 34px;
+      height: 34px;
+      display: block;
+      object-fit: cover;
+      border: 1px solid #e1e1e6;
+      border-radius: 8px;
+      background: #f7f7f8;
+    }
+
+    .attachment-remove {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      display: grid;
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      place-items: center;
+      border: 1px solid rgba(0, 0, 0, .12);
+      border-radius: 50%;
+      background: #fff;
+      color: #55555a;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+      font: 700 11px/1 sans-serif;
+      cursor: pointer;
+    }
+
+    .attachment-error {
+      min-height: 0;
+      margin: 2px 0 0;
+      color: var(--error);
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 12px;
+    }
+
+    .attachment-error:empty {
+      display: none;
+    }
 
     @media (max-width: 560px) {
       main {
@@ -305,6 +425,25 @@
         <p id="initial-prompt-error" class="error-message" role="tooltip">Describe the app you want to create.</p>
       </div>
 
+      <div class="attachments-field">
+        <div class="attachments-heading">
+          <span class="attachments-title">Screenshots (optional)</span>
+          <span class="attachments-hint">Max 5 · PNG, JPG, WEBP, SVG</span>
+        </div>
+        <div class="attachments-row">
+          <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add screenshots">+</label>
+          <input
+            id="attachments"
+            class="attachment-input"
+            type="file"
+            multiple
+            accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml"
+          >
+          <div id="attachment-previews" class="attachment-previews"></div>
+        </div>
+        <p id="attachments-error" class="attachment-error" role="alert"></p>
+      </div>
+
       <div id="agreement-field" class="agreement">
         <input id="agreement" name="agreement" type="checkbox" required aria-describedby="agreement-error">
         <div>
@@ -325,6 +464,10 @@
       const invitationError = document.getElementById('invitation-error');
       const status = document.getElementById('form-status');
       const submitButton = form.querySelector('button[type="submit"]');
+      const attachmentInput = document.getElementById('attachments');
+      const attachmentPicker = document.getElementById('attachment-picker');
+      const attachmentPreviews = document.getElementById('attachment-previews');
+      const attachmentError = document.getElementById('attachments-error');
       const createAppEndpoint = 'https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/create-app';
 
       const invitationHash = window.location.search.slice(1);
@@ -333,6 +476,7 @@
       let buttonAnimationTimer = null;
       let buttonAnimationBase = '';
       let statusPollTimer = null;
+      let selectedAttachments = [];
 
       invitationInput.value = invitationIsPresent ? invitationHash : '';
 
@@ -372,6 +516,76 @@
         field.wrapper.classList.toggle('invalid', !valid);
         field.element.setAttribute('aria-invalid', String(!valid));
       }
+
+      function attachmentExtension(file) {
+        const parts = file.name.toLowerCase().split('.');
+        return parts.length > 1 ? parts.pop() : '';
+      }
+
+      function attachmentIsAllowed(file) {
+        return ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(attachmentExtension(file));
+      }
+
+      function renderAttachments() {
+        attachmentPreviews.innerHTML = '';
+
+        selectedAttachments.forEach(function (item, index) {
+          const preview = document.createElement('div');
+          preview.className = 'attachment-preview';
+
+          const image = document.createElement('img');
+          image.src = item.url;
+          image.alt = item.file.name;
+
+          const removeButton = document.createElement('button');
+          removeButton.type = 'button';
+          removeButton.className = 'attachment-remove';
+          removeButton.setAttribute('aria-label', 'Remove ' + item.file.name);
+          removeButton.textContent = '×';
+          removeButton.addEventListener('click', function () {
+            URL.revokeObjectURL(item.url);
+            selectedAttachments.splice(index, 1);
+            attachmentError.textContent = '';
+            renderAttachments();
+          });
+
+          preview.appendChild(image);
+          preview.appendChild(removeButton);
+          attachmentPreviews.appendChild(preview);
+        });
+
+        attachmentPicker.classList.toggle('disabled', selectedAttachments.length >= 5);
+      }
+
+      attachmentInput.addEventListener('change', function () {
+        attachmentError.textContent = '';
+        const files = Array.from(attachmentInput.files || []);
+
+        files.forEach(function (file) {
+          if (selectedAttachments.length >= 5) {
+            attachmentError.textContent = 'You can attach up to 5 screenshots.';
+            return;
+          }
+
+          if (!attachmentIsAllowed(file)) {
+            attachmentError.textContent = 'Use PNG, JPG, WEBP or SVG images.';
+            return;
+          }
+
+          if (file.size > 10 * 1024 * 1024) {
+            attachmentError.textContent = 'Each screenshot must be 10 MB or smaller.';
+            return;
+          }
+
+          selectedAttachments.push({
+            file: file,
+            url: URL.createObjectURL(file)
+          });
+        });
+
+        attachmentInput.value = '';
+        renderAttachments();
+      });
 
       function showBanner(message) {
         invitationError.textContent = message;
@@ -461,6 +675,10 @@
             return;
           }
 
+          if (result && result.status === 'uploading_attachments') {
+            startButtonAnimation('Uploading images');
+          }
+
           if (result && result.status === 'created') {
             startButtonAnimation('Creating app');
           }
@@ -495,6 +713,12 @@
           if (result.status === 'invalid_invitation') {
             setButton('Invalid invitation', true);
             showBanner('Invalid invitation. Your request has been saved.');
+            return;
+          }
+
+          if (result.status === 'uploading_attachments') {
+            startButtonAnimation('Uploading images');
+            scheduleStatusPoll();
             return;
           }
 
@@ -545,22 +769,22 @@
           return;
         }
 
-        const payload = {
-          email: document.getElementById('email').value.trim(),
-          appName: document.getElementById('app-name').value.trim(),
-          prompt: document.getElementById('initial-prompt').value.trim(),
-          organization: invitationIsPresent ? invitationHash : ''
-        };
+        const payload = new FormData();
+        payload.append('email', document.getElementById('email').value.trim());
+        payload.append('appName', document.getElementById('app-name').value.trim());
+        payload.append('prompt', document.getElementById('initial-prompt').value.trim());
+        payload.append('organization', invitationIsPresent ? invitationHash : '');
 
-        startButtonAnimation('Creating');
+        selectedAttachments.forEach(function (item) {
+          payload.append('attachments', item.file, item.file.name);
+        });
+
+        startButtonAnimation(selectedAttachments.length > 0 ? 'Uploading images' : 'Creating');
 
         try {
           const response = await fetch(createAppEndpoint, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
+            body: payload
           });
 
           const result = await response.json().catch(function () {
