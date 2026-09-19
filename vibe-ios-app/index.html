@@ -208,6 +208,16 @@
     button:hover { background: #0077ed; }
     button:active { transform: translateY(1px); }
 
+    button:disabled {
+      cursor: default;
+      opacity: .72;
+      transform: none;
+    }
+
+    button:disabled:hover {
+      background: #0071e3;
+    }
+
     button:focus-visible {
       outline: 3px solid rgba(0, 113, 227, .35);
       outline-offset: 3px;
@@ -257,9 +267,7 @@
     <p class="eyebrow">Invitation only</p>
     <h1>Create your iOS app with AI prompt and install app on iPhone with TestFlight.</h1>
     <p class="header-subtext">Then continue building the app with your favorite AI tool, like ChatGPT, Claude, or Copilot.</p>
-    <div id="invitation-error" class="invitation-error" role="alert">
-      This invitation link is invalid. Use the full invitation URL you received.
-    </div>
+    <div id="invitation-error" class="invitation-error" role="alert"></div>
 
     <form id="create-ios-app-form" class="card" novalidate>
       <input id="invitation-hash" name="invitationHash" type="hidden">
@@ -312,10 +320,13 @@
       const createAppEndpoint = 'https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/create-app';
 
       const invitationHash = window.location.search.slice(1);
-      const invitationIsValid = /[A-Za-z]/.test(invitationHash);
+      const invitationIsPresent = /[A-Za-z]/.test(invitationHash);
 
-      invitationInput.value = invitationIsValid ? invitationHash : '';
-      invitationError.classList.toggle('visible', !invitationIsValid);
+      let buttonAnimationTimer = null;
+      let buttonAnimationBase = '';
+      let statusPollTimer = null;
+
+      invitationInput.value = invitationIsPresent ? invitationHash : '';
 
       const fields = [
         {
@@ -354,6 +365,131 @@
         field.element.setAttribute('aria-invalid', String(!valid));
       }
 
+      function showBanner(message) {
+        invitationError.textContent = message;
+        invitationError.classList.add('visible');
+      }
+
+      function hideBanner() {
+        invitationError.textContent = '';
+        invitationError.classList.remove('visible');
+      }
+
+      function stopButtonAnimation() {
+        if (buttonAnimationTimer) {
+          window.clearInterval(buttonAnimationTimer);
+          buttonAnimationTimer = null;
+        }
+        buttonAnimationBase = '';
+      }
+
+      function setButton(text, disabled) {
+        stopButtonAnimation();
+        submitButton.textContent = text;
+        submitButton.disabled = disabled;
+      }
+
+      function startButtonAnimation(baseText) {
+        if (buttonAnimationTimer && buttonAnimationBase === baseText) {
+          submitButton.disabled = true;
+          return;
+        }
+
+        stopButtonAnimation();
+        buttonAnimationBase = baseText;
+        submitButton.disabled = true;
+
+        let dots = 1;
+        const render = function () {
+          submitButton.textContent = baseText + '.'.repeat(dots);
+          dots = dots === 3 ? 1 : dots + 1;
+        };
+
+        render();
+        buttonAnimationTimer = window.setInterval(render, 350);
+      }
+
+      async function getInvitationStatus() {
+        const response = await fetch(
+          createAppEndpoint + '?organization=' + encodeURIComponent(invitationHash),
+          { cache: 'no-store' }
+        );
+
+        if (response.status === 404) {
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error('Could not check invitation status.');
+        }
+
+        return response.json();
+      }
+
+      function scheduleStatusPoll() {
+        if (statusPollTimer) {
+          window.clearTimeout(statusPollTimer);
+        }
+
+        statusPollTimer = window.setTimeout(pollInvitationStatus, 2000);
+      }
+
+      async function pollInvitationStatus() {
+        if (!invitationIsPresent) {
+          return;
+        }
+
+        try {
+          const result = await getInvitationStatus();
+
+          if (result && result.status === 'finished') {
+            setButton('App created successfully!', true);
+            return;
+          }
+
+          if (result && result.status === 'created') {
+            startButtonAnimation('Creating app');
+          }
+
+          scheduleStatusPoll();
+        } catch (error) {
+          scheduleStatusPoll();
+        }
+      }
+
+      async function restoreInvitationState() {
+        if (!invitationIsPresent) {
+          setButton('Create iOS app', false);
+          return;
+        }
+
+        submitButton.disabled = true;
+
+        try {
+          const result = await getInvitationStatus();
+
+          if (!result) {
+            setButton('Create iOS app', false);
+            return;
+          }
+
+          if (result.status === 'finished') {
+            setButton('App created successfully!', true);
+            return;
+          }
+
+          if (result.status === 'created') {
+            startButtonAnimation('Creating app');
+            scheduleStatusPoll();
+            return;
+          }
+
+          setButton('Create iOS app', false);
+        } catch (error) {
+          setButton('Create iOS app', false);
+        }
+      }
+
       fields.forEach(function (field) {
         const eventName = field.element.type === 'checkbox' ? 'change' : 'input';
         field.element.addEventListener(eventName, function () {
@@ -365,6 +501,12 @@
 
       form.addEventListener('submit', async function (event) {
         event.preventDefault();
+
+        if (submitButton.disabled) {
+          return;
+        }
+
+        hideBanner();
         status.textContent = '';
 
         let firstInvalidElement = null;
@@ -378,12 +520,6 @@
           }
         });
 
-        if (!invitationIsValid) {
-          invitationError.classList.add('visible');
-          invitationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          return;
-        }
-
         if (firstInvalidElement) {
           firstInvalidElement.focus();
           return;
@@ -393,11 +529,10 @@
           email: document.getElementById('email').value.trim(),
           appName: document.getElementById('app-name').value.trim(),
           prompt: document.getElementById('initial-prompt').value.trim(),
-          organization: invitationHash
+          organization: invitationIsPresent ? invitationHash : ''
         };
 
-        submitButton.disabled = true;
-        submitButton.textContent = 'Creating...';
+        startButtonAnimation('Creating');
 
         try {
           const response = await fetch(createAppEndpoint, {
@@ -412,18 +547,37 @@
             return {};
           });
 
-          if (!response.ok) {
-            throw new Error(result.error || 'Could not create app request.');
+          if (response.status === 202 && result.status === 'missing_invitation') {
+            setButton('Request saved', true);
+            showBanner('Missing required invitation. Your request has been saved.');
+            return;
           }
 
-          status.textContent = 'App request created.';
+          if (response.status === 409) {
+            setButton('Invitation already used', true);
+            showBanner('Invitation for creating app is already used.');
+            return;
+          }
+
+          if (response.status === 422) {
+            setButton('Invalid invitation', true);
+            showBanner('Invalid invitation.');
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error('Could not create app request.');
+          }
+
+          startButtonAnimation('Creating app');
+          scheduleStatusPoll();
         } catch (error) {
-          status.textContent = error.message || 'Could not create app request.';
-        } finally {
-          submitButton.disabled = false;
-          submitButton.textContent = 'Create iOS app';
+          setButton('Create iOS app', false);
+          showBanner(error.message || 'Could not create app request.');
         }
       });
+
+      restoreInvitationState();
     })();
   </script>
 </body>
