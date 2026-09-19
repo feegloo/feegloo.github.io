@@ -308,6 +308,8 @@
       const invitationInput = document.getElementById('invitation-hash');
       const invitationError = document.getElementById('invitation-error');
       const status = document.getElementById('form-status');
+      const submitButton = form.querySelector('button[type="submit"]');
+      const createAppEndpoint = 'https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/create-app';
 
       const invitationHash = window.location.search.slice(1);
       const invitationIsValid = invitationHash.length > 0;
@@ -361,7 +363,7 @@
         });
       });
 
-      form.addEventListener('submit', function (event) {
+      form.addEventListener('submit', async function (event) {
         event.preventDefault();
         status.textContent = '';
 
@@ -387,11 +389,40 @@
           return;
         }
 
-        const payload = Object.fromEntries(new FormData(form).entries());
-        payload.agreement = document.getElementById('agreement').checked;
+        const payload = {
+          email: document.getElementById('email').value.trim(),
+          appName: document.getElementById('app-name').value.trim(),
+          prompt: document.getElementById('initial-prompt').value.trim(),
+          organization: invitationHash
+        };
 
-        console.log('vibe-ios-app payload', payload);
-        status.textContent = 'The form is valid. Submission backend is not connected yet.';
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creating...';
+
+        try {
+          const response = await fetch(createAppEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json().catch(function () {
+            return {};
+          });
+
+          if (!response.ok) {
+            throw new Error(result.error || 'Could not create app request.');
+          }
+
+          status.textContent = 'App request created.';
+        } catch (error) {
+          status.textContent = error.message || 'Could not create app request.';
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Create iOS app';
+        }
       });
     })();
   </script>
