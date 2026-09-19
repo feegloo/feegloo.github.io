@@ -675,12 +675,12 @@
             return;
           }
 
-          if (result && result.status === 'uploading_attachments') {
-            startButtonAnimation('Uploading images');
-          }
-
           if (result && result.status === 'created') {
-            startButtonAnimation('Creating app');
+            startButtonAnimation(
+              result.attachmentStatus === 'uploading'
+                ? 'Uploading images'
+                : 'Creating app'
+            );
           }
 
           scheduleStatusPoll();
@@ -716,14 +716,12 @@
             return;
           }
 
-          if (result.status === 'uploading_attachments') {
-            startButtonAnimation('Uploading images');
-            scheduleStatusPoll();
-            return;
-          }
-
           if (result.status === 'created') {
-            startButtonAnimation('Creating app');
+            startButtonAnimation(
+              result.attachmentStatus === 'uploading'
+                ? 'Uploading images'
+                : 'Creating app'
+            );
             scheduleStatusPoll();
             return;
           }
