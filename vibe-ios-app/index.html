@@ -60,6 +60,13 @@
       font-size: 19px;
     }
 
+    .header-subtext {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
     .card {
       margin-top: 22px;
       padding: 22px;
@@ -240,7 +247,8 @@
 <body>
   <main>
     <p class="eyebrow">Invitation only</p>
-    <h1>Create your iOS app from prompt and install on iPhone with TestFlight.</h1>
+    <h1>Create your iOS app with AI prompt and install app on iPhone with TestFlight.</h1>
+    <p class="header-subtext">Then continue building the app with your favorite AI tool, like ChatGPT, Claude, or Copilot.</p>
     <div id="invitation-error" class="invitation-error" role="alert">
       This invitation link is invalid. Use the full invitation URL you received.
     </div>
@@ -262,7 +270,7 @@
 
       <div class="field" data-field="initialPrompt">
         <label for="initial-prompt">Describe the app you want to build</label>
-        <p class="field-subtext">Describe it fully - you only have one prompt to build it!</p>
+        <p class="field-subtext">Describe all your features fully so the AI can build it in one prompt!</p>
         <textarea
           id="initial-prompt"
           name="initialPrompt"
