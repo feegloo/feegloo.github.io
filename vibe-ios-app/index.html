@@ -664,7 +664,7 @@
         try {
           const result = await getInvitationStatus();
 
-          if (result && result.status === 'finished') {
+          if (result && ['repository_created', 'finished'].includes(result.status)) {
             setButton('App created successfully!', true);
             return;
           }
@@ -705,7 +705,7 @@
             return;
           }
 
-          if (result.status === 'finished') {
+          if (['repository_created', 'finished'].includes(result.status)) {
             setButton('App created successfully!', true);
             return;
           }
