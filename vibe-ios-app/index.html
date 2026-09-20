@@ -84,7 +84,7 @@
     }
 
     .eyebrow {
-      margin: 0 0 8px;
+      margin: 0 0 4px;
       text-align: right;
       color: var(--muted);
       font-size: 10px;
@@ -507,7 +507,6 @@
 </head>
 <body>
   <main>
-    <p class="eyebrow">Invitation required</p>
     <h1>Create your iOS app with an AI agent prompt and install app on iPhone with TestFlight.</h1>
     <p class="header-subtext">Then continue building the app on Github repository with your favorite AI tool, like ChatGPT, Claude, Copilot or others.</p>
     <div id="invitation-error" class="invitation-error" role="alert"></div>
@@ -516,7 +515,10 @@
       <input id="invitation-hash" name="invitationHash" type="hidden">
 
       <div class="field" data-field="email">
-        <label for="email">Email</label>
+        <div class="field-label-row">
+          <label for="email">Email</label>
+          <p class="eyebrow">Invitation required</p>
+        </div>
         <input id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error">
         <p id="email-error" class="error-message" role="tooltip">Enter a valid email address.</p>
       </div>
