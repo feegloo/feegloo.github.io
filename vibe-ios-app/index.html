@@ -470,10 +470,14 @@
       }
       .card { padding: 18px 18px 22px; border-radius: 18px; }
       h1 { font-size: 19px; }
+      .agreement label { white-space: normal; }
+    }
+
+    /* Keep editable text at 16px to prevent iOS focus zoom, including landscape. */
+    @media (max-width: 560px), (any-pointer: coarse) {
       input[type="email"],
       input[type="text"],
-      textarea { font-size: 14px; }
-      .agreement label { white-space: normal; }
+      textarea { font-size: 16px; }
     }
   </style>
 </head>
