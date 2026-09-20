@@ -83,6 +83,12 @@ window.createDrawingEditor = function (onSave) {
       if (hit) {
         stroke = null;
         imageDrag = { picture: hit, start: p, x: hit.x, y: hit.y, w: hit.w, h: hit.h, corner };
+      } else if (selected) {
+        // Consume this gesture to deselect, without leaving a dot or starting a stroke.
+        stroke = null;
+        held = true;
+        render();
+        return;
       } else { stroke = [p]; }
       render();
       timer = setTimeout(preparePaste, 550);
