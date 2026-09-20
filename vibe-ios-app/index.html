@@ -396,13 +396,16 @@
       user-select: none;
     }
 
-    #attachment-picker {
+    #attachment-picker,
+    #attachment-draw {
       grid-template-rows: 25px 12px;
       align-content: center;
       gap: 1px;
     }
 
-    .attachment-add-icon { font-size: 27px; line-height: 25px; }
+    .attachment-add-icon { font-size: 23px; line-height: 25px; }
+    .attachment-draw-icon { font-size: 24px; line-height: 25px; white-space: nowrap; }
+    #attachment-draw .attachment-add-label { font-size: 9px; }
     .attachment-add-label {
       font-family: inherit;
       font-size: 10px;
@@ -613,8 +616,8 @@
           <span class="attachments-hint">5 images and files / 1 video - PNG, PDF, MP4, other</span>
         </div>
         <div class="attachments-row">
-          <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add files or video" role="button" tabindex="0" aria-describedby="attachments-error"><span class="attachment-add-icon" aria-hidden="true">+</span><span class="attachment-add-label">Add File</span></label>
-          <button id="attachment-draw" class="attachment-picker attachment-draw" type="button">draw image</button>
+          <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add files or video" role="button" tabindex="0" aria-describedby="attachments-error"><span class="attachment-add-icon" aria-hidden="true">➕</span><span class="attachment-add-label">Add File</span></label>
+          <button id="attachment-draw" class="attachment-picker attachment-draw" type="button"><span class="attachment-draw-icon" aria-hidden="true">✎ᝰ</span><span class="attachment-add-label">draw image</span></button>
           <input
             id="attachments"
             class="attachment-input"
