@@ -52,6 +52,8 @@
       }
     }
   </script>
+  <link rel="stylesheet" href="/vibe-ios-app/drawing-editor.css">
+  <script src="/vibe-ios-app/drawing-editor.js"></script>
   <style>
     * { box-sizing: border-box; }
 
@@ -572,6 +574,7 @@
         </div>
         <div class="attachments-row">
           <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add files or video" role="button" tabindex="0" aria-describedby="attachments-error">+</label>
+          <button id="attachment-draw" class="attachment-picker attachment-draw" type="button">draw image</button>
           <input
             id="attachments"
             class="attachment-input"
@@ -607,6 +610,13 @@
       const attachmentInput = document.getElementById('attachments');
       const attachmentPicker = document.getElementById('attachment-picker');
       const attachmentPreviews = document.getElementById('attachment-previews');
+      const drawButton = document.getElementById('attachment-draw');
+      const drawingEditor = createDrawingEditor(function (file) {
+        const count = selectedAttachments.length;
+        addAttachments([file]);
+        return selectedAttachments.length > count;
+      });
+      drawButton.addEventListener('click', function () { drawingEditor.open(); });
       const attachmentError = document.getElementById('attachments-error');
       const appNameInput = document.getElementById('app-name');
       const bundleIdValue = document.getElementById('bundle-id-value');
@@ -769,6 +779,7 @@
         });
 
         attachmentPicker.classList.toggle('disabled', selectedAttachments.length >= 6);
+        drawButton.disabled = selectedAttachments.filter(item => !attachmentIsVideo(item.file)).length >= 5;
       }
 
       function addAttachments(files) {
@@ -1055,4 +1066,5 @@
   </script>
 </body>
 </html>
+
 
