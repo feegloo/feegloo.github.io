@@ -380,10 +380,10 @@
 
     .attachment-picker {
       display: grid;
-      width: 51px;
-      height: 51px;
+      width: 60px;
+      height: 60px;
       margin: 0;
-      flex: 0 0 51px;
+      flex: 0 0 60px;
       place-items: center;
       border: 1px dashed #c5c5ca;
       border-radius: 9px;
@@ -405,7 +405,8 @@
 
     .attachment-add-icon { font-size: 23px; line-height: 25px; }
     .attachment-draw-icon { font-size: 24px; line-height: 25px; white-space: nowrap; }
-    #attachment-draw .attachment-add-label { font-size: 9px; }
+    #attachment-draw { grid-template-rows: 25px 24px; }
+    #attachment-draw .attachment-add-label { font-size: 10px; text-align: center; white-space: normal; }
     .attachment-add-label {
       font-family: inherit;
       font-size: 10px;
@@ -617,7 +618,7 @@
         </div>
         <div class="attachments-row">
           <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add files or video" role="button" tabindex="0" aria-describedby="attachments-error"><span class="attachment-add-icon" aria-hidden="true">➕</span><span class="attachment-add-label">Add File</span></label>
-          <button id="attachment-draw" class="attachment-picker attachment-draw" type="button"><span class="attachment-draw-icon" aria-hidden="true">✎ᝰ</span><span class="attachment-add-label">draw image</span></button>
+          <button id="attachment-draw" class="attachment-picker attachment-draw" type="button"><span class="attachment-draw-icon" aria-hidden="true">✎ᝰ</span><span class="attachment-add-label">draw<br>image</span></button>
           <input
             id="attachments"
             class="attachment-input"
