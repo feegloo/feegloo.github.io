@@ -485,11 +485,11 @@
 
     .attachment-remove {
       position: absolute;
-      top: -5px;
-      right: -5px;
+      top: -7px;
+      right: -7px;
       display: grid;
-      width: 16px;
-      height: 16px;
+      width: 24px;
+      height: 24px;
       padding: 0;
       place-items: center;
       border: 1px solid rgba(0, 0, 0, .12);
@@ -497,8 +497,17 @@
       background: #fff;
       color: #55555a;
       box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
-      font: 700 11px/1 sans-serif;
+      font: 700 17px/1 sans-serif;
       cursor: pointer;
+      touch-action: manipulation;
+      z-index: 1;
+    }
+
+    .attachment-remove::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      border-radius: 50%;
     }
 
     .attachment-error {
