@@ -341,13 +341,13 @@
     .attachments-hint {
       color: var(--muted);
       font-size: 10px;
-      white-space: nowrap;
+      white-space: normal;
     }
 
     .attachments-row {
       display: flex;
       align-items: center;
-      min-height: 34px;
+      min-height: 51px;
       gap: 6px;
     }
 
@@ -357,16 +357,16 @@
 
     .attachment-picker {
       display: grid;
-      width: 34px;
-      height: 34px;
+      width: 51px;
+      height: 51px;
       margin: 0;
-      flex: 0 0 34px;
+      flex: 0 0 51px;
       place-items: center;
       border: 1px dashed #c5c5ca;
       border-radius: 9px;
       background: #fafafa;
       color: var(--muted);
-      font-size: 22px;
+      font-size: 33px;
       font-weight: 400;
       line-height: 1;
       cursor: pointer;
@@ -381,11 +381,12 @@
     .attachment-picker.disabled {
       cursor: default;
       opacity: .4;
-      pointer-events: none;
+
     }
 
     .attachment-previews {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 6px;
       min-width: 0;
@@ -393,22 +394,27 @@
 
     .attachment-preview {
       position: relative;
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
+      width: 51px;
+      height: 51px;
+      flex: 0 0 51px;
       overflow: visible;
       border-radius: 8px;
     }
 
-    .attachment-preview img {
-      width: 34px;
-      height: 34px;
+    .attachment-preview img,
+    .attachment-preview video {
+      width: 51px;
+      height: 51px;
       display: block;
       object-fit: cover;
       border: 1px solid #e1e1e6;
       border-radius: 8px;
       background: #f7f7f8;
     }
+
+    .attachment-picker.drag-over { border-color: var(--focus); background: #eaf4ff; }
+    .attachment-picker:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .attachment-video-label { position: absolute; bottom: 2px; left: 3px; padding: 1px 3px; border-radius: 3px; background: #0009; color: white; font-size: 9px; pointer-events: none; }
 
     .attachment-remove {
       position: absolute;
@@ -495,17 +501,17 @@
 
       <div class="attachments-field">
         <div class="attachments-heading">
-          <span class="attachments-title">Screenshots (optional)</span>
-          <span class="attachments-hint">Max 5 · PNG, JPG, WEBP, SVG</span>
+          <span class="attachments-title">Screenshots &amp; Video</span>
+          <span class="attachments-hint">5 images · PNG, JPG, WEBP, SVG<br>1 video · MP4, MOV, WEBM · Max 50 MB/file</span>
         </div>
         <div class="attachments-row">
-          <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add screenshots">+</label>
+          <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add screenshots or video" role="button" tabindex="0" aria-describedby="attachments-error">+</label>
           <input
             id="attachments"
             class="attachment-input"
             type="file"
             multiple
-            accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml"
+            accept=".png,.jpg,.jpeg,.webp,.svg,.mp4,.mov,.webm,image/png,image/jpeg,image/webp,image/svg+xml,video/mp4,video/quicktime,video/webm"
           >
           <div id="attachment-previews" class="attachment-previews"></div>
         </div>
@@ -641,7 +647,11 @@
       }
 
       function attachmentIsAllowed(file) {
-        return ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(attachmentExtension(file));
+        return ['png', 'jpg', 'jpeg', 'webp', 'svg', 'mp4', 'mov', 'webm'].includes(attachmentExtension(file));
+      }
+
+      function attachmentIsVideo(file) {
+        return ['mp4', 'mov', 'webm'].includes(attachmentExtension(file));
       }
 
       function renderAttachments() {
@@ -651,7 +661,18 @@
           const preview = document.createElement('div');
           preview.className = 'attachment-preview';
 
-          const image = document.createElement('img');
+          const isVideo = attachmentIsVideo(item.file);
+          const image = document.createElement(isVideo ? 'video' : 'img');
+          if (isVideo) {
+            image.muted = true;
+            image.playsInline = true;
+            image.preload = 'metadata';
+            image.setAttribute('aria-label', item.file.name);
+            const badge = document.createElement('span');
+            badge.className = 'attachment-video-label';
+            badge.textContent = 'VIDEO';
+            preview.appendChild(badge);
+          }
           image.src = item.url;
           image.alt = item.file.name;
 
@@ -672,37 +693,63 @@
           attachmentPreviews.appendChild(preview);
         });
 
-        attachmentPicker.classList.toggle('disabled', selectedAttachments.length >= 5);
+        attachmentPicker.classList.toggle('disabled', selectedAttachments.length >= 6);
+      }
+
+      function addAttachments(files) {
+        attachmentError.textContent = '';
+        Array.from(files || []).forEach(function (file) {
+          if (!attachmentIsAllowed(file)) {
+            attachmentError.textContent = 'Use PNG, JPG, WEBP, SVG, MP4, MOV or WEBM files.';
+            return;
+          }
+          if (file.size > 50 * 1024 * 1024) {
+            attachmentError.textContent = file.name + ': file is too large. Maximum size is 50 MB.';
+            return;
+          }
+          if (file.size === 0) {
+            attachmentError.textContent = file.name + ': file is empty.';
+            return;
+          }
+          const isVideo = attachmentIsVideo(file);
+          const count = selectedAttachments.filter(function (item) {
+            return attachmentIsVideo(item.file) === isVideo;
+          }).length;
+          if (count >= (isVideo ? 1 : 5)) {
+            attachmentError.textContent = isVideo
+              ? 'You can attach up to 1 video.'
+              : 'You can attach up to 5 screenshots.';
+            return;
+          }
+          selectedAttachments.push({ file: file, url: URL.createObjectURL(file) });
+        });
+        renderAttachments();
       }
 
       attachmentInput.addEventListener('change', function () {
-        attachmentError.textContent = '';
-        const files = Array.from(attachmentInput.files || []);
-
-        files.forEach(function (file) {
-          if (selectedAttachments.length >= 5) {
-            attachmentError.textContent = 'You can attach up to 5 screenshots.';
-            return;
-          }
-
-          if (!attachmentIsAllowed(file)) {
-            attachmentError.textContent = 'Use PNG, JPG, WEBP or SVG images.';
-            return;
-          }
-
-          if (file.size > 10 * 1024 * 1024) {
-            attachmentError.textContent = 'Each screenshot must be 10 MB or smaller.';
-            return;
-          }
-
-          selectedAttachments.push({
-            file: file,
-            url: URL.createObjectURL(file)
-          });
-        });
-
+        addAttachments(attachmentInput.files);
         attachmentInput.value = '';
-        renderAttachments();
+      });
+      attachmentPicker.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          attachmentInput.click();
+        }
+      });
+      ['dragenter', 'dragover'].forEach(function (name) {
+        attachmentPicker.addEventListener(name, function (event) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'copy';
+          attachmentPicker.classList.add('drag-over');
+        });
+      });
+      attachmentPicker.addEventListener('dragleave', function () {
+        attachmentPicker.classList.remove('drag-over');
+      });
+      attachmentPicker.addEventListener('drop', function (event) {
+        event.preventDefault();
+        attachmentPicker.classList.remove('drag-over');
+        addAttachments(event.dataTransfer.files);
       });
 
       function showBanner(message) {
@@ -804,7 +851,7 @@
           if (result && isCreatingStatus(result.status)) {
             startButtonAnimation(
               result.status === 'created' && result.attachmentStatus === 'uploading'
-                ? 'Uploading images'
+                ? 'Uploading files'
                 : 'Creating app'
             );
           }
@@ -880,7 +927,7 @@
           payload.append('attachments', item.file, item.file.name);
         });
 
-        startButtonAnimation(selectedAttachments.length > 0 ? 'Uploading images' : 'Creating');
+        startButtonAnimation(selectedAttachments.length > 0 ? 'Uploading files' : 'Creating');
 
         try {
           const response = await fetch(createAppEndpoint, {
@@ -915,7 +962,7 @@
           }
 
           if (!response.ok) {
-            throw new Error('Could not create app request.');
+            throw new Error(result.error || 'Could not create app request.');
           }
 
           currentRequestId = result.requestId;
@@ -933,3 +980,4 @@
   </script>
 </body>
 </html>
+
