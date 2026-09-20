@@ -538,12 +538,17 @@
       const bundleIdValue = document.getElementById('bundle-id-value');
       const createAppEndpoint = 'https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/create-app';
 
-      const invitationHash = window.location.search.slice(1);
-      const invitationIsPresent = /[A-Za-z]/.test(invitationHash);
+      let invitationHash = window.location.search.slice(1);
+      try { invitationHash = decodeURIComponent(invitationHash); } catch (_) {}
+      invitationHash = invitationHash.trim().toLowerCase();
+      const invitationIsPresent = invitationHash.length > 0;
 
       let buttonAnimationTimer = null;
       let buttonAnimationBase = '';
       let statusPollTimer = null;
+      let currentRequestId = null;
+
+      form.reset();
       let selectedAttachments = [];
 
       invitationInput.value = invitationIsPresent ? invitationHash : '';
@@ -742,9 +747,13 @@
         buttonAnimationTimer = window.setInterval(render, 350);
       }
 
-      async function getInvitationStatus() {
+      async function getInvitationStatus(view) {
+        if (!invitationIsPresent) return null;
+        const suffix = view === 'quota'
+          ? '&view=quota'
+          : '&requestId=' + encodeURIComponent(currentRequestId);
         const response = await fetch(
-          createAppEndpoint + '?organization=' + encodeURIComponent(invitationHash),
+          createAppEndpoint + '?organization=' + encodeURIComponent(invitationHash) + suffix,
           { cache: 'no-store' }
         );
 
@@ -772,7 +781,7 @@
       }
 
       async function pollInvitationStatus() {
-        if (!invitationIsPresent) {
+        if (!invitationIsPresent || !currentRequestId) {
           return;
         }
 
@@ -813,34 +822,11 @@
         submitButton.disabled = true;
 
         try {
-          const result = await getInvitationStatus();
-
-          if (!result) {
-            setButton('Create iOS app', false);
+          const result = await getInvitationStatus('quota');
+          if (result && result.invitationStatus === 'valid' && result.limitReached) {
+            setButton('You reached the limit of free 3 apps', true);
             return;
           }
-
-          if (result.status === 'finished') {
-            setButton('App created successfully!', true);
-            return;
-          }
-
-          if (result.status === 'invalid_invitation') {
-            setButton('Invalid invitation', true);
-            showBanner('Invalid invitation. Your form has been submitted.');
-            return;
-          }
-
-          if (isCreatingStatus(result.status)) {
-            startButtonAnimation(
-              result.status === 'created' && result.attachmentStatus === 'uploading'
-                ? 'Uploading images'
-                : 'Creating app'
-            );
-            scheduleStatusPoll();
-            return;
-          }
-
           setButton('Create iOS app', false);
         } catch (error) {
           setButton('Create iOS app', false);
@@ -911,8 +897,12 @@
           }
 
           if (response.status === 409) {
-            setButton('Invitation already used', true);
-            showBanner('Invitation for creating app is already used.');
+            if (result.code === 'app_limit_reached') {
+              setButton('You reached the limit of free 3 apps', true);
+            } else {
+              setButton('Create iOS app', false);
+              showBanner(result.error || 'Could not create app request. Please try again.');
+            }
             return;
           }
 
@@ -926,6 +916,8 @@
             throw new Error('Could not create app request.');
           }
 
+          currentRequestId = result.requestId;
+          if (!currentRequestId) throw new Error('Missing app request ID. Refresh the page before trying again.');
           startButtonAnimation('Creating app');
           scheduleStatusPoll();
         } catch (error) {
