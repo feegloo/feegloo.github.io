@@ -452,6 +452,9 @@
 
     .attachment-document {
       display: grid;
+      align-content: center;
+      gap: 3px;
+      padding: 4px;
       width: 51px;
       height: 51px;
       place-items: center;
@@ -461,6 +464,19 @@
       color: var(--muted);
       font-size: 10px;
       font-weight: 650;
+    }
+
+    .attachment-document-name {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 8px;
+      font-weight: 400;
+      line-height: 11px;
+      text-align: center;
     }
 
     .attachment-picker.drag-over { border-color: var(--focus); background: #eaf4ff; }
@@ -758,7 +774,13 @@
           preview.title = item.file.name;
           if (!isVideo && !isImage) {
             image.className = 'attachment-document';
-            image.textContent = attachmentExtension(item.file).toUpperCase();
+            const fileType = document.createElement('span');
+            fileType.textContent = attachmentExtension(item.file).toUpperCase();
+            const fileName = document.createElement('span');
+            fileName.className = 'attachment-document-name';
+            fileName.textContent = item.file.name;
+            image.appendChild(fileType);
+            image.appendChild(fileName);
             image.setAttribute('aria-label', item.file.name);
           }
           if (isVideo) {
