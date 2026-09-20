@@ -136,52 +136,31 @@
       font-size: 12px;
     }
 
-    .bundle-id-preview {
+    .field-label-row {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       justify-content: space-between;
-      gap: 10px;
-      min-height: 30px;
-      margin: 4px 0 0;
-      padding: 5px 8px;
-      border: 1px solid #e7e7eb;
-      border-radius: 9px;
-      background: #fafafa;
-      color: var(--muted);
-      font-size: 11px;
+      gap: 12px;
     }
 
-    .bundle-id-preview code {
+    .field-label-row label {
+      margin-bottom: 4px;
+    }
+
+    .bundle-id-inline {
+      display: none;
       min-width: 0;
       overflow: hidden;
-      color: var(--text);
+      color: var(--muted);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 11px;
+      font-weight: 500;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .bundle-id-copy {
-      flex: 0 0 auto;
-      padding: 2px 7px;
-      border: 0;
-      border-radius: 7px;
-      background: transparent;
-      color: var(--focus);
-      font: 600 11px/1.4 inherit;
-      cursor: pointer;
-    }
-
-    .bundle-id-copy:disabled {
-      color: #a1a1a6;
-      cursor: default;
-    }
-
-    .bundle-id-hint {
-      margin: 2px 0 0;
-      color: var(--muted);
-      font-size: 10px;
-      line-height: 1.35;
+    .bundle-id-inline.visible {
+      display: block;
     }
 
     label,
@@ -491,14 +470,11 @@
       </div>
 
       <div class="field" data-field="appName">
-        <label for="app-name">App name</label>
-        <input id="app-name" name="appName" type="text" autocomplete="off" required aria-describedby="app-name-error bundle-id-hint">
-        <div class="bundle-id-preview" aria-live="polite">
-          <span>Bundle ID</span>
-          <code id="bundle-id-value">app.vibeios...</code>
-          <button id="bundle-id-copy" class="bundle-id-copy" type="button" disabled>Copy</button>
+        <div class="field-label-row">
+          <label for="app-name">App name</label>
+          <span id="bundle-id-value" class="bundle-id-inline" aria-live="polite"></span>
         </div>
-        <p id="bundle-id-hint" class="bundle-id-hint">You can create this Bundle ID and App Store Connect app before submitting the form.</p>
+        <input id="app-name" name="appName" type="text" autocomplete="off" required aria-describedby="app-name-error">
         <p id="app-name-error" class="error-message" role="tooltip">App name must be between 2 and 30 characters.</p>
       </div>
 
@@ -560,7 +536,6 @@
       const attachmentError = document.getElementById('attachments-error');
       const appNameInput = document.getElementById('app-name');
       const bundleIdValue = document.getElementById('bundle-id-value');
-      const bundleIdCopy = document.getElementById('bundle-id-copy');
       const createAppEndpoint = 'https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/create-app';
 
       const invitationHash = window.location.search.slice(1);
@@ -606,28 +581,9 @@
 
       function updateBundleIdPreview() {
         const bundleId = bundleIdentifierFromAppName(appNameInput.value);
-        bundleIdValue.textContent = bundleId || 'app.vibeios...';
-        bundleIdCopy.disabled = !bundleId;
-        bundleIdCopy.dataset.bundleId = bundleId;
+        bundleIdValue.textContent = bundleId;
+        bundleIdValue.classList.toggle('visible', Boolean(bundleId));
       }
-
-      bundleIdCopy.addEventListener('click', async function () {
-        const bundleId = bundleIdCopy.dataset.bundleId || '';
-        if (!bundleId) return;
-
-        try {
-          await navigator.clipboard.writeText(bundleId);
-          bundleIdCopy.textContent = 'Copied';
-          window.setTimeout(function () {
-            bundleIdCopy.textContent = 'Copy';
-          }, 1200);
-        } catch (error) {
-          bundleIdCopy.textContent = 'Copy failed';
-          window.setTimeout(function () {
-            bundleIdCopy.textContent = 'Copy';
-          }, 1200);
-        }
-      });
 
       appNameInput.addEventListener('input', updateBundleIdPreview);
       updateBundleIdPreview();
