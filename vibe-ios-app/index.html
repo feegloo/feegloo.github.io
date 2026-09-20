@@ -84,10 +84,14 @@
     }
 
     .eyebrow {
-      margin: 0 0 4px;
+      position: absolute;
+      top: 5px;
+      right: 18px;
+      margin: 0;
+      line-height: 11px;
       text-align: right;
       color: var(--muted);
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
@@ -116,6 +120,7 @@
     }
 
     .card {
+      position: relative;
       margin-top: 0;
       padding: 22px;
       border: 1px solid rgba(0, 0, 0, .06);
@@ -512,13 +517,11 @@
     <div id="invitation-error" class="invitation-error" role="alert"></div>
 
     <form id="create-ios-app-form" class="card" novalidate>
+      <p class="eyebrow">Invitation required</p>
       <input id="invitation-hash" name="invitationHash" type="hidden">
 
       <div class="field" data-field="email">
-        <div class="field-label-row">
-          <label for="email">Email</label>
-          <p class="eyebrow">Invitation required</p>
-        </div>
+        <label for="email">Email</label>
         <input id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error">
         <p id="email-error" class="error-message" role="tooltip">Enter a valid email address.</p>
       </div>
