@@ -575,8 +575,11 @@
       }
 
       function bundleIdentifierFromAppName(appName) {
-        const component = repositoryNameFromAppName(appName).replace(/[^a-z0-9]/g, '');
-        return component ? 'app.vibeios.' + component : '';
+        const component = repositoryNameFromAppName(appName);
+        const invitation = invitationIsPresent ? invitationHash.trim().toLowerCase() : '';
+        return component && invitation
+          ? 'app.vibeios.' + invitation + '.' + component
+          : '';
       }
 
       function updateBundleIdPreview() {
