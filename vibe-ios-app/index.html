@@ -508,6 +508,13 @@
       z-index: 1;
     }
 
+    .attachment-remove svg {
+      display: block;
+      width: 12px;
+      height: 12px;
+      pointer-events: none;
+    }
+
     .attachment-remove::before {
       content: "";
       position: absolute;
@@ -816,7 +823,18 @@
           removeButton.type = 'button';
           removeButton.className = 'attachment-remove';
           removeButton.setAttribute('aria-label', 'Remove ' + item.file.name);
-          removeButton.textContent = '×';
+          const removeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          removeIcon.setAttribute('viewBox', '0 0 12 12');
+          removeIcon.setAttribute('aria-hidden', 'true');
+          removeIcon.setAttribute('focusable', 'false');
+          const removePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          removePath.setAttribute('d', 'M3 3L9 9M9 3L3 9');
+          removePath.setAttribute('fill', 'none');
+          removePath.setAttribute('stroke', 'currentColor');
+          removePath.setAttribute('stroke-width', '2.5');
+          removePath.setAttribute('stroke-linecap', 'round');
+          removeIcon.appendChild(removePath);
+          removeButton.appendChild(removeIcon);
           removeButton.addEventListener('click', function () {
             URL.revokeObjectURL(item.url);
             selectedAttachments.splice(index, 1);
