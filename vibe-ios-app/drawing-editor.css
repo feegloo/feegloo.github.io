@@ -13,7 +13,7 @@
   padding: 10px 18px;
   border: 1px solid rgba(255, 255, 255, .72);
   border-radius: 999px;
-  background: linear-gradient(155deg, rgba(255, 255, 255, .78), rgba(238, 239, 243, .46));
+  background: linear-gradient(155deg, rgba(225, 227, 232, .84), rgba(180, 184, 193, .72));
   color: #1d1d1f;
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   backdrop-filter: blur(16px) saturate(160%);
@@ -26,23 +26,44 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   cursor: pointer;
-  transition: transform .22s cubic-bezier(.2, .8, .2, 1), box-shadow .22s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  overflow: hidden;
+  transition: transform .36s cubic-bezier(.22, 1.6, .36, 1), box-shadow .22s ease;
+}
+.drawing-done::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 22% 0%, rgba(255, 255, 255, .65), transparent 65%);
+  opacity: .55;
+  transform: translateX(-12%);
+  transition: transform .32s ease, opacity .18s ease;
+}
+.drawing-done:active:not(:disabled)::before {
+  transform: translateX(28%);
+  opacity: 1;
 }
 .drawing-done:active:not(:disabled) {
-  transform: scale(.95);
+  transform: scaleX(1.045) scaleY(.9);
+  transition-duration: .09s;
   box-shadow: inset 0 1px 3px rgba(60, 65, 80, .13), 0 1px 5px rgba(20, 25, 40, .08);
 }
-.drawing-done:focus-visible { outline: 2px solid #0071e3; outline-offset: 4px; }
+.drawing-done:focus, .drawing-done:focus-visible { outline: none; }
 .drawing-done:disabled { opacity: .55; cursor: default; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .drawing-done { background: #f4f4f6; }
+  .drawing-done { background: #d0d2d8; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .drawing-done { transition: none; }
+  .drawing-done, .drawing-done::before { transition: none; }
+  .drawing-done:active:not(:disabled)::before { transform: translateX(-12%); }
   .drawing-done:active:not(:disabled) { transform: none; }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .drawing-done { background: #f4f4f6; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .drawing-done { background: #d0d2d8; -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 .drawing-paste { position: absolute; padding: 12px 20px; border: 0; border-radius: 12px; background: #252525; color: white; font: 17px/1.2 -apple-system, BlinkMacSystemFont, sans-serif; box-shadow: 0 3px 16px #0003; cursor: pointer; }
 .drawing-message { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); left: 16px; right: 16px; margin: 0; padding: 8px; border-radius: 8px; color: #b00020; background: #fff; text-align: center; font-size: 14px; pointer-events: none; }
