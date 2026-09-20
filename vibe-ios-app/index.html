@@ -334,8 +334,23 @@
     }
 
     .attachments-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0 5px;
       font-size: 13px;
       font-weight: 650;
+    }
+
+    .attachments-title-text,
+    .attachments-optional {
+      white-space: nowrap;
+    }
+
+    .attachments-optional {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 400;
     }
 
     .attachments-hint {
@@ -501,7 +516,7 @@
 
       <div class="attachments-field">
         <div class="attachments-heading">
-          <span class="attachments-title">Screenshots &amp; Video</span>
+          <span class="attachments-title"><span class="attachments-title-text">Screenshots &amp; Video</span><span class="attachments-optional">(optional)</span></span>
           <span class="attachments-hint">5 images · PNG, JPG, WEBP, SVG<br>1 video · MP4, MOV, WEBM · Max 50 MB/file</span>
         </div>
         <div class="attachments-row">
