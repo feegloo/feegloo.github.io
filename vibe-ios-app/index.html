@@ -433,6 +433,19 @@
       background: #f7f7f8;
     }
 
+    .attachment-document {
+      display: grid;
+      width: 51px;
+      height: 51px;
+      place-items: center;
+      border: 1px solid #e1e1e6;
+      border-radius: 8px;
+      background: #f7f7f8;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 650;
+    }
+
     .attachment-picker.drag-over { border-color: var(--focus); background: #eaf4ff; }
     .attachment-picker:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
     .attachment-video-label { position: absolute; bottom: 2px; left: 3px; padding: 1px 3px; border-radius: 3px; background: #0009; color: white; font-size: 9px; pointer-events: none; }
@@ -551,17 +564,17 @@
 
       <div class="attachments-field">
         <div class="attachments-heading">
-          <span class="attachments-title"><span class="attachments-title-text">Screenshots &amp; Video</span><span class="attachments-optional">(optional)</span></span>
-          <span class="attachments-hint">5 images · PNG, JPG, WEBP, SVG<br>1 video · MP4, MOV, WEBM</span>
+          <span class="attachments-title"><span class="attachments-title-text">Attached Files</span><span class="attachments-optional">(optional)</span></span>
+          <span class="attachments-hint">5 images and files · PNG, JPG, WEBP, SVG, PDF, TXT, MD, PPT/PPTX, XLS/XLSX, DOC/DOCX<br>1 video · MP4, MOV, WEBM</span>
         </div>
         <div class="attachments-row">
-          <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add screenshots or video" role="button" tabindex="0" aria-describedby="attachments-error">+</label>
+          <label id="attachment-picker" class="attachment-picker" for="attachments" aria-label="Add files or video" role="button" tabindex="0" aria-describedby="attachments-error">+</label>
           <input
             id="attachments"
             class="attachment-input"
             type="file"
             multiple
-            accept=".png,.jpg,.jpeg,.webp,.svg,.mp4,.mov,.webm,image/png,image/jpeg,image/webp,image/svg+xml,video/mp4,video/quicktime,video/webm"
+            accept=".pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx,.doc,.docx,.png,.jpg,.jpeg,.webp,.svg,.mp4,.mov,.webm,image/png,image/jpeg,image/webp,image/svg+xml,video/mp4,video/quicktime,video/webm"
           >
           <div id="attachment-previews" class="attachment-previews"></div>
         </div>
@@ -697,7 +710,7 @@
       }
 
       function attachmentIsAllowed(file) {
-        return ['png', 'jpg', 'jpeg', 'webp', 'svg', 'mp4', 'mov', 'webm'].includes(attachmentExtension(file));
+        return ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'txt', 'md', 'ppt', 'pptx', 'xls', 'xlsx', 'doc', 'docx', 'mp4', 'mov', 'webm'].includes(attachmentExtension(file));
       }
 
       function attachmentIsVideo(file) {
@@ -712,7 +725,14 @@
           preview.className = 'attachment-preview';
 
           const isVideo = attachmentIsVideo(item.file);
-          const image = document.createElement(isVideo ? 'video' : 'img');
+          const isImage = ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(attachmentExtension(item.file));
+          const image = document.createElement(isVideo ? 'video' : isImage ? 'img' : 'span');
+          preview.title = item.file.name;
+          if (!isVideo && !isImage) {
+            image.className = 'attachment-document';
+            image.textContent = attachmentExtension(item.file).toUpperCase();
+            image.setAttribute('aria-label', item.file.name);
+          }
           if (isVideo) {
             image.muted = true;
             image.playsInline = true;
@@ -723,8 +743,10 @@
             badge.textContent = 'VIDEO';
             preview.appendChild(badge);
           }
-          image.src = item.url;
-          image.alt = item.file.name;
+          if (isVideo || isImage) {
+            image.src = item.url;
+            image.alt = item.file.name;
+          }
 
           const removeButton = document.createElement('button');
           removeButton.type = 'button';
@@ -750,7 +772,7 @@
         attachmentError.textContent = '';
         Array.from(files || []).forEach(function (file) {
           if (!attachmentIsAllowed(file)) {
-            attachmentError.textContent = 'Use PNG, JPG, WEBP, SVG, MP4, MOV or WEBM files.';
+            attachmentError.textContent = 'Use PNG, JPG, WEBP, SVG, PDF, TXT, MD, PPT/PPTX, XLS/XLSX, DOC/DOCX, MP4, MOV or WEBM files.';
             return;
           }
           if (file.size > 50 * 1024 * 1024) {
@@ -768,7 +790,7 @@
           if (count >= (isVideo ? 1 : 5)) {
             attachmentError.textContent = isVideo
               ? 'You can attach up to 1 video.'
-              : 'You can attach up to 5 screenshots.';
+              : 'You can attach up to 5 images and files.';
             return;
           }
           selectedAttachments.push({ file: file, url: URL.createObjectURL(file) });
