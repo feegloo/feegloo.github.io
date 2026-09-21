@@ -201,18 +201,12 @@
     try {
       const response = await fetch(createAppEndpoint, {
         method: 'POST',
-        headers: requestHeaders(),
+        headers: { 'x-request-key': currentRequestKey },
         body: payload,
       });
       const result = await response.json().catch(function () {
         return {};
       });
-      if (response.status === 401 && result.code === 'session_expired') {
-        localStorage.removeItem('vibe-github-session');
-        throw new Error(
-          'Your GitHub session expired. Submit again to continue.',
-        );
-      }
       if (!response.ok)
         throw new Error(result.error || 'Could not save app request.');
       currentRequestId = result.requestId;
@@ -488,10 +482,28 @@
 
   // Status polling and result screen.
 
+  async function connectGitHubAfterCreation(result) {
+    if (!result.creationOutcome || result.githubConnected || !storedSession()) {
+      return result;
+    }
+    const response = await fetch(authEndpoint, {
+      method: 'POST',
+      headers: { ...requestHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'connect', requestId: currentRequestId }),
+    });
+    const connection = await response.json();
+    if (!response.ok) throw new Error(connection.error || 'Could not check GitHub access.');
+    if (!connection.githubConnected) {
+      localStorage.removeItem('vibe-github-session');
+      return result;
+    }
+    return getInvitationStatus();
+  }
+
   async function getInvitationStatus() {
     const response = await fetch(
       createAppEndpoint + '?requestId=' + encodeURIComponent(currentRequestId),
-      { headers: requestHeaders(), cache: 'no-store' },
+      { headers: { 'x-request-key': currentRequestKey }, cache: 'no-store' },
     );
     if (!response.ok) throw new Error('Could not check app status.');
     return response.json();
@@ -505,14 +517,14 @@
   async function pollInvitationStatus() {
     if (!currentRequestId) return;
     try {
-      const result = await getInvitationStatus();
+      const result = await connectGitHubAfterCreation(await getInvitationStatus());
       if (
         [
           'finished',
           'missing_invitation',
           'invalid_invitation',
           'invitation_limit',
-        ].includes(result.status)
+        ].includes(result.status) || result.creationOutcome === 'failed'
       ) {
         showResult(result);
         return;
@@ -539,10 +551,11 @@
       'invalid_invitation',
       'invitation_limit',
     ].includes(result.status);
+    const failed = result.creationOutcome === 'failed';
     document.getElementById('result-title').textContent = rejected
       ? 'Request saved'
-      : 'App successfully created!';
-    document.getElementById('apple-email-message').hidden = rejected;
+      : failed ? 'Your repository is ready' : 'App successfully created!';
+    document.getElementById('apple-email-message').hidden = rejected || failed;
     loginButton.hidden = rejected || result.githubConnected;
     repositoryLink.hidden =
       rejected || !result.githubConnected || !result.repositoryUrl;
@@ -564,6 +577,9 @@
             ? 'Your repository is ready.'
             : 'Preparing your GitHub repository invitation...'
         : 'Log in with GitHub to receive an invitation to your repository.';
+    if (failed) {
+      resultMessage.textContent = 'Copilot could not complete your app. Your repository is saved and the process can be retried. ' + resultMessage.textContent;
+    }
     if (
       !rejected &&
       result.githubConnected &&
