@@ -680,7 +680,7 @@
       const drawButton = document.getElementById('attachment-draw');
       const drawingEditor = createDrawingEditor(function (file) {
         const count = selectedAttachments.length;
-        addAttachments([file]);
+        addAttachments([file], 'drawing');
         return selectedAttachments.length > count;
       });
       drawButton.addEventListener('click', function () { drawingEditor.open(); });
@@ -838,7 +838,7 @@
         drawButton.disabled = selectedAttachments.filter(item => !attachmentIsVideo(item.file)).length >= 5;
       }
 
-      function addAttachments(files) {
+      function addAttachments(files, source) {
         attachmentError.textContent = '';
         Array.from(files || []).forEach(function (file) {
           if (!attachmentIsAllowed(file)) {
@@ -863,7 +863,7 @@
               : 'You can attach up to 5 images and files.';
             return;
           }
-          selectedAttachments.push({ file: file, url: URL.createObjectURL(file) });
+          selectedAttachments.push({ file: file, source: source === 'drawing' ? 'drawing' : 'upload', url: URL.createObjectURL(file) });
         });
         renderAttachments();
       }
@@ -1052,6 +1052,7 @@
 
         selectedAttachments.forEach(function (item) {
           payload.append('attachments', item.file, item.file.name);
+          payload.append('attachmentSources', item.source || 'upload');
         });
 
         startButtonAnimation(selectedAttachments.length > 0 ? 'Uploading files' : 'Creating');
