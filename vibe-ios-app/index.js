@@ -37,6 +37,8 @@
 
   let currentRequestKey = null;
 
+  let requestGeneration = 0;
+
   const resultPanel = document.getElementById('app-result');
 
   const resultMessage = document.getElementById('result-message');
@@ -93,6 +95,7 @@
   function initialize() {
     form.reset();
     invitationInput.value = invitationHash;
+    restoreDraft();
     bindAttachmentEvents();
     bindValidationEvents();
     form.addEventListener('submit', submitApp);
@@ -137,11 +140,37 @@
     fields.forEach(function (field) {
       const eventName = field.element.type === 'checkbox' ? 'change' : 'input';
       field.element.addEventListener(eventName, function () {
+        saveDraft();
         if (field.wrapper.classList.contains('invalid')) {
           setValidity(field, field.isValid(field.element));
         }
       });
     });
+  }
+
+  // Only unsent text is restored on a normal page load.
+  function draftStorageKey() {
+    return 'vibe-app-draft:' + invitationHash;
+  }
+
+  function saveDraft() {
+    try {
+      localStorage.setItem(draftStorageKey(), JSON.stringify({
+        email: document.getElementById('email').value,
+        appName: document.getElementById('app-name').value,
+        prompt: document.getElementById('initial-prompt').value,
+      }));
+    } catch (_) {}
+  }
+
+  function restoreDraft() {
+    try {
+      const draft = JSON.parse(localStorage.getItem(draftStorageKey()) || 'null');
+      if (!draft) return;
+      for (const [id, key] of [['email', 'email'], ['app-name', 'appName'], ['initial-prompt', 'prompt']]) {
+        if (typeof draft[key] === 'string') document.getElementById(id).value = draft[key];
+      }
+    } catch (_) {}
   }
 
   // Form validation and submission.
@@ -176,7 +205,6 @@
     if (!currentRequestId) {
       currentRequestId = crypto.randomUUID();
       currentRequestKey = randomKey();
-      rememberRequest();
     }
     payload.append('requestId', currentRequestId);
     selectedAttachments.forEach(function (item) {
@@ -194,6 +222,8 @@
     hideBanner();
     status.textContent = '';
     if (!validateForm()) return;
+    requestGeneration += 1;
+    clearTimeout(statusPollTimer);
     const payload = buildRequestPayload();
     startButtonAnimation(
       selectedAttachments.length > 0 ? 'Uploading files' : 'Creating',
@@ -210,7 +240,6 @@
       if (!response.ok)
         throw new Error(result.error || 'Could not save app request.');
       currentRequestId = result.requestId;
-      rememberRequest();
       if (
         [
           'missing_invitation',
@@ -221,6 +250,7 @@
         showResult(result);
         return;
       }
+      localStorage.removeItem(draftStorageKey());
       startButtonAnimation('Creating app');
       scheduleStatusPoll();
     } catch (error) {
@@ -432,6 +462,7 @@
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
+      rememberRequest();
       location.assign(result.url);
     } catch (error) {
       resultMessage.textContent =
@@ -441,17 +472,25 @@
   }
 
   async function restoreInvitationState() {
+    const fragment = new URLSearchParams(location.hash.slice(1));
+    const returningFromGitHub = fragment.has('login_ticket') || fragment.has('login_error');
     const saved = sessionStorage.getItem('vibe-app-request');
-    if (saved) {
+    sessionStorage.removeItem('vibe-app-request');
+    if (returningFromGitHub && saved) {
       try {
         const value = JSON.parse(saved);
-        if (value.invitation === invitationHash) {
+        if (value.invitation === invitationHash &&
+            /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value.id || '') &&
+            /^[a-f0-9-]{32,80}$/i.test(value.key || '')) {
           currentRequestId = value.id;
           currentRequestKey = value.key;
+        } else {
+          sessionStorage.removeItem('vibe-app-request');
         }
-      } catch (_) {}
+      } catch (_) {
+        sessionStorage.removeItem('vibe-app-request');
+      }
     }
-    const fragment = new URLSearchParams(location.hash.slice(1));
     if (fragment.has('login_ticket')) {
       const ticket = fragment.get('login_ticket');
       history.replaceState(null, '', location.pathname + location.search);
@@ -505,7 +544,11 @@
       createAppEndpoint + '?requestId=' + encodeURIComponent(currentRequestId),
       { headers: { 'x-request-key': currentRequestKey }, cache: 'no-store' },
     );
-    if (!response.ok) throw new Error('Could not check app status.');
+    if (!response.ok) {
+      const error = new Error('Could not check app status.');
+      error.requestNotFound = response.status === 404;
+      throw error;
+    }
     return response.json();
   }
 
@@ -516,8 +559,15 @@
 
   async function pollInvitationStatus() {
     if (!currentRequestId) return;
+    const generation = requestGeneration;
+    const requestId = currentRequestId;
+    const isCurrent = () => generation === requestGeneration && requestId === currentRequestId;
     try {
-      const result = await connectGitHubAfterCreation(await getInvitationStatus());
+      const savedResult = await getInvitationStatus();
+      if (!isCurrent()) return;
+      const result = await connectGitHubAfterCreation(savedResult);
+      if (!isCurrent()) return;
+      status.textContent = '';
       if (
         [
           'finished',
@@ -536,13 +586,28 @@
       );
       if (result.provisioningError)
         status.textContent = result.provisioningError;
-    } catch (_) {
-      status.textContent = 'Checking your saved request...';
+    } catch (error) {
+      if (!isCurrent()) return;
+      if (error.requestNotFound) {
+        clearTimeout(statusPollTimer);
+        currentRequestId = null;
+        currentRequestKey = null;
+        sessionStorage.removeItem('vibe-app-request');
+        status.textContent = '';
+        resultPanel.hidden = true;
+        form.hidden = false;
+        setButton('Create iOS app', false);
+        return;
+      }
+      // A temporary network error must not discard a saved request or its key.
+      // Retry quietly; the existing form/result remains unchanged.
     }
     scheduleStatusPoll();
   }
 
   function showResult(result) {
+    clearTimeout(statusPollTimer);
+    status.textContent = '';
     stopButtonAnimation();
     form.hidden = true;
     resultPanel.hidden = false;
@@ -551,6 +616,25 @@
       'invalid_invitation',
       'invitation_limit',
     ].includes(result.status);
+    if (rejected) {
+      requestGeneration += 1;
+      currentRequestId = null;
+      currentRequestKey = null;
+      sessionStorage.removeItem('vibe-app-request');
+      resultPanel.hidden = true;
+      form.hidden = false;
+      loginButton.hidden = true;
+      repositoryLink.hidden = true;
+      saveDraft();
+      const messages = {
+        missing_invitation: 'An invitation is required. Your request has been saved.',
+        invalid_invitation: 'This invitation is invalid. Your request has been saved.',
+        invitation_limit: "You've reached the app limit. Your request has been saved.",
+      };
+      showBanner(messages[result.status]);
+      setButton('Create iOS app', false);
+      return;
+    }
     const failed = result.creationOutcome === 'failed';
     document.getElementById('result-title').textContent = rejected
       ? 'Request saved'
@@ -591,6 +675,8 @@
   }
 
   function createAnotherApp() {
+    requestGeneration += 1;
+    localStorage.removeItem(draftStorageKey());
     clearTimeout(statusPollTimer);
     currentRequestId = null;
     currentRequestKey = null;
@@ -607,6 +693,7 @@
     fields.forEach((field) => field.wrapper.classList.remove('invalid'));
     setButton('Create iOS app', false);
     document.getElementById('email').focus();
+    checkInvitationLimit();
   }
 
   // Shared UI feedback.
