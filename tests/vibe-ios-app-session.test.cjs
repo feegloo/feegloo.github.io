@@ -15,7 +15,7 @@ function setup(status, connected = false, outcome = null, initial = {}) {
   if (initial.saved) sessionStorage.setItem('vibe-app-request', JSON.stringify(initial.saved));
   if (initial.draft) localStorage.setItem('vibe-app-draft:082b', JSON.stringify(initial.draft));
   let timer, linked=false; const calls=[];
-  const result = () => ({requestId:'test-request',status,githubConnected:linked,creationOutcome:outcome,repositoryUrl:outcome?'https://github.com/feegloo/example':null,accessStatus:linked?'repository_invited':null});
+  const result = () => ({requestId:'test-request',status,githubConnected:linked,creationOutcome:outcome,repositoryUrl:outcome?'https://github.com/feegloo/example':null,accessStatus:linked?(initial.accessStatus ?? 'repository_invited'):null});
   const fetch=async (url, options={}) => {calls.push({url,...options}); if(url.endsWith('github-auth')) {linked=connected;return {ok:true,json:async()=>({githubConnected:connected})};} return {ok:true,json:async()=>result()};};
   const context = {history:{replaceState(){}},document:{getElementById:element,querySelector:element},localStorage,sessionStorage,crypto:webcrypto,URLSearchParams,URL,FormData,fetch,createDrawingEditor:()=>({open(){}}),location:{search:'?invitation=082b',hash:initial.hash || ''},setTimeout:fn=>{timer=fn;return 1;},clearTimeout(){},setInterval(){return 1;},clearInterval(){}};
   context.window=context;vm.runInNewContext(script,context);
@@ -48,3 +48,23 @@ test('OAuth return resumes only the request tied to login', async()=>{
 
 test('page load makes no server requests', async()=>{const t=setup('created');await new Promise(resolve=>setImmediate(resolve));assert.equal(t.calls.length,0);assert.equal(t.element('submit').disabled,false);});
 test('limit response retains editable draft and permits another submission',async()=>{const t=setup('invitation_limit');await t.submit();assert.match(t.element('invitation-error').textContent,/reached the app limit/);assert.ok(t.localStorage.getItem('vibe-app-draft:082b'));assert.equal(t.element('submit').disabled,false);await t.submit();assert.equal(t.calls.length,2);assert.notEqual(t.calls[0].body.get('requestId'),t.calls[1].body.get('requestId'));});
+
+for (const hash of ['#login_ticket=ticket', '#login_error=cancelled']) test('OAuth return hides form before requests resolve: '+hash, async()=>{
+ const t=setup('finished',true,'success',{hash,saved:{id:'00000000-0000-4000-8000-000000000001',key:'a'.repeat(64),invitation:'082b'}});
+ assert.equal(t.element('create-ios-app-form').hidden,true);
+ assert.equal(t.element('app-result').hidden,false);
+ assert.equal(t.element('repository-link').hidden,true);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(t.element('create-ios-app-form').hidden,true);
+});
+for (const accessStatus of ['pending','repository_invited','collaborator_present']) test('repository link matches access state: '+accessStatus,async()=>{
+ const t=setup('finished',true,'success',{accessStatus});await t.submit();await t.poll();
+ assert.equal(t.element('repository-link').hidden,accessStatus==='pending');
+ assert.equal(t.element('result-message').textContent.includes('Preparing'),accessStatus==='pending');
+});
+test('Create Another App resets the screen without a server request',async()=>{
+ const t=setup('finished',true,'success');await t.submit();await t.poll();const count=t.calls.length;
+ t.element('create-another-app').listeners.click();
+ assert.equal(t.element('create-ios-app-form').hidden,false);assert.equal(t.element('app-result').hidden,true);
+ assert.equal(t.element('submit').disabled,false);assert.equal(t.calls.length,count);
+});

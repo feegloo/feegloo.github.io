@@ -491,6 +491,14 @@
         sessionStorage.removeItem('vibe-app-request');
       }
     }
+    // Choose the screen before the first network request on OAuth return.
+    form.hidden = Boolean(currentRequestId);
+    resultPanel.hidden = !currentRequestId;
+    if (currentRequestId) {
+      loginButton.hidden = true;
+      repositoryLink.hidden = true;
+      resultMessage.textContent = 'Connecting your GitHub account...';
+    }
     if (fragment.has('login_ticket')) {
       const ticket = fragment.get('login_ticket');
       history.replaceState(null, '', location.pathname + location.search);
@@ -640,9 +648,11 @@
       ? 'Request saved'
       : failed ? 'Your repository is ready' : 'App successfully created!';
     document.getElementById('apple-email-message').hidden = rejected || failed;
+    const accessReady = ['repository_invited', 'collaborator_present'].includes(result.accessStatus);
+    loginButton.disabled = false;
     loginButton.hidden = rejected || result.githubConnected;
     repositoryLink.hidden =
-      rejected || !result.githubConnected || !result.repositoryUrl;
+      rejected || !result.githubConnected || !result.repositoryUrl || !accessReady;
     if (!repositoryLink.hidden) repositoryLink.href = result.repositoryUrl;
     const messages = {
       missing_invitation:
@@ -667,9 +677,7 @@
     if (
       !rejected &&
       result.githubConnected &&
-      !['repository_invited', 'collaborator_present'].includes(
-        result.accessStatus,
-      )
+      !accessReady
     )
       scheduleStatusPoll();
   }
@@ -693,7 +701,6 @@
     fields.forEach((field) => field.wrapper.classList.remove('invalid'));
     setButton('Create iOS app', false);
     document.getElementById('email').focus();
-    checkInvitationLimit();
   }
 
   // Shared UI feedback.
