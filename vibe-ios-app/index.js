@@ -502,6 +502,11 @@
     if (fragment.has('login_ticket')) {
       const ticket = fragment.get('login_ticket');
       history.replaceState(null, '', location.pathname + location.search);
+      const browserKey = sessionStorage.getItem('vibe-login-browser-key');
+      if (!ticket || !browserKey || !currentRequestId) {
+        resetGitHubLogin();
+        return;
+      }
       try {
         const response = await fetch(authEndpoint, {
           method: 'POST',
@@ -509,11 +514,17 @@
           body: JSON.stringify({
             action: 'exchange',
             ticket,
-            browserKey: sessionStorage.getItem('vibe-login-browser-key'),
+            browserKey,
           }),
         });
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
+        if (!response.ok) {
+          if (response.status === 400 || response.status === 401) {
+            resetGitHubLogin();
+            return;
+          }
+          throw new Error(result.error);
+        }
         localStorage.setItem('vibe-github-session', result.token);
         sessionStorage.removeItem('vibe-login-browser-key');
       } catch (error) {
@@ -521,10 +532,33 @@
       }
     } else if (fragment.has('login_error')) {
       history.replaceState(null, '', location.pathname + location.search);
-      showBanner('GitHub login was cancelled or expired. Please try again.');
+      resetGitHubLogin();
+      return;
     }
     if (currentRequestId) pollInvitationStatus();
     else setButton('Create iOS app', false);
+  }
+
+  // GitHub authentication is only needed for repository access after creation.
+  function resetGitHubLogin() {
+    requestGeneration += 1;
+    clearTimeout(statusPollTimer);
+    currentRequestId = null;
+    currentRequestKey = null;
+    localStorage.removeItem('vibe-github-session');
+    sessionStorage.removeItem('vibe-login-browser-key');
+    sessionStorage.removeItem('vibe-app-request');
+    history.replaceState(null, '', location.pathname + location.search);
+    resultPanel.hidden = true;
+    loginButton.hidden = true;
+    loginButton.disabled = false;
+    repositoryLink.hidden = true;
+    repositoryLink.removeAttribute('href');
+    resultMessage.textContent = '';
+    form.hidden = false;
+    hideBanner();
+    status.textContent = '';
+    setButton('Create iOS app', false);
   }
 
   // Status polling and result screen.
