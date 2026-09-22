@@ -733,7 +733,7 @@
         ? result.accessStatus === 'repository_invited'
           ? 'Your GitHub invitation has been sent. Accept it before opening the private repository.'
           : result.accessStatus === 'collaborator_present'
-            ? 'Your repository is ready.'
+            ? ''
             : 'Preparing your GitHub repository invitation...'
         : 'Connect with GitHub to access your repository.';
     if (failed && result.creationFailureSource === 'app_store') {

@@ -272,7 +272,7 @@ button[type="submit"]:focus-visible {
 
 .invitation-error.visible {
   visibility: visible;
-  margin: 8px 0 14px;
+  margin: 8px 0 19px;
 }
 
 .attachments-field {
@@ -532,3 +532,5 @@ button[type="submit"]:focus-visible {
 .another-app { display: block; width: fit-content; max-width: 100%; box-sizing: border-box; min-height: 44px; margin: 40px auto 0; padding: 11px 22px; border: 1px solid #2997ff; border-radius: 10px; background: transparent; color: #2997ff; font: inherit; font-weight: 500; cursor: pointer; }
 .another-app:hover { background: rgba(41, 151, 255, 0.08); }
 .another-app:focus-visible { outline: 2px solid #2997ff; outline-offset: 4px; }
+
+#result-message:empty { display: none; }
