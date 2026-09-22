@@ -92,3 +92,20 @@ test('OAuth network failure exposes a retry instead of an indefinite loader', as
   assert.equal(element('result-title').textContent, 'Your repository is ready');
   assert.doesNotMatch(element('result-message').textContent, /Connecting/);
 });
+
+
+test('invitation failure explains automatic retry and recovers on the next poll', async () => {
+  const base = {status: 'finished', creationOutcome: 'success', githubConnected: true, repositoryUrl: 'https://github.com/feegloo/example'};
+  const {context, element, calls} = setup([
+    {body: {...base, accessStatus: 'pending', accessState: 'failed'}},
+    {body: {...base, accessStatus: 'repository_invited', accessState: 'finished'}},
+  ]);
+  await context.api.pollInvitationStatus();
+  assert.match(element('result-message').textContent, /retry automatically every few seconds/);
+  assert.equal(element('repository-link').hidden, true);
+  assert.equal(element('github-login').hidden, true);
+  await context.api.pollInvitationStatus();
+  assert.match(element('result-message').textContent, /invitation has been sent/);
+  assert.equal(element('repository-link').hidden, false);
+  assert.equal(calls.length, 2);
+});

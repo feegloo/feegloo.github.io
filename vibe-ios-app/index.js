@@ -712,7 +712,9 @@
           ? 'Your GitHub invitation has been sent. Accept it before opening the private repository.'
           : result.accessStatus === 'collaborator_present'
             ? ''
-            : 'Preparing your GitHub repository invitation...'
+            : result.accessState === 'failed'
+              ? 'Your GitHub invitation is delayed. We retry automatically every few seconds. You do not need to sign in again.'
+              : 'Preparing your GitHub repository invitation...'
         : 'Connect with GitHub to access your repository.';
     if (failed && result.creationFailureSource === 'app_store') {
       showBanner('Your app could not be created in App Store Connect. Your GitHub repository is saved and available below.');
