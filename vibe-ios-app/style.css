@@ -261,12 +261,12 @@ button[type="submit"]:focus-visible {
 }
 
 .invitation-error {
-  min-height: 20px;
-  margin: 8px 0 5px;
+  min-height: 15px;
+  margin: 0 0 5px;
   color: var(--error);
   font-size: 13px;
   font-weight: 600;
-  line-height: 20px;
+  line-height: 15px;
   visibility: hidden;
 }
 
