@@ -705,9 +705,13 @@
             ? 'Your repository is ready.'
             : 'Preparing your GitHub repository invitation...'
         : 'Log in with GitHub to receive an invitation to your repository.';
-    if (failed) {
+    if (failed && result.creationFailureSource === 'app_store') {
+      showBanner('Your app could not be created in App Store Connect. Your GitHub repository is saved and available below.');
+    } else if (failed) {
+      hideBanner();
       resultMessage.textContent = 'Copilot could not complete your app. Your repository is saved and the process can be retried. ' + resultMessage.textContent;
     }
+    if (!failed) hideBanner();
     if (
       !rejected &&
       result.githubConnected &&
