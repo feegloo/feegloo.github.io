@@ -680,9 +680,12 @@
       return;
     }
     const failed = result.creationOutcome === 'failed';
+    const successTitle = result.appName
+      ? 'App ' + result.appName + ' successfully created!'
+      : 'App successfully created!';
     document.getElementById('result-title').textContent = rejected
       ? 'Request saved'
-      : failed ? 'Your repository is ready' : 'App successfully created!';
+      : failed ? 'Your repository is ready' : successTitle;
     document.getElementById('apple-email-message').hidden = rejected || failed;
     const accessReady = ['repository_invited', 'collaborator_present'].includes(result.accessStatus);
     loginButton.disabled = false;
