@@ -97,7 +97,6 @@
   function initialize() {
     form.reset();
     invitationInput.value = invitationHash;
-    restoreDraft();
     bindAttachmentEvents();
     bindValidationEvents();
     form.addEventListener('submit', submitApp);
@@ -142,37 +141,11 @@
     fields.forEach(function (field) {
       const eventName = field.element.type === 'checkbox' ? 'change' : 'input';
       field.element.addEventListener(eventName, function () {
-        saveDraft();
         if (field.wrapper.classList.contains('invalid')) {
           setValidity(field, field.isValid(field.element));
         }
       });
     });
-  }
-
-  // Only unsent text is restored on a normal page load.
-  function draftStorageKey() {
-    return 'vibe-app-draft:' + invitationHash;
-  }
-
-  function saveDraft() {
-    try {
-      localStorage.setItem(draftStorageKey(), JSON.stringify({
-        email: document.getElementById('email').value,
-        appName: document.getElementById('app-name').value,
-        prompt: document.getElementById('initial-prompt').value,
-      }));
-    } catch (_) {}
-  }
-
-  function restoreDraft() {
-    try {
-      const draft = JSON.parse(localStorage.getItem(draftStorageKey()) || 'null');
-      if (!draft) return;
-      for (const [id, key] of [['email', 'email'], ['app-name', 'appName'], ['initial-prompt', 'prompt']]) {
-        if (typeof draft[key] === 'string') document.getElementById(id).value = draft[key];
-      }
-    } catch (_) {}
   }
 
   // Form validation and submission.
@@ -252,7 +225,6 @@
         showResult(result);
         return;
       }
-      localStorage.removeItem(draftStorageKey());
       startButtonAnimation('Creating app');
       scheduleStatusPoll();
     } catch (error) {
@@ -698,7 +670,6 @@
       form.hidden = false;
       loginButton.hidden = true;
       repositoryLink.hidden = true;
-      saveDraft();
       const messages = {
         missing_invitation: 'An invitation is required. Your request has been saved.',
         invalid_invitation: 'This invitation is invalid. Your request has been saved.',
@@ -753,7 +724,6 @@
 
   function createAnotherApp() {
     requestGeneration += 1;
-    localStorage.removeItem(draftStorageKey());
     clearTimeout(statusPollTimer);
     currentRequestId = null;
     currentRequestKey = null;
