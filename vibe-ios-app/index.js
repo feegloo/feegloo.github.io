@@ -680,12 +680,16 @@
       return;
     }
     const failed = result.creationOutcome === 'failed';
-    const successTitle = result.appName
-      ? 'App ' + result.appName + ' successfully created!'
-      : 'App successfully created!';
-    document.getElementById('result-title').textContent = rejected
+    const resultTitle = document.getElementById('result-title');
+    resultTitle.textContent = rejected
       ? 'Request saved'
-      : failed ? 'Your repository is ready' : successTitle;
+      : failed ? 'Your repository is ready' : 'App successfully created!';
+    if (!rejected && !failed && result.appName) {
+      const appName = document.createElement('span');
+      appName.textContent = result.appName;
+      appName.style.color = '#008b8b';
+      resultTitle.replaceChildren('App ', appName, ' successfully created!');
+    }
     document.getElementById('apple-email-message').hidden = rejected || failed;
     const accessReady = ['repository_invited', 'collaborator_present'].includes(result.accessStatus);
     loginButton.disabled = false;
