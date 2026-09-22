@@ -1,0 +1,168 @@
+name: Build and publish Ad Hoc
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  XCODE_PROJECT: ${{ vars.XCODE_PROJECT }}
+  APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+  ADHOC_BASE_URL: ${{ vars.ADHOC_BASE_URL }}
+  BUILDS_REPOSITORY: ${{ vars.BUILDS_REPOSITORY }}
+
+concurrency:
+  group: adhoc-publish
+  cancel-in-progress: false
+
+jobs:
+  adhoc:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[adhoc]')
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Validate repository variables
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+
+          required = ("XCODE_PROJECT", "APPLE_TEAM_ID", "ADHOC_BASE_URL", "BUILDS_REPOSITORY")
+          missing = [name for name in required if not os.environ.get(name, "").strip()]
+          if missing:
+              raise SystemExit("Missing GitHub Actions Variables: " + ", ".join(missing))
+          if not re.fullmatch(r"[A-Z0-9]{10}", os.environ["APPLE_TEAM_ID"]):
+              raise SystemExit("APPLE_TEAM_ID must contain 10 uppercase letters or digits.")
+          if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", os.environ["XCODE_PROJECT"]):
+              raise SystemExit("XCODE_PROJECT must be the project and scheme name without an extension.")
+          from urllib.parse import urlsplit
+          url = urlsplit(os.environ["ADHOC_BASE_URL"])
+          if url.scheme != "https" or not url.hostname or url.username or url.password or url.query or url.fragment or not url.path.rstrip("/").endswith("/adhoc"):
+              raise SystemExit("ADHOC_BASE_URL must be the public HTTPS URL ending in /adhoc/")
+          if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", os.environ["BUILDS_REPOSITORY"]):
+              raise SystemExit("BUILDS_REPOSITORY must use owner/repository format")
+          PY
+
+      - name: Validate publishing token
+        env:
+          BUILDS_REPO_TOKEN: ${{ secrets.BUILDS_REPO_TOKEN }}
+        run: |
+          : "${BUILDS_REPO_TOKEN:?Set BUILDS_REPO_TOKEN with Contents read/write on your website repository}"
+
+      - name: Install XcodeGen
+        run: |
+          # GitHub's macOS runner currently includes an untrusted aws/tap.
+          # It is unrelated to this project and causes Homebrew to emit a warning.
+          brew untap aws/tap >/dev/null 2>&1 || true
+          brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Import reusable distribution signing assets
+        env:
+          DISTRIBUTION_CERTIFICATE_P12_BASE64: ${{ secrets.DISTRIBUTION_CERTIFICATE_P12_BASE64 }}
+          DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          ADHOC_PROVISIONING_PROFILE_BASE64: ${{ secrets.ADHOC_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          umask 077
+          : "${DISTRIBUTION_CERTIFICATE_P12_BASE64:?Missing distribution certificate secret}"
+          : "${DISTRIBUTION_CERTIFICATE_PASSWORD:?Missing distribution certificate password}"
+          : "${ADHOC_PROVISIONING_PROFILE_BASE64:?Missing Ad Hoc profile secret}"
+          printf '%s' "$DISTRIBUTION_CERTIFICATE_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/distribution.p12"
+          printf '%s' "$ADHOC_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$RUNNER_TEMP/adhoc.mobileprovision"
+          openssl smime -inform der -verify -noverify \
+            -in "$RUNNER_TEMP/adhoc.mobileprovision" \
+            -out "$RUNNER_TEMP/adhoc-profile.plist"
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/adhoc.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/distribution.p12" \
+            -P "$DISTRIBUTION_CERTIFICATE_PASSWORD" -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+          # Install Apple's intermediate certificate without overriding system trust.
+          curl --fail --silent --show-error --location \
+            https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer \
+            -o "$RUNNER_TEMP/AppleWWDRCAG3.cer"
+          # A Keychain-exported .p12 may already contain this intermediate.
+          # Ignore only the duplicate-item error; propagate every other failure.
+          if import_output=$(security import "$RUNNER_TEMP/AppleWWDRCAG3.cer" -k "$KEYCHAIN_PATH" 2>&1); then
+            printf '%s\n' "$import_output"
+          else
+            import_status=$?
+            if [[ "$import_output" == *"SecKeychainItemImport: The specified item already exists in the keychain."* ]]; then
+              echo "Apple WWDR G3 intermediate is already installed."
+            else
+              printf '%s\n' "$import_output" >&2
+              exit "$import_status"
+            fi
+          fi
+
+      # Reuse the imported certificate at export; never request new signing assets.
+      - name: Archive without local signing
+        run: |
+          xcodebuild \
+            -project "${XCODE_PROJECT}.xcodeproj" \
+            -scheme "$XCODE_PROJECT" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            clean archive
+
+      - name: Validate signing profile and create manual export options
+        run: python3 scripts/prepare-adhoc-export.py
+
+      - name: Export Ad Hoc IPA
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$RUNNER_TEMP/${XCODE_PROJECT}.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Remove temporary signing assets
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/adhoc.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/distribution.p12" "$RUNNER_TEMP/adhoc.mobileprovision" \
+            "$RUNNER_TEMP/adhoc-profile.plist" "$RUNNER_TEMP/AppleWWDRCAG3.cer" \
+            "$RUNNER_TEMP/ExportOptions.plist"
+          if [[ -f "$RUNNER_TEMP/adhoc-profile-paths.txt" ]]; then
+            while IFS= read -r profile_path; do rm -f "$profile_path"; done < "$RUNNER_TEMP/adhoc-profile-paths.txt"
+            rm -f "$RUNNER_TEMP/adhoc-profile-paths.txt"
+          fi
+
+      - name: Checkout website
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ vars.BUILDS_REPOSITORY }}
+          ref: main
+          token: ${{ secrets.BUILDS_REPO_TOKEN }}
+          path: website
+
+      - name: Publish installation files and version catalog
+        run: python3 scripts/publish-adhoc.py
