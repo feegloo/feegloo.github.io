@@ -270,7 +270,10 @@ button[type="submit"]:focus-visible {
   visibility: hidden;
 }
 
-.invitation-error.visible { visibility: visible; }
+.invitation-error.visible {
+  visibility: visible;
+  margin: 8px 0 14px;
+}
 
 .attachments-field {
   margin: 0 0 4px;

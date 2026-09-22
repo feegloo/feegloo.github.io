@@ -39,6 +39,8 @@
 
   let requestGeneration = 0;
 
+  let lastCreationResult = null;
+
   const resultPanel = document.getElementById('app-result');
 
   const resultMessage = document.getElementById('result-message');
@@ -442,6 +444,7 @@
         id: currentRequestId,
         key: currentRequestKey,
         invitation: invitationHash,
+        result: lastCreationResult,
       }),
     );
   }
@@ -452,6 +455,7 @@
       const browserKey = randomKey();
       sessionStorage.setItem('vibe-login-browser-key', browserKey);
       const response = await fetch(authEndpoint, {
+      signal: AbortSignal.timeout(15000),
         method: 'POST',
         headers: { ...requestHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -484,6 +488,7 @@
             /^[a-f0-9-]{32,80}$/i.test(value.key || '')) {
           currentRequestId = value.id;
           currentRequestKey = value.key;
+          lastCreationResult = value.result || null;
         } else {
           sessionStorage.removeItem('vibe-app-request');
         }
@@ -495,6 +500,12 @@
     form.hidden = Boolean(currentRequestId);
     resultPanel.hidden = !currentRequestId;
     if (currentRequestId) {
+      if (lastCreationResult?.creationOutcome) {
+        showResult({ ...lastCreationResult, githubConnected: false, accessStatus: null });
+        clearTimeout(statusPollTimer);
+      } else {
+        document.getElementById('result-title').textContent = 'Checking app status';
+      }
       loginButton.hidden = true;
       repositoryLink.hidden = true;
       resultMessage.textContent = 'Connecting your GitHub account...';
@@ -509,6 +520,7 @@
       }
       try {
         const response = await fetch(authEndpoint, {
+      signal: AbortSignal.timeout(15000),
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -528,7 +540,10 @@
         localStorage.setItem('vibe-github-session', result.token);
         sessionStorage.removeItem('vibe-login-browser-key');
       } catch (error) {
-        showBanner(error.message || 'GitHub login failed. Please try again.');
+        localStorage.removeItem('vibe-github-session');
+        loginButton.hidden = false;
+        loginButton.disabled = false;
+        resultMessage.textContent = 'Could not finish GitHub login. Please try again.';
       }
     } else if (fragment.has('login_error')) {
       history.replaceState(null, '', location.pathname + location.search);
@@ -545,6 +560,7 @@
     clearTimeout(statusPollTimer);
     currentRequestId = null;
     currentRequestKey = null;
+    lastCreationResult = null;
     localStorage.removeItem('vibe-github-session');
     sessionStorage.removeItem('vibe-login-browser-key');
     sessionStorage.removeItem('vibe-app-request');
@@ -568,6 +584,7 @@
       return result;
     }
     const response = await fetch(authEndpoint, {
+      signal: AbortSignal.timeout(15000),
       method: 'POST',
       headers: { ...requestHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'connect', requestId: currentRequestId }),
@@ -584,7 +601,7 @@
   async function getInvitationStatus() {
     const response = await fetch(
       createAppEndpoint + '?requestId=' + encodeURIComponent(currentRequestId),
-      { headers: { 'x-request-key': currentRequestKey }, cache: 'no-store' },
+      { headers: { 'x-request-key': currentRequestKey }, cache: 'no-store', signal: AbortSignal.timeout(15000) },
     );
     if (!response.ok) {
       const error = new Error('Could not check app status.');
@@ -607,6 +624,8 @@
     try {
       const savedResult = await getInvitationStatus();
       if (!isCurrent()) return;
+      // Render the saved outcome before optional session linking can fail.
+      if (savedResult.creationOutcome) showResult(savedResult);
       const result = await connectGitHubAfterCreation(savedResult);
       if (!isCurrent()) return;
       status.textContent = '';
@@ -621,6 +640,11 @@
         showResult(result);
         return;
       }
+      // OAuth can return while Copilot is still working. Resume the form
+      // instead of leaving an obsolete Connecting message on the result card.
+      resultPanel.hidden = true;
+      form.hidden = false;
+      hideBanner();
       startButtonAnimation(
         result.attachmentStatus === 'uploading'
           ? 'Uploading files'
@@ -641,13 +665,20 @@
         setButton('Create iOS app', false);
         return;
       }
-      // A temporary network error must not discard a saved request or its key.
-      // Retry quietly; the existing form/result remains unchanged.
+      // Preserve the request, but provide an actionable way out of OAuth errors.
+      if (!resultPanel.hidden) {
+        loginButton.hidden = false;
+        loginButton.disabled = false;
+        if (repositoryLink.hidden) {
+          resultMessage.textContent = 'Could not check GitHub access. Please connect again.';
+        }
+      }
     }
     scheduleStatusPoll();
   }
 
   function showResult(result) {
+    lastCreationResult = result;
     clearTimeout(statusPollTimer);
     status.textContent = '';
     stopButtonAnimation();
@@ -704,7 +735,7 @@
           : result.accessStatus === 'collaborator_present'
             ? 'Your repository is ready.'
             : 'Preparing your GitHub repository invitation...'
-        : 'Log in with GitHub to receive an invitation to your repository.';
+        : 'Connect with GitHub to access your repository.';
     if (failed && result.creationFailureSource === 'app_store') {
       showBanner('Your app could not be created in App Store Connect. Your GitHub repository is saved and available below.');
     } else if (failed) {
@@ -726,6 +757,7 @@
     clearTimeout(statusPollTimer);
     currentRequestId = null;
     currentRequestKey = null;
+    lastCreationResult = null;
     sessionStorage.removeItem('vibe-app-request');
     form.reset();
     invitationInput.value = invitationHash;
