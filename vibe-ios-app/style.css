@@ -261,7 +261,7 @@ button[type="submit"]:focus-visible {
 }
 
 .invitation-error {
-  min-height: 40px;
+  min-height: 20px;
   margin: 8px 0 5px;
   color: var(--error);
   font-size: 13px;
