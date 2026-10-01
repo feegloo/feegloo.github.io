@@ -65,7 +65,7 @@ test('verified owner with access gets the repository link', async () => {
   assert.equal(element('repository-link').hidden, false);
   assert.equal(element('github-login').hidden, true);
   assert.match(element('repository-link').href, /another-project$/);
-  assert.equal(context.location.assigned, element('repository-link').href);
+  assert.equal(context.location.assigned, undefined);
 });
 test('expired session offers connection again', async () => {
   const {context, element} = setup([{body: failed}, {body: {githubConnected: false}}]);
@@ -121,18 +121,20 @@ function saveOAuthRequest(context, result = failed) {
   context.location.hash = '#login_ticket=ticket';
   context.sessionStorage.setItem('vibe-login-browser-key', 'key');
   context.sessionStorage.setItem('vibe-app-request', JSON.stringify({
-    id: context.api.requestId, key: 'a'.repeat(64), invitation: '1234567890123456', result,
+    id: context.api.requestId, key: 'a'.repeat(64), invitation: '1234567890123456', result, openRepository: true,
   }));
 }
 
-test('valid owner session links automatically and redirects without a click', async () => {
-  const {context, calls} = setup([
+test('valid owner session links automatically but stays on the result screen until a click', async () => {
+  const {context, element, calls} = setup([
     {body: {...ready, githubConnected: false, accessStatus: null}},
     {body: {githubConnected: true}}, {body: ready},
   ]);
   context.localStorage.setItem('vibe-github-session', 'valid');
   await context.api.pollInvitationStatus();
-  assert.equal(context.location.assigned, repositoryUrl);
+  assert.equal(context.location.assigned, undefined);
+  assert.equal(element('repository-link').hidden, false);
+  assert.equal(element('repository-link').href, repositoryUrl);
   assert.equal(JSON.parse(calls[1].options.body).action, 'connect');
   assert.equal(calls.some(call => JSON.parse(call.options?.body || '{}').action === 'start'), false);
 });
@@ -210,9 +212,10 @@ test('unverified identity never redirects even if the response contains a reposi
 
 test('redirect is attempted only once per request and leaves a fallback link', async () => {
   const {context, element} = setup([{body: ready}, {body: ready}]);
+  context.localStorage.setItem('vibe-github-session', 'valid');
   let redirects = 0;
   context.location.assign = () => { redirects++; };
-  await context.api.pollInvitationStatus();
+  await context.api.startGitHubLogin();
   await context.api.pollInvitationStatus();
   assert.equal(redirects, 1);
   assert.equal(element('repository-link').href, repositoryUrl);
@@ -227,4 +230,42 @@ test('cancelled OAuth never redirects', async () => {
   assert.equal(context.location.assigned, undefined);
   assert.equal(element('create-ios-app-form').hidden, false);
   assert.equal(calls.length, 0);
+});
+
+test('repeated background status checks never navigate before the user clicks', async () => {
+  const {context, element} = setup([{body: ready}, {body: ready}]);
+  await context.api.pollInvitationStatus();
+  await context.api.pollInvitationStatus();
+  assert.equal(context.location.assigned, undefined);
+  assert.equal(element('app-result').hidden, false);
+  assert.equal(element('repository-link').href, repositoryUrl);
+});
+
+test('OAuth return without a saved click intent shows the link instead of redirecting', async () => {
+  const {context, element} = setup([{body: {token: 'verified-session'}}, {body: ready}]);
+  saveOAuthRequest(context);
+  const saved = JSON.parse(context.sessionStorage.getItem('vibe-app-request'));
+  delete saved.openRepository;
+  context.sessionStorage.setItem('vibe-app-request', JSON.stringify(saved));
+  await context.api.restoreInvitationState();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(context.location.assigned, undefined);
+  assert.equal(element('repository-link').hidden, false);
+});
+
+test('one click survives delayed access confirmation', async () => {
+  const {context} = setup([{body: {...ready, accessStatus: 'pending'}}, {body: ready}]);
+  context.localStorage.setItem('vibe-github-session', 'valid');
+  await context.api.startGitHubLogin();
+  assert.equal(context.location.assigned, undefined);
+  await context.api.pollInvitationStatus();
+  assert.equal(context.location.assigned, repositoryUrl);
+});
+
+test('failed click clears navigation intent before subsequent background recovery', async () => {
+  const {context} = setup([new Error('offline'), {body: ready}]);
+  context.localStorage.setItem('vibe-github-session', 'valid');
+  await context.api.startGitHubLogin();
+  await context.api.pollInvitationStatus();
+  assert.equal(context.location.assigned, undefined);
 });

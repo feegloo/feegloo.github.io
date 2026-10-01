@@ -43,6 +43,8 @@
 
   let redirectedRequestId = null;
 
+  let openRepositoryRequestId = null;
+
   const resultPanel = document.getElementById('app-result');
 
   const resultMessage = document.getElementById('result-message');
@@ -419,11 +421,14 @@
         key: currentRequestKey,
         invitation: invitationHash,
         result: lastCreationResult,
+        openRepository: openRepositoryRequestId === currentRequestId,
       }),
     );
   }
 
   async function startGitHubLogin() {
+    if (loginButton.disabled || !currentRequestId) return;
+    openRepositoryRequestId = currentRequestId;
     loginButton.disabled = true;
     try {
       // A valid site session can recover a failed background connection
@@ -453,6 +458,7 @@
       rememberRequest();
       location.assign(result.url);
     } catch (error) {
+      openRepositoryRequestId = null;
       resultMessage.textContent =
         error.message || 'Could not start GitHub login.';
       loginButton.disabled = false;
@@ -473,6 +479,7 @@
           currentRequestId = value.id;
           currentRequestKey = value.key;
           lastCreationResult = value.result || null;
+          openRepositoryRequestId = value.openRepository === true ? value.id : null;
         } else {
           sessionStorage.removeItem('vibe-app-request');
         }
@@ -524,6 +531,7 @@
         localStorage.setItem('vibe-github-session', result.token);
         sessionStorage.removeItem('vibe-login-browser-key');
       } catch (error) {
+        openRepositoryRequestId = null;
         localStorage.removeItem('vibe-github-session');
         loginButton.hidden = false;
         loginButton.disabled = false;
@@ -540,6 +548,7 @@
 
   // GitHub authentication is only needed for repository access after creation.
   function resetGitHubLogin() {
+    openRepositoryRequestId = null;
     requestGeneration += 1;
     clearTimeout(statusPollTimer);
     currentRequestId = null;
@@ -752,8 +761,10 @@
 
   function redirectToRepository(result) {
     // An invitation is not access yet. Keep its explicit acceptance link.
+    // Only a click for this request may continue navigation after OAuth/polling.
     // Navigate in the same tab so mobile popup blockers cannot consume the click.
-    if (!result.creationOutcome || !result.githubConnected ||
+    if (!currentRequestId || openRepositoryRequestId !== currentRequestId ||
+        !result.creationOutcome || !result.githubConnected ||
         result.accessStatus !== 'collaborator_present' || !result.repositoryUrl ||
         redirectedRequestId === currentRequestId) return;
     redirectedRequestId = currentRequestId;
@@ -761,6 +772,7 @@
   }
 
   function createAnotherApp() {
+    openRepositoryRequestId = null;
     requestGeneration += 1;
     clearTimeout(statusPollTimer);
     currentRequestId = null;
