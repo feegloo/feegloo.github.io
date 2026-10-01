@@ -65,6 +65,7 @@ test('verified owner with access gets the repository link', async () => {
   assert.equal(element('repository-link').hidden, false);
   assert.equal(element('github-login').hidden, true);
   assert.match(element('repository-link').href, /another-project$/);
+  assert.equal(context.location.assigned, element('repository-link').href);
 });
 test('expired session offers connection again', async () => {
   const {context, element} = setup([{body: failed}, {body: {githubConnected: false}}]);
@@ -107,5 +108,123 @@ test('invitation failure explains automatic retry and recovers on the next poll'
   await context.api.pollInvitationStatus();
   assert.match(element('result-message').textContent, /invitation has been sent/);
   assert.equal(element('repository-link').hidden, false);
+  assert.equal(element('repository-link').href, base.repositoryUrl + '/invitations');
+  assert.equal(element('repository-link').textContent, 'Accept GitHub invitation');
+  assert.equal(context.location.assigned, undefined);
   assert.equal(calls.length, 2);
+});
+
+const repositoryUrl = 'https://github.com/feegloo/vibe-ios-app-example';
+const ready = {status: 'finished', creationOutcome: 'success', githubConnected: true, accessStatus: 'collaborator_present', repositoryUrl};
+
+function saveOAuthRequest(context, result = failed) {
+  context.location.hash = '#login_ticket=ticket';
+  context.sessionStorage.setItem('vibe-login-browser-key', 'key');
+  context.sessionStorage.setItem('vibe-app-request', JSON.stringify({
+    id: context.api.requestId, key: 'a'.repeat(64), invitation: '1234567890123456', result,
+  }));
+}
+
+test('valid owner session links automatically and redirects without a click', async () => {
+  const {context, calls} = setup([
+    {body: {...ready, githubConnected: false, accessStatus: null}},
+    {body: {githubConnected: true}}, {body: ready},
+  ]);
+  context.localStorage.setItem('vibe-github-session', 'valid');
+  await context.api.pollInvitationStatus();
+  assert.equal(context.location.assigned, repositoryUrl);
+  assert.equal(JSON.parse(calls[1].options.body).action, 'connect');
+  assert.equal(calls.some(call => JSON.parse(call.options?.body || '{}').action === 'start'), false);
+});
+
+test('owner without a site session completes OAuth then redirects without another click', async () => {
+  const {context, calls} = setup([
+    {body: {url: 'https://github.com/login/oauth/authorize?state=test'}},
+    {body: {token: 'verified-session'}}, {body: ready},
+  ]);
+  context.api.showResult({...ready, githubConnected: false, accessStatus: null});
+  await context.api.startGitHubLogin();
+  assert.match(context.location.assigned, /oauth\/authorize/);
+  context.location.hash = '#login_ticket=ticket';
+  await context.api.restoreInvitationState();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(context.location.assigned, repositoryUrl);
+  assert.equal(context.localStorage.getItem('vibe-github-session'), 'verified-session');
+  assert.deepEqual(calls.filter(c => c.url.endsWith('github-auth')).map(c => JSON.parse(c.options.body).action), ['start', 'exchange']);
+});
+
+test('another account returning from OAuth waits for invitation and gets its acceptance link', async () => {
+  const {context, element} = setup([
+    {body: {token: 'another-account-session'}},
+    {body: {...ready, accessStatus: 'pending'}},
+    {body: {...ready, accessStatus: 'repository_invited'}},
+  ]);
+  saveOAuthRequest(context);
+  await context.api.restoreInvitationState();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(context.location.assigned, undefined);
+  assert.equal(element('github-login').hidden, true);
+  assert.equal(element('repository-link').hidden, true);
+  await context.api.pollInvitationStatus();
+  assert.equal(element('repository-link').href, repositoryUrl + '/invitations');
+  assert.equal(context.location.assigned, undefined);
+});
+
+test('another account already collaborating redirects just like the owner', async () => {
+  const {context} = setup([{body: {token: 'collaborator-session'}}, {body: ready}]);
+  saveOAuthRequest(context);
+  await context.api.restoreInvitationState();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(context.location.assigned, repositoryUrl);
+});
+
+test('retry with a valid session avoids repeating OAuth', async () => {
+  const {context, calls} = setup([
+    {body: {...ready, githubConnected: false, accessStatus: null}},
+    {body: {githubConnected: true}}, {body: ready},
+  ]);
+  context.localStorage.setItem('vibe-github-session', 'valid');
+  await context.api.startGitHubLogin();
+  assert.equal(context.location.assigned, repositoryUrl);
+  assert.equal(calls.length, 3);
+});
+
+test('expired session on retry falls back to OAuth', async () => {
+  const {context, calls} = setup([
+    {body: {...ready, githubConnected: false, accessStatus: null}},
+    {body: {githubConnected: false}},
+    {body: {url: 'https://github.com/login/oauth/authorize?state=fresh'}},
+  ]);
+  context.localStorage.setItem('vibe-github-session', 'expired');
+  await context.api.startGitHubLogin();
+  assert.equal(context.localStorage.getItem('vibe-github-session'), null);
+  assert.match(context.location.assigned, /state=fresh/);
+  assert.equal(JSON.parse(calls[2].options.body).action, 'start');
+});
+
+test('unverified identity never redirects even if the response contains a repository URL', async () => {
+  const {context} = setup([{body: {...ready, githubConnected: false}}]);
+  await context.api.pollInvitationStatus();
+  assert.equal(context.location.assigned, undefined);
+});
+
+test('redirect is attempted only once per request and leaves a fallback link', async () => {
+  const {context, element} = setup([{body: ready}, {body: ready}]);
+  let redirects = 0;
+  context.location.assign = () => { redirects++; };
+  await context.api.pollInvitationStatus();
+  await context.api.pollInvitationStatus();
+  assert.equal(redirects, 1);
+  assert.equal(element('repository-link').href, repositoryUrl);
+  assert.equal(element('repository-link').textContent, 'Open repository');
+});
+
+test('cancelled OAuth never redirects', async () => {
+  const {context, element, calls} = setup();
+  saveOAuthRequest(context);
+  context.location.hash = '#login_error=cancelled';
+  await context.api.restoreInvitationState();
+  assert.equal(context.location.assigned, undefined);
+  assert.equal(element('create-ios-app-form').hidden, false);
+  assert.equal(calls.length, 0);
 });

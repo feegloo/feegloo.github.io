@@ -41,6 +41,8 @@
 
   let lastCreationResult = null;
 
+  let redirectedRequestId = null;
+
   const resultPanel = document.getElementById('app-result');
 
   const resultMessage = document.getElementById('result-message');
@@ -424,6 +426,16 @@
   async function startGitHubLogin() {
     loginButton.disabled = true;
     try {
+      // A valid site session can recover a failed background connection
+      // without sending the user through OAuth again.
+      if (storedSession()) {
+        const result = await connectGitHubAfterCreation(await getInvitationStatus());
+        if (result.githubConnected) {
+          showResult(result);
+          redirectToRepository(result);
+          return;
+        }
+      }
       const browserKey = randomKey();
       sessionStorage.setItem('vibe-login-browser-key', browserKey);
       const response = await fetch(authEndpoint, {
@@ -610,6 +622,7 @@
         ].includes(result.status) || result.creationOutcome === 'failed'
       ) {
         showResult(result);
+        redirectToRepository(result);
         return;
       }
       // OAuth can return while Copilot is still working. Resume the form
@@ -696,7 +709,13 @@
     loginButton.hidden = rejected || result.githubConnected;
     repositoryLink.hidden =
       rejected || !result.githubConnected || !result.repositoryUrl || !accessReady;
-    if (!repositoryLink.hidden) repositoryLink.href = result.repositoryUrl;
+    if (!repositoryLink.hidden) {
+      const invited = result.accessStatus === 'repository_invited';
+      repositoryLink.href = invited
+        ? result.repositoryUrl.replace(/\/$/, '') + '/invitations'
+        : result.repositoryUrl;
+      repositoryLink.textContent = invited ? 'Accept GitHub invitation' : 'Open repository';
+    }
     const messages = {
       missing_invitation:
         'Your app name, prompt and files have been saved. An invitation is required before we can create your app.',
@@ -709,7 +728,7 @@
       ? messages[result.status]
       : result.githubConnected
         ? result.accessStatus === 'repository_invited'
-          ? 'Your GitHub invitation has been sent. Accept it before opening the private repository.'
+          ? 'Your GitHub invitation has been sent. Sign in to GitHub with the same account you just connected and accept it to open the private repository.'
           : result.accessStatus === 'collaborator_present'
             ? ''
             : result.accessState === 'failed'
@@ -729,6 +748,16 @@
       !accessReady
     )
       scheduleStatusPoll();
+  }
+
+  function redirectToRepository(result) {
+    // An invitation is not access yet. Keep its explicit acceptance link.
+    // Navigate in the same tab so mobile popup blockers cannot consume the click.
+    if (!result.creationOutcome || !result.githubConnected ||
+        result.accessStatus !== 'collaborator_present' || !result.repositoryUrl ||
+        redirectedRequestId === currentRequestId) return;
+    redirectedRequestId = currentRequestId;
+    location.assign(result.repositoryUrl);
   }
 
   function createAnotherApp() {
