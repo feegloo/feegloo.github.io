@@ -121,7 +121,7 @@ function saveOAuthRequest(context, result = failed) {
   context.location.hash = '#login_ticket=ticket';
   context.sessionStorage.setItem('vibe-login-browser-key', 'key');
   context.sessionStorage.setItem('vibe-app-request', JSON.stringify({
-    id: context.api.requestId, key: 'a'.repeat(64), invitation: '1234567890123456', result, openRepository: true,
+    id: context.api.requestId, key: 'a'.repeat(64), invitation: '1234567890123456', result, openRepository: true, openRepositoryStartedAt: Date.now(),
   }));
 }
 
@@ -253,13 +253,13 @@ test('OAuth return without a saved click intent shows the link instead of redire
   assert.equal(element('repository-link').hidden, false);
 });
 
-test('one click survives delayed access confirmation', async () => {
+test('delayed access confirmation shows a link without navigating later', async () => {
   const {context} = setup([{body: {...ready, accessStatus: 'pending'}}, {body: ready}]);
   context.localStorage.setItem('vibe-github-session', 'valid');
   await context.api.startGitHubLogin();
   assert.equal(context.location.assigned, undefined);
   await context.api.pollInvitationStatus();
-  assert.equal(context.location.assigned, repositoryUrl);
+  assert.equal(context.location.assigned, undefined);
 });
 
 test('failed click clears navigation intent before subsequent background recovery', async () => {
@@ -268,4 +268,41 @@ test('failed click clears navigation intent before subsequent background recover
   await context.api.startGitHubLogin();
   await context.api.pollInvitationStatus();
   assert.equal(context.location.assigned, undefined);
+});
+
+test('returning from OAuth after ten minutes stays on the result screen', async () => {
+  const {context, element} = setup([{body: {token: 'verified-session'}}, {body: ready}]);
+  saveOAuthRequest(context);
+  const saved = JSON.parse(context.sessionStorage.getItem('vibe-app-request'));
+  saved.openRepositoryStartedAt = Date.now() - 600000;
+  context.sessionStorage.setItem('vibe-app-request', JSON.stringify(saved));
+  await context.api.restoreInvitationState();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(context.location.assigned, undefined);
+  assert.equal(element('app-result').hidden, false);
+  assert.equal(element('repository-link').href, repositoryUrl);
+});
+
+test('OAuth pending access cannot redirect when a later background poll confirms access', async () => {
+  const {context} = setup([
+    {body: {token: 'verified-session'}},
+    {body: {...ready, accessStatus: 'pending'}}, {body: ready},
+  ]);
+  saveOAuthRequest(context);
+  await context.api.restoreInvitationState();
+  await new Promise(resolve => setImmediate(resolve));
+  await context.api.pollInvitationStatus();
+  assert.equal(context.location.assigned, undefined);
+});
+
+test('OAuth response while the tab is hidden cannot redirect on returning to the tab', async () => {
+  const {context, element} = setup([{body: {token: 'verified-session'}}, {body: ready}, {body: ready}]);
+  saveOAuthRequest(context);
+  context.document.visibilityState = 'hidden';
+  await context.api.restoreInvitationState();
+  await new Promise(resolve => setImmediate(resolve));
+  context.document.visibilityState = 'visible';
+  await context.api.pollInvitationStatus();
+  assert.equal(context.location.assigned, undefined);
+  assert.equal(element('repository-link').hidden, false);
 });

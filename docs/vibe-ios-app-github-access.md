@@ -18,9 +18,11 @@ reassigned to another user.
 
 OAuth returns to the saved request, exchanges the browser-bound ticket and then fetches
 the access status. A request-bound navigation intent is saved only when the user clicks
-Connect GitHub account and survives OAuth. Confirmed access then redirects once per
-request in the current page. Background session linking and status polling never
-navigate without that click.
+Connect GitHub account and survives OAuth for at most two minutes. Only the click
+handler or the first status check after a successful OAuth exchange can redirect,
+while the tab is visible. The OAuth continuation is consumed after that first check,
+even if access is still pending. All subsequent background status checks only update
+the screen. Returning after a longer wait shows the repository link instead.
 The ordinary repository link remains available as a fallback. A pending invitation is
 not treated as accepted access.
 
@@ -31,7 +33,7 @@ flowchart TD
   S -->|No| O["Connect account and complete OAuth"]
   O --> L
   L --> C{"Access status"}
-  C -->|collaborator_present| N{"Clicked Connect GitHub account?"}
+  C -->|collaborator_present| N{"Immediate click or fresh OAuth return?"}
   N -->|Yes| R["Redirect to repository"]
   N -->|No| B["Show Open repository link"]
   C -->|pending| P["Poll while invitation worker retries"]
@@ -42,3 +44,5 @@ flowchart TD
 Tests: `node --test vibe-ios-app/index.test.cjs`.
 Manual verification: result screen stays visible before clicking; owner with and without a site session; another GitHub account
 accepting its invitation, expired session, cancelled OAuth and a delayed invitation.
+Also leave the tab in the background for ten minutes and return: status updates must
+not open GitHub. Long or delayed sign-ins may require clicking Open repository.

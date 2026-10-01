@@ -45,6 +45,8 @@
 
   let openRepositoryRequestId = null;
 
+  let openRepositoryStartedAt = 0;
+
   const resultPanel = document.getElementById('app-result');
 
   const resultMessage = document.getElementById('result-message');
@@ -422,6 +424,7 @@
         invitation: invitationHash,
         result: lastCreationResult,
         openRepository: openRepositoryRequestId === currentRequestId,
+        openRepositoryStartedAt,
       }),
     );
   }
@@ -429,6 +432,7 @@
   async function startGitHubLogin() {
     if (loginButton.disabled || !currentRequestId) return;
     openRepositoryRequestId = currentRequestId;
+    openRepositoryStartedAt = Date.now();
     loginButton.disabled = true;
     try {
       // A valid site session can recover a failed background connection
@@ -466,6 +470,7 @@
   }
 
   async function restoreInvitationState() {
+    let continueNavigation = false;
     const fragment = new URLSearchParams(location.hash.slice(1));
     const returningFromGitHub = fragment.has('login_ticket') || fragment.has('login_error');
     const saved = sessionStorage.getItem('vibe-app-request');
@@ -479,7 +484,10 @@
           currentRequestId = value.id;
           currentRequestKey = value.key;
           lastCreationResult = value.result || null;
-          openRepositoryRequestId = value.openRepository === true ? value.id : null;
+          const clickAge = Date.now() - value.openRepositoryStartedAt;
+          openRepositoryRequestId = value.openRepository === true &&
+            clickAge >= 0 && clickAge < 120000 ? value.id : null;
+          openRepositoryStartedAt = value.openRepositoryStartedAt || 0;
         } else {
           sessionStorage.removeItem('vibe-app-request');
         }
@@ -530,6 +538,7 @@
         }
         localStorage.setItem('vibe-github-session', result.token);
         sessionStorage.removeItem('vibe-login-browser-key');
+        continueNavigation = openRepositoryRequestId === currentRequestId;
       } catch (error) {
         openRepositoryRequestId = null;
         localStorage.removeItem('vibe-github-session');
@@ -542,7 +551,7 @@
       resetGitHubLogin();
       return;
     }
-    if (currentRequestId) pollInvitationStatus();
+    if (currentRequestId) pollInvitationStatus(continueNavigation);
     else setButton('Create iOS app', false);
   }
 
@@ -609,7 +618,7 @@
     statusPollTimer = setTimeout(pollInvitationStatus, 2500);
   }
 
-  async function pollInvitationStatus() {
+  async function pollInvitationStatus(continueNavigation = false) {
     if (!currentRequestId) return;
     const generation = requestGeneration;
     const requestId = currentRequestId;
@@ -631,7 +640,9 @@
         ].includes(result.status) || result.creationOutcome === 'failed'
       ) {
         showResult(result);
-        redirectToRepository(result);
+        // Only the immediate successful OAuth return can continue a click.
+        // Timers, background checks and revisiting the page only update the UI.
+        if (continueNavigation) redirectToRepository(result);
         return;
       }
       // OAuth can return while Copilot is still working. Resume the form
@@ -667,6 +678,8 @@
           resultMessage.textContent = 'Could not check GitHub access. Please connect again.';
         }
       }
+    } finally {
+      if (continueNavigation && isCurrent()) openRepositoryRequestId = null;
     }
     scheduleStatusPoll();
   }
@@ -764,6 +777,7 @@
     // Only a click for this request may continue navigation after OAuth/polling.
     // Navigate in the same tab so mobile popup blockers cannot consume the click.
     if (!currentRequestId || openRepositoryRequestId !== currentRequestId ||
+        Date.now() - openRepositoryStartedAt >= 120000 || document.visibilityState === 'hidden' ||
         !result.creationOutcome || !result.githubConnected ||
         result.accessStatus !== 'collaborator_present' || !result.repositoryUrl ||
         redirectedRequestId === currentRequestId) return;
