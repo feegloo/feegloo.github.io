@@ -1,6 +1,6 @@
 import { formatHTML, renderHTML } from './scraper-format.js';
 
-const ENDPOINT = 'https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/scrape-page';
+const ENDPOINT = 'https://scraper-production-4367.up.railway.app';
 const $ = id => document.getElementById(id);
 let rawHTML = '';
 let displayedHTML = '';
@@ -51,9 +51,10 @@ $('form').addEventListener('submit', async event => {
   $('diagnostics').hidden = true;
   const clientStarted = performance.now();
   try {
-    const response = await fetch(ENDPOINT, { method: 'POST',
+    const engine = document.querySelector('input[name=engine]:checked').value;
+    const response = await fetch(`${ENDPOINT}/scrape/${engine}`, { method: 'POST',
       headers: { 'content-type': 'application/json', 'x-scraper-key': token },
-      body: JSON.stringify({ url: $('url').value.trim(), engine: document.querySelector('input[name=engine]:checked').value }), signal: AbortSignal.timeout(90000) });
+      body: JSON.stringify({ url: $('url').value.trim() }), signal: AbortSignal.timeout(90000) });
     const data = await response.json();
     showDiagnostics(data, response.status, Math.round(performance.now() - clientStarted));
     if (!response.ok) {

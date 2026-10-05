@@ -3,7 +3,7 @@
 Paths: `scraper.html`, `scraper.css`, `scraper.js`, `scraper-format.js`.
 
 Open `/scraper.html`, provide the dedicated test token and a public HTTP(S) URL.
-Choose Node.js (default) or Python in the switch. Send calls Supabase `scrape-page`, which calls the authenticated Playwright container.
+Choose Node.js (default) or Python in the switch. Send calls the Railway container directly: `/scrape/node` or `/scrape/python`. The same dedicated `x-scraper-key` test token is validated by the container. The Supabase gateway remains available but is bypassed by the form.
 The page shows the target HTTP status, final URL, response headers, render readiness,
 duration, actual engine, attempts, direct/proxy route and DOM HTML. HTTP errors from the target still display their HTML. Gateway
 errors display a separate message.
