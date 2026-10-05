@@ -25,7 +25,7 @@ function showDiagnostics(data, endpointStatus, clientDurationMs) {
     const row = document.createElement('tr');
     const failure = attempt.diagnostic;
     const outcome = attempt.httpStatus != null ? `HTTP: ${attempt.httpStatus} ${attempt.httpStatusText ?? ''}${attempt.responseAnalysis?.challengeDetected ? ' · challenge' : ''}` : `${failure?.code ?? attempt.error ?? 'Brak odpowiedzi HTTP'}${failure?.stage ? ' · ' + failure.stage : ''}`;
-    const next = index < history.length - 1 ? `Kolejna próba: ${attempt.retryReason ?? 'brak danych'}` : attempt.error ? 'Koniec: błąd przeglądarki / połączenia' : [403, 429].includes(attempt.httpStatus) ? 'Koniec: brak kolejnej próby' : 'Koniec';
+    const next = index < history.length - 1 ? `Kolejna próba: ${attempt.retryReason ?? 'brak danych'}` : data.stopReason === 'job_budget_exhausted' ? 'Koniec: limit czasu; pokazano ostatnią odpowiedź' : attempt.error ? 'Koniec: błąd przeglądarki / połączenia' : [403, 429].includes(attempt.httpStatus) ? 'Koniec: brak kolejnej próby' : 'Koniec';
     for (const value of [attempt.index ?? index + 1, attempt.route, outcome, attempt.durationMs == null ? 'brak danych' : `${(attempt.durationMs / 1000).toFixed(3)} s`, next]) {
       const cell = document.createElement('td'); cell.textContent = String(value); row.append(cell);
     }
@@ -34,7 +34,7 @@ function showDiagnostics(data, endpointStatus, clientDurationMs) {
   const diagnostics = { requestId: data.requestId, engine: data.engine, endpointStatus, clientDurationMs,
     durationMs: data.durationMs, configuredProxyCount: data.configuredProxyCount, maxProxyAttempts: data.maxProxyAttempts,
     attempts: data.attempts, route: data.route, httpStatus: data.httpStatus, error: data.error,
-    readiness: data.readiness, responseAnalysis: data.responseAnalysis, sessionReused: data.sessionReused, cookieCount: data.cookieCount, requestHeaders: data.requestHeaders, attemptHistory: history };
+    stopReason: data.stopReason, readiness: data.readiness, responseAnalysis: data.responseAnalysis, sessionReused: data.sessionReused, cookieCount: data.cookieCount, requestHeaders: data.requestHeaders, attemptHistory: history };
   $('diagnostic-json').textContent = JSON.stringify(diagnostics, null, 2);
 }
 $('formatted').addEventListener('change', showHTML);
