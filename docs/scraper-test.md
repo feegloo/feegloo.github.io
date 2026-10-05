@@ -18,3 +18,5 @@ Backend and deployment setup: `feegloo/vibe-ios-app/docs/browser-scraper.md`.
 Remove these test-only files when the temporary UI is no longer needed.
 
 Attempt diagnostics remain visible even on worker HTTP errors. Each row shows direct/proxy route, target status or safe browser error code, duration and retry reason. Expand JSON for navigation responses, readiness and request ID. Client time includes the gateway/cold start and is separate from worker time. Browser-only network failures before JSON arrives cannot include server attempt history.
+
+The worker rotates proxies immediately after rendered HTTP 403 or 429 (up to five proxies). Diagnostics include safe request headers, session reuse, cookie count and challenge hints. No target diagnostic headers or custom UA suffix are sent; full JavaScript rendering remains enabled.
