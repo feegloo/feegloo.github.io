@@ -6,8 +6,8 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="no-referrer">
   <title>Scraper - test</title>
-  <link rel="stylesheet" href="scraper.css?v=rendered-proxy-1">
-  <script type="module" src="scraper.js?v=rendered-proxy-1"></script>
+  <link rel="stylesheet" href="scraper.css?v=diagnostics-1">
+  <script type="module" src="scraper.js?v=diagnostics-1"></script>
 </head>
 <body>
   <main>
@@ -19,6 +19,12 @@
       <details id="access"><summary>Dostęp do testu</summary><label for="token">Token testowy</label><input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Wklej token testowy"></details>
     </form>
     <p id="message" role="status" aria-live="polite">Gotowy do testu.</p>
+    <section id="diagnostics" hidden aria-label="Diagnostyka wywołania">
+      <h3>Przebieg żądań</h3>
+      <p class="caption" id="diagnostic-summary"></p>
+      <div class="attempt-table"><table><thead><tr><th>Próba</th><th>Trasa</th><th>Wynik</th><th>Czas</th><th>Dalsze działanie</th></tr></thead><tbody id="attempt-rows"></tbody></table></div>
+      <details><summary>Pełna diagnostyka JSON</summary><pre id="diagnostic-json"></pre></details>
+    </section>
     <section id="result" hidden>
       <div class="result-heading"><h2 id="status">HTTP: 200</h2><span id="duration"></span></div>
       <p class="final-url">Końcowy URL: <span id="final-url"></span></p>
