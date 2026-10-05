@@ -3,9 +3,9 @@
 Paths: `scraper.html`, `scraper.css`, `scraper.js`, `scraper-format.js`.
 
 Open `/scraper.html`, provide the dedicated test token and a public HTTP(S) URL.
-Choose Node.js (default) or Python in the switch. Send calls the Railway container directly: `/scrape/node` or `/scrape/python`. The same dedicated `x-scraper-key` test token is validated by the container. The Supabase gateway remains available but is bypassed by the form.
+Choose Node.js (default) or Python in the switch. Send calls the Railway container directly: `/scrape/node` or `/scrape/python`. The same dedicated `x-scraper-key` test token is validated by the container. The retired Supabase scrape-page gateway has been deleted; the form uses only the container.
 The page shows the target HTTP status, final URL, response headers, render readiness,
-duration, actual engine, attempts, direct/proxy route and DOM HTML. HTTP errors from the target still display their HTML. Gateway
+duration, actual engine, attempts, direct/proxy route and DOM HTML. HTTP errors from the target still display their HTML. Container endpoint
 errors display a separate message.
 
 Returned HTML is highlighted using text nodes only. It is never executed or embedded
@@ -17,6 +17,6 @@ sessionStorage until that browser tab/session closes.
 Backend and deployment setup: `feegloo/vibe-ios-app/docs/browser-scraper.md`.
 Remove these test-only files when the temporary UI is no longer needed.
 
-Attempt diagnostics remain visible even on worker HTTP errors. Each row shows direct/proxy route, target status or safe browser error code, duration and retry reason. Expand JSON for navigation responses, readiness and request ID. Client time includes the gateway/cold start and is separate from worker time. Browser-only network failures before JSON arrives cannot include server attempt history.
+Attempt diagnostics remain visible even on worker HTTP errors. Each row shows direct/proxy route, target status or safe browser error code, duration and retry reason. Expand JSON for navigation responses, readiness and request ID. Client time includes network/cold start and is separate from worker time. Browser-only network failures before JSON arrives cannot include server attempt history.
 
-The worker rotates proxies immediately after rendered HTTP 403 or 429 (up to five proxies). Diagnostics include safe request headers, session reuse, cookie count and challenge hints. No target diagnostic headers or custom UA suffix are sent; full JavaScript rendering remains enabled.
+The worker rotates proxies immediately after rendered HTTP 403 or 429 (Node: up to three proxies; Python: up to five, within the job budget). Diagnostics include safe request headers, session reuse, cookie count and challenge hints. No target diagnostic headers or custom UA suffix are sent; full JavaScript rendering remains enabled.
