@@ -7,7 +7,7 @@ See [GitHub access](docs/vibe-ios-app-github-access.md) for login, invitations a
 
 Run `node --test vibe-ios-app/index.test.cjs` to check the result screen and OAuth flow.
 
-## Scraper test
+## Books test
 
-[Temporary scraper form](scraper.html) displays rendered DOM HTML, response status and headers.
-See [scraper test notes](docs/scraper-test.md) for access and behavior.
+[Books / ISBN test form](books.html) displays title, author and the original cover returned inline as base64. HTML mode keeps public-page diagnostics. Healthcheck uses the new books service.
+See [Books test notes](docs/books-test.md) for access and behavior.

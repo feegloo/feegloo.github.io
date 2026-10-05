@@ -46,3 +46,4 @@ export function renderHTML(element, source) {
   fragment.append(document.createTextNode(source.slice(last)));
   element.append(fragment);
 }
+

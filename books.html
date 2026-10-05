@@ -5,18 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="no-referrer">
-  <title>Scraper - test</title>
-  <link rel="stylesheet" href="scraper.css?v=browser-sessions-2">
-  <script type="module" src="scraper.js?v=browser-sessions-2"></script>
+  <title>Books - test</title>
+  <link rel="stylesheet" href="books.css?v=isbn-cover-1">
+  <script type="module" src="books.js?v=isbn-cover-1"></script>
 </head>
 <body>
   <main>
-    <header><p class="eyebrow">TEST NARZĘDZIA</p><h1>Scraper</h1><p>Wpisz adres strony i zobacz HTML po załadowaniu strony i wykonaniu JavaScriptu.</p></header>
+    <header><p class="eyebrow">TEST NARZĘDZIA</p><h1>Books</h1><p>Sprawdź tytuł, autora i okładkę książki po numerze ISBN albo odpowiedź HTML strony.</p></header>
     <p class="caption">Połączenie bezpośrednio z kontenerem Railway.</p>
     <form id="form">
-      <fieldset class="engine-switch"><legend>Silnik scrapera</legend><label><input type="radio" name="engine" value="node" checked> Node.js</label><label><input type="radio" name="engine" value="python"> Python</label></fieldset>
-      <label for="url">Adres strony</label>
-      <div class="input-row"><input id="url" type="url" value="https://example.com/" placeholder="https://example.com/" required maxlength="2048" autocapitalize="none" spellcheck="false"><button id="send" type="submit">Send</button></div>
+      <fieldset class="engine-switch"><legend>Tryb testu</legend><label><input type="radio" name="mode" value="isbn" checked> ISBN</label><label><input type="radio" name="mode" value="page"> HTML</label></fieldset>
+      <label id="input-label" for="url">ISBN-13</label>
+      <div class="input-row"><input id="url" type="text" inputmode="numeric" value="9788396775801" placeholder="13 cyfr ISBN" required maxlength="13" autocapitalize="none" spellcheck="false"><button id="send" type="submit">Send</button></div>
+      <button id="health" type="button" class="secondary">Healthcheck</button><span id="health-status" role="status"></span>
       <details id="access"><summary>Dostęp do testu</summary><label for="token">Token testowy</label><input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Wklej token testowy"></details>
     </form>
     <p id="message" role="status" aria-live="polite">Gotowy do testu.</p>
@@ -28,15 +29,17 @@
     </section>
     <section id="result" hidden>
       <div class="result-heading"><h2 id="status">HTTP: 200</h2><span id="duration"></span></div>
+      <div id="book-result" hidden><h3 id="book-title"></h3><p id="book-author"></p><img id="book-cover" hidden alt="Okładka książki"></div>
       <p class="final-url">Końcowy URL: <span id="final-url"></span></p>
       <p class="caption" id="readiness"></p>
       <p class="caption" id="attempts"></p>
       <p id="warning" hidden></p>
       <details class="response-headers"><summary>Nagłówki odpowiedzi</summary><pre id="headers"></pre></details>
-      <div class="toolbar"><h3>HTML</h3><div><label class="toggle"><input id="formatted" type="checkbox" checked> Formatuj</label><button id="copy" type="button" class="secondary">Kopiuj</button><button id="download" type="button" class="secondary">Pobierz TXT</button></div></div>
-      <p class="caption">HTML to migawka DOM po wykonaniu JavaScriptu. Pobrane skrypty są tutaj wyświetlane jako tekst.</p>
+      <div class="toolbar"><h3 id="output-label">JSON</h3><div><label class="toggle"><input id="formatted" type="checkbox" checked> Formatuj</label><button id="copy" type="button" class="secondary">Kopiuj</button><button id="download" type="button" class="secondary">Pobierz TXT</button></div></div>
+      <p class="caption">W trybie ISBN odpowiedź zawiera metadane i okładkę base64. W trybie HTML treść jest wyświetlana wyłącznie jako tekst.</p>
       <pre class="html-output" tabindex="0"><code id="html"></code></pre>
     </section>
   </main>
 </body>
 </html>
+
