@@ -23,20 +23,25 @@ $('form').addEventListener('submit', async event => {
   if (!token) { $('access').open = true; $('token').focus(); $('message').textContent = 'Wklej token testowy.'; return; }
   sessionStorage.setItem('scraper-test-token', token);
   $('send').disabled = true;
+  document.querySelectorAll('input[name=engine]').forEach(input => input.disabled = true);
   $('message').className = '';
   $('message').textContent = 'Ładowanie strony… Pierwsze wywołanie może wybudzać kontener.';
   $('result').hidden = true;
   try {
     const response = await fetch(ENDPOINT, { method: 'POST',
       headers: { 'content-type': 'application/json', 'x-scraper-key': token },
-      body: JSON.stringify({ url: $('url').value.trim() }), signal: AbortSignal.timeout(90000) });
+      body: JSON.stringify({ url: $('url').value.trim(), engine: document.querySelector('input[name=engine]:checked').value }), signal: AbortSignal.timeout(90000) });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error ?? `Błąd endpointu HTTP: ${response.status}`);
+    if (!response.ok) {
+      if (data.error === 'cooldown') throw new Error(`Strona wymaga przerwy. Spróbuj ponownie za ${data.retryAfterSeconds} s.`);
+      throw new Error(data.error ?? `Błąd endpointu HTTP: ${response.status}`);
+    }
     rawHTML = data.html ?? '';
     $('status').textContent = `HTTP: ${data.httpStatus}${data.httpStatusText ? ' ' + data.httpStatusText : ''}`;
     $('status').className = data.httpStatus >= 400 ? 'failure' : 'success';
-    $('duration').textContent = `${(data.durationMs / 1000).toFixed(2)} s · ${data.browser}`;
+    $('duration').textContent = `${(data.durationMs / 1000).toFixed(2)} s · ${data.engine ?? 'node'} · ${data.browser}`;
     $('final-url').textContent = data.finalUrl;
+    $('attempts').textContent = `Próby: ${data.attempts ?? 1} · ${data.route ?? 'DIRECT'} · Stealth: ${data.stealth ? 'OK' : 'wyłączony'}`;
     $('readiness').textContent = Object.entries(data.readiness ?? {}).map(([key,value]) => `${key}: ${value ? 'OK' : 'limit czasu'}`).join(' · ');
     $('headers').textContent = Object.entries(data.headers ?? {}).sort(([a],[b]) => a.localeCompare(b)).map(([key,value]) => `${key}: ${value}`).join('\n');
     $('warning').hidden = !data.truncated;
@@ -49,7 +54,7 @@ $('form').addEventListener('submit', async event => {
       busy: 'Kontener obsługuje inny request. Spróbuj ponownie za chwilę.', navigation_failed: 'Przeglądarka nie załadowała strony.',
       scraper_unavailable: 'Kontener jest niedostępny lub przekroczył limit czasu.' };
     $('message').textContent = messages[error.message] ?? `Nie udało się pobrać strony: ${error.message}`;
-  } finally { $('send').disabled = false; }
+  } finally { $('send').disabled = false; document.querySelectorAll('input[name=engine]').forEach(input => input.disabled = false); }
 });
 $('copy').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(displayedHTML); $('message').textContent = 'HTML skopiowany.'; }
