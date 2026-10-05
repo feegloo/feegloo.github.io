@@ -1,92 +1,25 @@
 <!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="referrer" content="no-referrer">
-  <title>Połącz Workflow Status</title>
-  <style>
-    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
-    body { max-width: 440px; margin: 10vh auto; padding: 24px; }
-    input, button { box-sizing: border-box; width: 100%; padding: 12px; margin: 8px 0; font: inherit; }
-    button { cursor: pointer; } #error { color: #c52d37; } small { overflow-wrap: anywhere; }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Workflow Status - podłączenie</title>
+<style>
+body{font:17px/1.6 system-ui,sans-serif;max-width:680px;margin:64px auto;padding:0 24px;color:#172033;background:#fafafa}h1{line-height:1.2}li{margin:16px 0}a{color:#155acf}code{overflow-wrap:anywhere;background:#eef1f6;padding:3px 5px}button{font:inherit;padding:10px 18px;border:0;border-radius:8px;background:#155acf;color:white;cursor:pointer}#copied{margin-left:12px}
+</style>
 </head>
 <body>
-  <h1>Workflow Status</h1>
-  <p>Połącz swojego asystenta ze statusami workflow. Plugin pokazuje lampkę dla commita i linki do buildu oraz podpisania i uploadu. Nie uruchamia ani nie zmienia workflow.</p>
-  <p id="error" role="alert"></p>
-  <form id="login" hidden>
-    <label>E-mail<input name="email" type="email" autocomplete="username" required></label>
-    <label>Hasło<input name="password" type="password" autocomplete="current-password" required></label>
-    <button>Zaloguj się</button>
-    <p>Użyj konta utworzonego przez administratora pluginu. To osobne konto od logowania do panelu Supabase.</p>
-  </form>
-  <section id="consent" hidden>
-    <p>Zalogowano: <strong id="email"></strong></p>
-    <p>Aplikacja: <strong id="client"></strong></p>
-    <p>Zakres logowania: <span id="scopes"></span></p>
-    <p>Adres powrotu: <small id="redirect"></small></p>
-    <p>Statusy prywatnych repozytoriów są dostępne tylko kontom dopuszczonym przez administratora. Zatwierdzenie logowania samo nie nadaje dostępu do repozytoriów.</p>
-    <button id="approve">Zezwól na połączenie</button>
-    <button id="deny">Odrzuć</button>
-    <button id="logout">Wyloguj</button>
-  </section>
-  <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.117.2';
-    const endpoint = 'https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/workflow-status-widget';
-    const authorizationId = new URL(location.href).searchParams.get('authorization_id');
-    const element = id => document.getElementById(id);
-    const showError = error => { element('error').textContent = error?.message ?? 'Nie można nawiązać połączenia.'; };
-    let supabase;
-    async function display() {
-      element('error').textContent = '';
-      if (!authorizationId) throw new Error('Rozpocznij połączenie z poziomu ChatGPT. Brakuje żądania autoryzacji.');
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      element('login').hidden = !!user;
-      element('consent').hidden = true;
-      if (!user || userError) return;
-      const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
-      if (error) throw error;
-      if ('redirect_url' in data) { location.assign(data.redirect_url); return; }
-      element('email').textContent = user.email;
-      element('client').textContent = data.client.name ?? data.client.id;
-      element('scopes').textContent = Array.isArray(data.scope) ? data.scope.join(', ') : data.scope;
-      element('redirect').textContent = data.redirect_uri;
-      element('consent').hidden = false;
-    }
-    element('login').addEventListener('submit', async event => {
-      event.preventDefault();
-      const button = event.target.querySelector('button'); button.disabled = true;
-      const form = new FormData(event.target);
-      try {
-        const { error } = await supabase.auth.signInWithPassword({ email: form.get('email'), password: form.get('password') });
-        if (error) throw error;
-        event.target.reset(); await display();
-      } catch (error) { showError(error); }
-      finally { button.disabled = false; }
-    });
-    for (const action of ['approve', 'deny']) {
-      element(action).addEventListener('click', async () => {
-        element('approve').disabled = element('deny').disabled = true;
-        try {
-          const { data, error } = action === 'approve'
-            ? await supabase.auth.oauth.approveAuthorization(authorizationId, { skipBrowserRedirect: true })
-            : await supabase.auth.oauth.denyAuthorization(authorizationId, { skipBrowserRedirect: true });
-          if (error) throw error;
-          location.assign(data.redirect_url);
-        } catch (error) { showError(error); }
-        finally { element('approve').disabled = element('deny').disabled = false; }
-      });
-    }
-    element('logout').addEventListener('click', async () => { await supabase.auth.signOut(); await display(); });
-    try {
-      const response = await fetch(`${endpoint}/config`);
-      if (!response.ok) throw new Error('Konfiguracja pluginu jest niedostępna.');
-      const config = await response.json();
-      supabase = createClient(config.supabaseUrl, config.publishableKey, { auth: { storage: sessionStorage } });
-      await display();
-    } catch (error) { showError(error); }
-  </script>
+<h1>Workflow Status</h1>
+<p>Lampka pokazuje stan workflow konkretnego commita. Śledzi build aplikacji oraz podpisanie i upload do App Store Connect. Po sukcesie, błędzie lub anulowaniu przestaje odpytywać.</p>
+<p>Nie potrzebujesz osobnego konta, hasła ani konfiguracji Supabase. Wykorzystujemy istniejącą GitHub App <strong>vibeios.app</strong> (dawniej Signer).</p>
+<ol>
+<li><a href="https://github.com/apps/vibeios-app/installations/new">Zainstaluj vibeios.app</a> na koncie lub organizacji z repo aplikacji. Jeśli już jest zainstalowana, sprawdź dostęp do repo. Wybierz wszystkie repozytoria, aby objąć również przyszłe, albo wybrane.</li>
+<li>W ChatGPT włącz Developer mode. Dodaj połączenie <strong>Workflow Status</strong>, wybierz <strong>bez uwierzytelniania / None</strong> i wklej adres MCP:</li>
+</ol>
+<p><code id="url">https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/workflow-status-widget/mcp</code></p>
+<button id="copy" type="button">Kopiuj adres</button><span id="copied" role="status"></span>
+<p>Włącz połączenie w rozmowie i poproś o status repozytorium oraz pełnego SHA commita. Każdy commit ma własną lampkę. Dwa linki pojawią się, gdy oba runy zostaną uruchomione.</p>
+<p>Status i linki są dostępne bez logowania osobom znającym repo i pełny SHA. Widget nie udostępnia kodu, logów, artefaktów ani tokenów. Otwarcie prywatnego workflow na GitHubie nadal wymaga dostępu do repo.</p>
+<p>Pełny tutorial ze screenami powstanie po sprawdzeniu połączenia w ChatGPT.</p>
+<script>document.querySelector('#copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(document.querySelector('#url').textContent);document.querySelector('#copied').textContent='Skopiowano';}catch{document.querySelector('#copied').textContent='Zaznacz i skopiuj adres powyżej.';}});</script>
 </body>
 </html>
