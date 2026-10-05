@@ -51,7 +51,7 @@ $('form').addEventListener('submit', async event => {
   } catch (error) {
     $('message').className = 'error';
     const messages = { unauthorized: 'Nieprawidłowy token testowy.', invalid_or_blocked_url: 'Nieprawidłowy URL lub niedozwolony adres.',
-      busy: 'Kontener obsługuje inny request. Spróbuj ponownie za chwilę.', navigation_failed: 'Nie udało się pobrać odpowiedzi HTTP.',
+      busy: 'Kontener obsługuje inny request. Spróbuj ponownie za chwilę.', navigation_failed: 'Przeglądarka nie załadowała strony.',
       scraper_unavailable: 'Kontener jest niedostępny lub przekroczył limit czasu.' };
     $('message').textContent = messages[error.message] ?? `Nie udało się pobrać strony: ${error.message}`;
   } finally { $('send').disabled = false; document.querySelectorAll('input[name=engine]').forEach(input => input.disabled = false); }
