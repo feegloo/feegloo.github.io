@@ -41,8 +41,8 @@ $('form').addEventListener('submit', async event => {
     $('status').className = data.httpStatus >= 400 ? 'failure' : 'success';
     $('duration').textContent = `${(data.durationMs / 1000).toFixed(2)} s · ${data.engine ?? 'node'} · ${data.browser}`;
     $('final-url').textContent = data.finalUrl;
-    $('attempts').textContent = `Próby: ${data.attempts ?? 1} · ${data.route ?? 'DIRECT'} · Stealth: ${data.stealth ? 'OK' : 'wyłączony'}`;
-    $('readiness').textContent = Object.entries(data.readiness ?? {}).map(([key,value]) => `${key}: ${value ? 'OK' : 'limit czasu'}`).join(' · ');
+    $('attempts').textContent = `Próby: ${data.attempts ?? 1} · ${data.route ?? 'DIRECT'}`;
+    $('readiness').textContent = data.htmlSource === 'http_response' ? 'Surowa odpowiedź HTTP · bez renderowania i pobierania zasobów strony' : Object.entries(data.readiness ?? {}).map(([key,value]) => `${key}: ${value ? 'OK' : 'limit czasu'}`).join(' · ');
     $('headers').textContent = Object.entries(data.headers ?? {}).sort(([a],[b]) => a.localeCompare(b)).map(([key,value]) => `${key}: ${value}`).join('\n');
     $('warning').hidden = !data.truncated;
     $('warning').textContent = 'HTML przekroczył limit 2 MiB. Pokazano początek odpowiedzi.';
@@ -51,7 +51,7 @@ $('form').addEventListener('submit', async event => {
   } catch (error) {
     $('message').className = 'error';
     const messages = { unauthorized: 'Nieprawidłowy token testowy.', invalid_or_blocked_url: 'Nieprawidłowy URL lub niedozwolony adres.',
-      busy: 'Kontener obsługuje inny request. Spróbuj ponownie za chwilę.', navigation_failed: 'Przeglądarka nie załadowała strony.',
+      busy: 'Kontener obsługuje inny request. Spróbuj ponownie za chwilę.', navigation_failed: 'Nie udało się pobrać odpowiedzi HTTP.',
       scraper_unavailable: 'Kontener jest niedostępny lub przekroczył limit czasu.' };
     $('message').textContent = messages[error.message] ?? `Nie udało się pobrać strony: ${error.message}`;
   } finally { $('send').disabled = false; document.querySelectorAll('input[name=engine]').forEach(input => input.disabled = false); }
