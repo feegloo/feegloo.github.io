@@ -1,8 +1,8 @@
 # Books / ISBN test
 
-Paths: `books.html`, `books.css`, `books.js`, `books-format.js`.
+Paths: `books/index.html`, `books/books.css`, `books/books.js`, `books/books-format.js`.
 
-Open `/books.html` and enter the existing dedicated test token. The form connects directly to `https://books-production-4367.up.railway.app` using `x-books-key`.
+Open `/books/` and enter the existing dedicated test token. The form connects directly to `https://books-production-4367.up.railway.app` using `x-books-key`.
 
 - ISBN mode posts `{ "isbn": "9788396775801" }` to `/isbn` and displays title, author and the decoded original cover. `cover` contains raw raster-image base64 or null. No image request is made by the client.
 - HTML mode posts `{ "url": "https://example.com/" }` to `/page` and retains rendered HTML, response status and diagnostic display.
