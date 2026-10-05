@@ -1,0 +1,7 @@
+name: Demo workflow
+on: [push, workflow_dispatch]
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello from GitHub Actions"

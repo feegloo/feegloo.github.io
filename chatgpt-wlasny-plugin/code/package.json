@@ -1,0 +1,18 @@
+{
+  "name": "hello-workflow-mcp",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "hello": "node hello.mjs",
+    "build": "node build.mjs",
+    "start": "node --env-file-if-exists=.env workflow.mjs",
+    "test": "node --test *.test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@modelcontextprotocol/ext-apps": "1.7.5",
+    "zod": "3.25.76"
+  },
+  "devDependencies": { "esbuild": "0.25.12" }
+}
