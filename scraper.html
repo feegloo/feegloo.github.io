@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Scraper - test</title>
+  <link rel="stylesheet" href="scraper.css">
+  <script type="module" src="scraper.js"></script>
+</head>
+<body>
+  <main>
+    <header><p class="eyebrow">TEST NARZĘDZIA</p><h1>Scraper</h1><p>Wpisz adres strony i zobacz HTML po jej załadowaniu w przeglądarce.</p></header>
+    <form id="form">
+      <label for="url">Adres strony</label>
+      <div class="input-row"><input id="url" type="url" value="https://example.com/" placeholder="https://example.com/" required maxlength="2048" autocapitalize="none" spellcheck="false"><button id="send" type="submit">Send</button></div>
+      <details id="access"><summary>Dostęp do testu</summary><label for="token">Token testowy</label><input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Wklej token testowy"></details>
+    </form>
+    <p id="message" role="status" aria-live="polite">Gotowy do testu.</p>
+    <section id="result" hidden>
+      <div class="result-heading"><h2 id="status">HTTP: 200</h2><span id="duration"></span></div>
+      <p class="final-url">Końcowy URL: <span id="final-url"></span></p>
+      <p class="caption" id="readiness"></p>
+      <p id="warning" hidden></p>
+      <details class="response-headers"><summary>Nagłówki odpowiedzi</summary><pre id="headers"></pre></details>
+      <div class="toolbar"><h3>HTML</h3><div><label class="toggle"><input id="formatted" type="checkbox" checked> Formatuj</label><button id="copy" type="button" class="secondary">Kopiuj</button><button id="download" type="button" class="secondary">Pobierz TXT</button></div></div>
+      <p class="caption">HTML to migawka DOM po wykonaniu JavaScriptu. Pobrane skrypty są tutaj wyświetlane jako tekst.</p>
+      <pre class="html-output" tabindex="0"><code id="html"></code></pre>
+    </section>
+  </main>
+</body>
+</html>
