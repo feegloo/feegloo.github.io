@@ -1,0 +1,10 @@
+Napraw błąd GitHub Actions z tego linku:
+[WKLEJ LINK DO NIEUDANEGO WORKFLOW, JOBA LUB KROKU]
+
+Sprawdź logi tego konkretnego uruchomienia, aktualny kod i ostatnie zmiany. Znajdź przyczynę błędu i zrób najmniejszą sensowną poprawkę w odpowiednim repozytorium. Przeczytaj jego AGENTS.md, README.md i dokumentację dotyczącą zmiany.
+
+Jeżeli inne aplikacje lub workflow podpisują się poprawnie, porównaj działający run z błędnym. Nie zakładaj problemu z kluczami tylko na podstawie „Authentication failed”.
+
+Uruchom dostępne testy. Po poprawce zrób jeden commit i push na main, jeśli zasady repozytorium na to pozwalają. Podaj link do commita, zakres zmiany i czego nie udało się zweryfikować. Sukces potwierdź dopiero na podstawie wyniku nowego uruchomienia.
+
+Jeśli nie masz dostępu do repozytorium lub logów, powiedz to i poproś o połączenie GitHub albo wklejenie logów. Nie zgaduj ich zawartości. Nie proś o ujawnienie sekretów.

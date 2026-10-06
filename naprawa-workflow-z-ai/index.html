@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Naprawa workflow z AI - GitHub Actions i ChatGPT</title>
+  <meta name="description" content="Workflow na GitHub zakończył się błędem? Znajdź nieudany krok, skopiuj link i wklej go do ChatGPT. Krótki tutorial ze screenami z iPhone’a.">
+  <link rel="canonical" href="https://aleksanderfigiel.pl/naprawa-workflow-z-ai/">
+  <link rel="stylesheet" href="../tutoriale/style.css">
+  <link rel="stylesheet" href="../tutoriale/preview-modal.css">
+  <script defer src="../tutoriale/app.js"></script>
+  <script defer src="../tutoriale/preview-modal.js"></script>
+</head>
+<body>
+<a class="skip" href="#tresc">Przejdź do treści</a>
+<header class="top"><a class="brand" href="/">Aleksander Figiel <span>/ tutoriale</span></a><a href="#prompt">Prompt do skopiowania ↓</a></header>
+<div class="layout">
+<aside><p class="eyebrow">GitHub Actions / AI</p><nav aria-label="Spis treści">
+<a href="#workflow">1. Otwórz nieudany workflow</a>
+<a href="#krok">2. Znajdź krok z błędem</a>
+<a href="#udostepnij">3. Otwórz udostępnianie</a>
+<a href="#kopiuj">4. Skopiuj link</a>
+<a href="#wklej">5. Wklej go do ChatGPT</a>
+<a href="#wyslij">6. Wyślij i sprawdź poprawkę</a>
+<a href="#prompt">Gotowy prompt</a>
+</nav></aside>
+<main id="tresc">
+<div class="intro"><p class="eyebrow">GitHub Actions + ChatGPT</p><h1>Naprawa workflow z AI.</h1>
+<p class="lead">Workflow zakończył się błędem? Otwórz jego logi, skopiuj link i wklej go do ChatGPT. Asystent z dostępem do GitHub może sprawdzić przyczynę i poprawić kod.</p>
+<p class="meta">6 października 2026 · GitHub Mobile / przeglądarka · około 3 minut</p></div>
+<div class="preflight"><b>Wystarczy link do konkretnego błędu.</b><p>Otwórz rozmowę z dostępem do repozytorium przez połączenie GitHub. Dla prywatnego repo sam link nie daje dostępu. Jeśli asystent nie może odczytać logów, wklej je przez <b>Copy All Logs</b> albo dołącz screenshot.</p></div>
+
+<section class="step" id="workflow"><div class="step-heading"><span class="number">01</span><h2>Otwórz nieudany workflow</h2></div><div class="step-body">
+<p>W repozytorium na GitHub przejdź do <b>Actions</b> i wybierz uruchomienie oznaczone czerwonym krzyżykiem lub statusem <b>Failure</b>. W aplikacji GitHub otwórz szczegóły tego uruchomienia.</p>
+<p>Na przykładzie nie powiodło się <b>Sign and upload TestFlight artifact</b>. Naciśnij job <b>sign-and-upload</b>, aby zobaczyć jego kroki.</p>
+<figure class="phone"><a href="resources/01-workflow-failure.png"><img src="resources/01-workflow-failure.png" alt="Nieudany workflow ze statusem Failure i jobem sign-and-upload" loading="lazy" width="943" height="2048"></a><figcaption>Czerwony status wskazuje nieudane uruchomienie. Otwórz job z błędem.</figcaption></figure>
+</div></section>
+
+<section class="step" id="krok"><div class="step-heading"><span class="number">02</span><h2>Znajdź krok z błędem</h2></div><div class="step-body">
+<p>Otwórz krok oznaczony czerwonym krzyżykiem. Tutaj jest to <b>Sign and upload to App Store Connect</b>. Pozostałe kroki mogły zakończyć się poprawnie.</p>
+<p>Link do konkretnego joba lub kroku ułatwia dotarcie do właściwego logu. Nie musisz samodzielnie interpretować wszystkich komunikatów.</p>
+<figure class="phone"><a href="resources/02-failed-step.png"><img src="resources/02-failed-step.png" alt="Lista kroków z błędem Sign and upload to App Store Connect" loading="lazy" width="943" height="2048"></a><figcaption>Wybierz czerwony krok, aby otworzyć jego log.</figcaption></figure>
+</div></section>
+
+<section class="step" id="udostepnij"><div class="step-heading"><span class="number">03</span><h2>Otwórz udostępnianie</h2></div><div class="step-body">
+<p>Na ekranie logów w aplikacji GitHub otwórz menu <b>⋯</b> i wybierz <b>Share via…</b>.</p>
+<p>To udostępnianie adresu strony. Opcja <b>Copy All Logs</b> kopiuje treść logów i przydaje się, gdy ChatGPT nie ma do nich dostępu.</p>
+<figure class="phone"><a href="resources/03-share-menu.jpeg"><img src="resources/03-share-menu.jpeg" alt="Menu logów GitHub z opcją Share via" loading="lazy" width="707" height="1536"></a><figcaption>W menu logów wybierz Share via…, aby skopiować adres błędu.</figcaption></figure>
+</div></section>
+
+<section class="step" id="kopiuj"><div class="step-heading"><span class="number">04</span><h2>Skopiuj link</h2></div><div class="step-body">
+<p>W systemowym oknie udostępniania naciśnij <b>Copy</b>. Link trafi do schowka.</p>
+<p>Jeśli korzystasz z GitHub w przeglądarce, skopiuj adres z paska po otwarciu właściwego joba. Link może kończyć się fragmentem <code>#step:13:1</code>, wskazującym konkretny krok i linię logu.</p>
+<figure class="phone"><a href="resources/04-copy-link.jpeg"><img src="resources/04-copy-link.jpeg" alt="Okno udostępniania iOS z przyciskiem Copy" loading="lazy" width="707" height="1536"></a><figcaption>Copy kopiuje link. Nie musisz przesyłać całej strony ani przepisywać błędu.</figcaption></figure>
+</div></section>
+
+<section class="step" id="wklej"><div class="step-heading"><span class="number">05</span><h2>Wklej go do ChatGPT</h2></div><div class="step-body">
+<p>Wróć do rozmowy, w której pracujesz nad aplikacją. Przytrzymaj pole wiadomości i wybierz <b>Paste</b>. Zachowasz kontekst wcześniejszych zmian.</p>
+<p>W nowej rozmowie dopisz, czego dotyczy repozytorium i co ostatnio zmieniono. GitHub powinien być połączony z asystentem i mieć dostęp do tego repo.</p>
+<figure class="phone"><a href="resources/05-paste.png"><img src="resources/05-paste.png" alt="Pole wiadomości ChatGPT z menu Paste" loading="lazy" width="943" height="2048"></a><figcaption>Wklej link w rozmowie dotyczącej aplikacji.</figcaption></figure>
+</div></section>
+
+<section class="step" id="wyslij"><div class="step-heading"><span class="number">06</span><h2>Wyślij i sprawdź poprawkę</h2></div><div class="step-body">
+<p>Dodaj krótkie polecenie: <b>„Sprawdź logi i napraw ten workflow”</b>, a następnie wyślij wiadomość. W rozmowie, w której cel jest już jasny, możesz wkleić sam link.</p>
+<figure class="phone"><a href="resources/06-send-link.png"><img src="resources/06-send-link.png" alt="Link GitHub wklejony do wiadomości ChatGPT przed wysłaniem" loading="lazy" width="943" height="2048"></a><figcaption>Wyślij link do konkretnego błędu. Asystent może przejść do logów i kodu.</figcaption></figure>
+<p>Asystent powinien sprawdzić ten run, aktualny kod i ostatnie zmiany. Po poprawce poproś o link do commita i informację o wykonanych testach.</p>
+<p>Jeśli inne workflow działają, dopisz to. Taki kontekst pomaga porównać działające podpisywanie z błędnym zamiast od razu zmieniać klucze lub konfigurację konta.</p>
+<p>Po zmianie kodu sprawdź <b>nowe uruchomienie dla nowego commita</b>. Re-run starego runa zwykle nadal korzysta ze starego kodu. Zielony build aplikacji nie oznacza jeszcze udanego podpisania i uploadu, a upload nie kończy przetwarzania przez Apple.</p>
+<p class="note">Screeny pokazują zgłoszenie błędu, nie dowód jego naprawienia. O wyniku decyduje nowy workflow i, dla zmian w aplikacji, sprawdzenie na urządzeniu.</p>
+</div></section>
+
+<section class="prompt-section" id="prompt"><p class="eyebrow">Do skopiowania</p><h2>Link + krótkie polecenie</h2>
+<p>Skopiuj prompt i zastąp nawias z instrukcją swoim linkiem.</p>
+<div class="actions"><button type="button" data-copy-target="prompt-text" data-copy-status="copy-status">Kopiuj prompt</button><a href="prompt.txt" download>Pobierz prompt.txt</a></div>
+<p id="copy-status" role="status"></p><details><summary>Pokaż pełny prompt</summary><pre id="prompt-text">Napraw błąd GitHub Actions z tego linku:
+[WKLEJ LINK DO NIEUDANEGO WORKFLOW, JOBA LUB KROKU]
+
+Sprawdź logi tego konkretnego uruchomienia, aktualny kod i ostatnie zmiany. Znajdź przyczynę błędu i zrób najmniejszą sensowną poprawkę w odpowiednim repozytorium. Przeczytaj jego AGENTS.md, README.md i dokumentację dotyczącą zmiany.
+
+Jeżeli inne aplikacje lub workflow podpisują się poprawnie, porównaj działający run z błędnym. Nie zakładaj problemu z kluczami tylko na podstawie „Authentication failed”.
+
+Uruchom dostępne testy. Po poprawce zrób jeden commit i push na main, jeśli zasady repozytorium na to pozwalają. Podaj link do commita, zakres zmiany i czego nie udało się zweryfikować. Sukces potwierdź dopiero na podstawie wyniku nowego uruchomienia.
+
+Jeśli nie masz dostępu do repozytorium lub logów, powiedz to i poproś o połączenie GitHub albo wklejenie logów. Nie zgaduj ich zawartości. Nie proś o ujawnienie sekretów.</pre></details></section>
+<section id="seria"><h2>Pozostałe tutoriale</h2><div class="series"><a href="/ios-new-app-tutorial-1/">Rejestracja aplikacji</a><a href="/ios-testflight-tutorial-2/">TestFlight</a><a href="/ios-macos-cable-tutorial-3/">Instalacja przez kabel</a><a href="/ios-adhoc-tutorial-4/">Ad Hoc</a><a href="/chatgpt-wlasny-plugin/">ChatGPT, własny plugin</a></div></section>
+<footer><p>Naprawa workflow z AI · Screeny z GitHub Mobile i ChatGPT na iPhonie.</p></footer>
+</main></div>
+</body></html>
