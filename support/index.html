@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Get help with apps by Aleksander Figiel. Send a question, report a problem or share feedback.">
+  <title>App Support - Aleksander Figiel</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="support.js" defer></script>
+</head>
+<body>
+  <main class="card">
+    <p class="eyebrow">ALEKSANDER FIGIEL · APP SUPPORT</p>
+    <h1>How can I help?</h1>
+    <p class="intro">Report a problem, ask a question or share feedback about an app.</p>
+    <form id="support-form">
+      <label for="app">App name</label>
+      <input id="app" name="app" type="text" value="HRV Breathing Meditation" required maxlength="100" autocomplete="off">
+      <label for="email">Your email</label>
+      <input id="email" name="email" type="email" placeholder="you@example.com" required maxlength="254" autocomplete="email">
+      <label for="message">Message</label>
+      <textarea id="message" name="message" rows="6" placeholder="Tell me what happened. For technical issues, include your device model, iOS version and app version." required minlength="10" maxlength="5000"></textarea>
+      <div class="honeypot" aria-hidden="true">
+        <label for="website">Leave this field empty</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <p class="privacy">Your email and message will only be used to handle your support request. Please do not include passwords or sensitive information.</p>
+      <button type="submit">Send message</button>
+      <p id="form-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    </form>
+    <noscript><p>Please enable JavaScript to send a support request.</p></noscript>
+    <footer><a href="/">aleksanderfigiel.pl</a></footer>
+  </main>
+</body>
+</html>

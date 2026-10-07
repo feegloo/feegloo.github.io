@@ -1,0 +1,61 @@
+:root {
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172724;
+  background: #f3f6f5;
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 48px 20px; }
+.card {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 36px;
+  background: #fff;
+  border: 1px solid #e0e8e4;
+  border-radius: 20px;
+  box-shadow: 0 12px 48px #173b2510;
+}
+.eyebrow { margin: 0 0 18px; color: #487164; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+h1 { margin: 0 0 12px; font-size: clamp(28px, 7vw, 36px); letter-spacing: -1px; }
+.intro { margin: 0 0 28px; color: #5b6d65; line-height: 1.6; }
+label { display: block; margin: 20px 0 8px; font-size: 14px; font-weight: 600; }
+input, textarea {
+  display: block;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #cdd8d2;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 16px;
+  color: inherit;
+  background: #fff;
+}
+textarea { resize: vertical; min-height: 150px; line-height: 1.5; }
+input:focus, textarea:focus { outline: 2px solid #2c7b60; outline-offset: 2px; }
+.privacy { margin: 18px 0; font-size: 12px; line-height: 1.6; color: #5b6d65; }
+button {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #24664f;
+  color: white;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+button:hover { background: #1b503d; }
+button:focus-visible, a:focus-visible { outline: 3px solid #2c7b60; outline-offset: 3px; }
+button:disabled { opacity: .65; cursor: wait; }
+#form-status { margin: 16px 0 0; font-size: 14px; line-height: 1.5; }
+#form-status:empty { display: none; }
+#form-status[data-state="error"] { color: #ad2831; }
+#form-status[data-state="success"] { color: #24664f; }
+.honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+footer { margin-top: 28px; text-align: center; font-size: 12px; }
+footer a { color: #5b6d65; }
+@media (max-width: 480px) {
+  body { padding: 20px 14px; }
+  .card { padding: 26px 22px; }
+}
