@@ -1,8 +1,8 @@
 # App support
 
-Public URL: https://aleksanderfigiel.pl/support
+Public URL: https://aleksanderfigiel.pl/ios-breathing-support
 
-A responsive English form for app name, email and message. No sign-in is required.
+A responsive English form for email and message. The app name is fixed to HRV Breathing & Meditation in the submission payload. No sign-in is required.
 The page posts directly to the Supabase Data API using a public publishable key.
 No service-role key is exposed.
 
@@ -26,7 +26,7 @@ the project; it is intended for fresh installations, not repeated execution.
 ## Local preview
 
 From the repository root, run `python3 -m http.server 8000`, then open
-http://localhost:8000/support/. Submission uses the live Supabase project.
+http://localhost:8000/ios-breathing-support/. Submission uses the live Supabase project.
 The repository's GitHub Pages workflow publishes changes on main.
 
 ## Privacy

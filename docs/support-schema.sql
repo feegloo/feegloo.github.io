@@ -14,4 +14,4 @@ create policy "Public can submit support requests"
   on public.support_requests for insert to anon with check (true);
 create unique index support_requests_email_minute
   on public.support_requests (lower(email), date_trunc('minute', created_at at time zone 'UTC'));
-comment on table public.support_requests is 'Support submissions from aleksanderfigiel.pl/support. Public access is insert-only.';
+comment on table public.support_requests is 'Support submissions from aleksanderfigiel.pl/ios-breathing-support. Public access is insert-only.';

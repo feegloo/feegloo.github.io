@@ -2,11 +2,11 @@ https://aleksanderfigiel.pl
 
 ## App support
 
-- [Support form](https://aleksanderfigiel.pl/support): app questions and feedback saved in Supabase. [Setup and data access](docs/support.md).
+- [Support form](https://aleksanderfigiel.pl/ios-breathing-support): app questions and feedback saved in Supabase. [Setup and data access](docs/support.md).
 
 ## Privacy policy
 
-- [HRV Breathing Meditation](https://aleksanderfigiel.pl/ios-breathing-privacy-policy): [policy maintenance](docs/breathing-privacy.md).
+- [HRV Breathing & Meditation](https://aleksanderfigiel.pl/ios-breathing-privacy-policy): [policy maintenance](docs/breathing-privacy.md).
 
 ## Tutoriale
 

@@ -15,7 +15,7 @@
     event.preventDefault();
     if (submitting) return;
 
-    for (const name of ['app', 'email', 'message']) {
+    for (const name of ['email', 'message']) {
       form.elements[name].value = form.elements[name].value.trim();
     }
 
@@ -47,7 +47,7 @@
           Prefer: 'return=minimal',
         },
         body: JSON.stringify({
-          app: form.elements.app.value,
+          app: 'HRV Breathing & Meditation',
           email: form.elements.email.value.toLowerCase(),
           message: form.elements.message.value,
         }),
