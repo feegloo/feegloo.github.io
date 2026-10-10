@@ -12,7 +12,7 @@
     const apps = await response.json();
     if (!Array.isArray(apps) || !apps.length || !apps.every(app =>
       typeof app.name === 'string' && typeof app.version === 'string' &&
-      typeof app.build === 'string' && /^\/builds\/[a-zA-Z0-9_-]+\/index\.html$/.test(app.url) &&
+      typeof app.build === 'string' && /^\/builds\/[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)*\/index\.html$/.test(app.url) &&
       typeof app.icon === 'string' && (!app.icon || app.icon.startsWith('/builds/') ||
         app.icon.startsWith('https://raw.githubusercontent.com/feegloo/')))) return;
     const cards = apps.map(app => {

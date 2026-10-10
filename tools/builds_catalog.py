@@ -38,7 +38,7 @@ def order(entry):
 def render(builds):
     apps = []
     for folder in sorted(builds.iterdir()):
-        if not folder.is_dir() or not re.fullmatch(r'[a-zA-Z0-9_-]+', folder.name):
+        if not folder.is_dir() or not re.fullmatch(r'[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)*', folder.name):
             continue
         entries = []
         for path in folder.rglob('metadata.json'):
