@@ -1,0 +1,16 @@
+[
+  {
+    "name": "AI Trichoscopy & Dermatology",
+    "version": "0.1",
+    "build": "12",
+    "url": "/builds/ai-trichoscopy/index.html",
+    "icon": "/builds/ai-trichoscopy/icon.png"
+  },
+  {
+    "name": "HRV Breathing ASMR Meditation",
+    "version": "1.1",
+    "build": "2",
+    "url": "/builds/vibe-ios-app-breathing/index.html",
+    "icon": "/builds/vibe-ios-app-breathing/apps/1378346531/38081803071-38081844884-2/icon.png"
+  }
+]

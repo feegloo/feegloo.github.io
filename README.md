@@ -17,3 +17,10 @@ https://aleksanderfigiel.pl
 ## UDID
 
 - [UDID page and Safari return handling](docs/udid.md).
+
+
+## Ad Hoc builds
+
+- [App catalog](https://aleksanderfigiel.pl/builds/): icons, latest version/build and per-app installation history.
+- `tools/builds_catalog.py` rebuilds the catalog from published metadata. Both central signing and Trichoscopy publication call it against the latest website revision.
+- `builds/catalog.json` refreshes the app cards; static HTML also works without JavaScript.
