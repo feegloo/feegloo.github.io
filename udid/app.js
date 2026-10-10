@@ -2,7 +2,6 @@
 const endpoint = "https://gwfdnwlhonszocjizrnl.supabase.co/functions/v1/udid-service-301/profile";
 const status = document.getElementById("status");
 const storageKey = "udid-profile-session";
-const result = new URLSearchParams(location.hash.slice(1));
 const instructionImages = [
   "ios-downloaded-profile-settings.jpeg",
   "ios-downloaded-udid-profile.jpeg",
@@ -85,21 +84,33 @@ instructionCarousel.addEventListener("keydown", event => {
   event.preventDefault();
   advanceInstructionImage();
 });
-// Clear the fragment before any further interaction. UDID is never stored by this script.
-history.replaceState(null, "", location.pathname);
-if (result.has("udid")) {
-  try {
-    const pending = JSON.parse(localStorage.getItem(storageKey) || "null");
-    const udid = result.get("udid");
-    if (!pending || pending.state !== result.get("state") || Date.now() - pending.created > 30 * 60 * 1000 || !/^(?:[A-F0-9]{8}-[A-F0-9]{16}|[A-F0-9]{40})$/.test(udid)) throw Error();
-    localStorage.removeItem(storageKey);
-    document.getElementById("start").hidden = true;
-    document.getElementById("result").hidden = false;
-    document.getElementById("udid").value = udid;
-  } catch {
-    status.textContent = "Sesja wygasła lub wynik otwarto w innej przeglądarce. Pobierz nowy profil w Safari.";
+function showReturnedUDID() {
+  const result = new URLSearchParams(location.hash.slice(1));
+  if (!result.has("udid")) return;
+
+  // Safari may reuse this document on return from Settings.
+  // Clear identifiers from the URL before validating or displaying the result.
+  history.replaceState(null, "", location.pathname);
+  if (result.has("udid")) {
+    try {
+      const pending = JSON.parse(localStorage.getItem(storageKey) || "null");
+      const udid = result.get("udid");
+      if (!pending || pending.state !== result.get("state") || Date.now() - pending.created > 30 * 60 * 1000 || !/^(?:[A-F0-9]{8}-[A-F0-9]{16}|[A-F0-9]{40})$/.test(udid)) throw Error();
+      localStorage.removeItem(storageKey);
+      document.getElementById("start").hidden = true;
+      document.getElementById("result").hidden = false;
+      document.getElementById("udid").value = udid;
+      status.textContent = "";
+      window.scrollTo(0, 0);
+    } catch {
+      status.textContent = "Sesja wygasła lub wynik otwarto w innej przeglądarce. Pobierz nowy profil w Safari.";
+    }
   }
 }
+window.addEventListener("hashchange", showReturnedUDID);
+window.addEventListener("pageshow", showReturnedUDID);
+showReturnedUDID();
+
 document.getElementById("download").addEventListener("click", () => {
   try {
     const state = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, "0")).join("");
