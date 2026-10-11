@@ -41,3 +41,11 @@ Do publikacji używaj zanonimizowanych kopii. Bez sekretów, haseł, kluczy pryw
 27. `15-catalog.png`: Własna strona z ikoną aplikacji, wersją i Install.
 28. `15-install.png`: Komunikat instalacji iOS po wybraniu Install w Safari.
 29. `15-history.png`: Historia wersji tej samej aplikacji.
+
+## Tryb dewelopera w kroku 15
+
+- `15-developer-mode-required.png`: komunikat „Wymagany tryb dewelopera”.
+- `15-developer-mode-settings.png`: Ustawienia → Prywatność i ochrona → Tryb dewelopera (screenshot w języku angielskim).
+- `15-developer-mode-enabled.png`: włączony przełącznik trybu dewelopera.
+
+Obrazy mają podgląd po kliknięciu i zachowują oryginalne proporcje. Instrukcja dotyczy iOS 16 lub nowszego, obejmuje restart i potwierdzenie włączenia.
