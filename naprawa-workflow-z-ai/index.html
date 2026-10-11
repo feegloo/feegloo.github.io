@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Naprawa workflow z AI - GitHub Actions i ChatGPT</title>
-  <meta name="description" content="Workflow na GitHub zakończył się błędem? Otwórz nieudane uruchomienie, skopiuj link i wklej go do ChatGPT. Krótki tutorial ze screenami z iPhone’a.">
+  <title>Naprawa workflow z AI - GitHub Actions, ChatGPT i Copilot</title>
+  <meta name="description" content="Workflow na GitHub zakończył się błędem? Otwórz nieudane uruchomienie, skopiuj link i wklej go do ChatGPT. Możesz też użyć Fix with Copilot bezpośrednio w GitHub. Tutorial ze screenami z iPhone’a.">
   <link rel="canonical" href="https://aleksanderfigiel.pl/naprawa-workflow-z-ai/">
   <link rel="stylesheet" href="../tutoriale/style.css">
   <link rel="stylesheet" href="../tutoriale/preview-modal.css">
@@ -28,6 +28,7 @@
 <a href="#wklej">10. Wklej go do ChatGPT</a>
 <a href="#wyslij">11. Wyślij i sprawdź poprawkę</a>
 <a href="#prompt">Gotowy prompt</a>
+<a href="#copilot">12. Trzecia ścieżka: Fix with Copilot</a>
 </nav></aside>
 <main id="tresc">
 <div class="intro"><p class="eyebrow">GitHub Actions + ChatGPT</p><h1>Naprawa workflow z AI.</h1>
@@ -114,7 +115,19 @@ Jeżeli inne aplikacje lub workflow podpisują się poprawnie, porównaj działa
 Uruchom dostępne testy. Po poprawce zrób jeden commit i push na main, jeśli zasady repozytorium na to pozwalają. Podaj link do commita, zakres zmiany i czego nie udało się zweryfikować. Sukces potwierdź dopiero na podstawie wyniku nowego uruchomienia.
 
 Jeśli nie masz dostępu do repozytorium lub logów, powiedz to i poproś o połączenie GitHub albo wklejenie logów. Nie zgaduj ich zawartości. Nie proś o ujawnienie sekretów.</pre></details></section>
+
+<section class="step" id="copilot"><div class="step-heading"><span class="number">12</span><h2>Trzecia ścieżka: naprawa bezpośrednio w GitHub</h2></div><div class="step-body">
+<p>Jeśli masz aktywną licencję <b>GitHub Copilot Pro</b> i dostęp do agenta w swoim repozytorium, możesz zlecić naprawę bezpośrednio w aplikacji GitHub. To trzecia ścieżka: zamiast kopiować link do ChatGPT lub innego zewnętrznego AI, skorzystaj z opcji <b>Fix with Copilot</b>.</p>
+<p>Otwórz logi nieudanego joba, rozwiń menu <b>⋯</b> i wybierz <b>Fix with Copilot</b>. Możesz też nacisnąć zielony przycisk o tej samej nazwie pod logami.</p>
+<figure class="phone"><a href="resources/09-fix-with-copilot.jpeg"><img src="resources/09-fix-with-copilot.jpeg" alt="Menu logów nieudanego joba GitHub z opcją Fix with Copilot i zielonym przyciskiem pod logami" loading="lazy" width="707" height="1536"></a><figcaption>Wybierz Fix with Copilot w menu logów lub użyj przycisku pod nimi.</figcaption></figure>
+<p>GitHub otworzy ekran <b>New Agent Session</b> z gotowym poleceniem: przeanalizuj logi GitHub Actions, znajdź przyczynę błędu i wprowadź poprawkę. <b>Link do joba jest już dodany automatycznie.</b> Sprawdź wybrane repozytorium i gałąź, a następnie naciśnij <b>niebieską strzałkę w prawym górnym rogu</b>, aby wysłać zadanie i uruchomić agenta.</p>
+<figure class="phone"><a href="resources/10-copilot-agent-session.png"><img src="resources/10-copilot-agent-session.png" alt="New Agent Session w GitHub z gotowym poleceniem naprawy, automatycznie dodanym adresem joba i niebieską strzałką wysłania" loading="lazy" width="1260" height="2736"></a><figcaption>Gotowe polecenie i adres błędu są już wpisane. Niebieska strzałka uruchamia sesję agenta.</figcaption></figure>
+<p>Agent przeanalizuje logi i kod repozytorium, a następnie przygotuje poprawkę. Cały proces możesz śledzić w GitHub, bez przenoszenia linków ani logów do zewnętrznego asystenta. Po zakończeniu sprawdź proponowane zmiany, wykonane testy i wynik nowego uruchomienia workflow.</p>
+<p class="note">Drugi screen pokazuje przygotowanie zadania, a nie zakończoną naprawę. Sama opcja Fix with Copilot nie gwarantuje sukcesu. Jeśli nie jest dostępna, sprawdź dostęp do agenta dla konta i repozytorium albo skorzystaj z jednej z dwóch wcześniejszych ścieżek.</p>
+<p>Więcej: <a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/use-cloud-agent-on-github">dokumentacja agenta Copilot i naprawy błędów GitHub Actions</a>.</p>
+</div></section>
+
 <section id="seria"><h2>Pozostałe tutoriale</h2><div class="series"><a href="/ios-new-app-tutorial-1/">Rejestracja aplikacji</a><a href="/ios-testflight-tutorial-2/">TestFlight</a><a href="/ios-macos-cable-tutorial-3/">Instalacja przez kabel</a><a href="/ios-adhoc-tutorial-4/">Ad Hoc</a><a href="/chatgpt-wlasny-plugin/">ChatGPT, własny plugin</a></div></section>
-<footer><p>Naprawa workflow z AI · Screeny z GitHub Mobile i ChatGPT na iPhonie.</p></footer>
+<footer><p>Naprawa workflow z AI · Screeny z GitHub Mobile, Copilot i ChatGPT na iPhonie.</p></footer>
 </main></div>
 </body></html>
