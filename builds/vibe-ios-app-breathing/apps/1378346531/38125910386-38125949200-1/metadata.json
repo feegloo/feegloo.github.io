@@ -1,0 +1,12 @@
+{
+  "name": "HRV Breathing ASMR Meditation",
+  "version": "1.1",
+  "build": "16",
+  "bundle_id": "app.vibeios.client.breathing",
+  "source_run_id": "38125910386",
+  "source_sha": "a6b20dc4ca73ab8cd12576b274c1db115de58e0b",
+  "sign_run_id": "38125949200",
+  "sign_attempt": "1",
+  "relative": "apps/1378346531/38125910386-38125949200-1",
+  "created_at": "2026-10-11T08:46:01.827994+00:00"
+}
