@@ -24,3 +24,20 @@ https://aleksanderfigiel.pl
 - [App catalog](https://aleksanderfigiel.pl/builds/): icons, latest version/build and per-app installation history.
 - `tools/builds_catalog.py` rebuilds the catalog from published metadata. Both central signing and Trichoscopy publication call it against the latest website revision.
 - `builds/catalog.json` refreshes the app cards; static HTML also works without JavaScript.
+
+## HRV ASMR
+
+- [Web breathing companion](https://aleksanderfigiel.pl/hrv-asmr/): native breathing animation and six ASMR sounds, ported to JavaScript. [Architecture, controls and checks](docs/hrv-asmr.md).
+
+## Local development
+
+Static HTML, CSS and JavaScript. Clone and serve without a build step:
+
+```bash
+git clone https://github.com/feegloo/feegloo.github.io.git
+cd feegloo.github.io
+python3 -m http.server 8000
+```
+
+Open `http://localhost:8000/`. GitHub Pages publishes pushes to `main` through `.github/workflows/pages.yml`.
+
